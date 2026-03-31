@@ -41,6 +41,7 @@ android {
     }
 
     defaultConfig {
+        applicationId "com.openclaw.assistant"
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
         versionCode 118
@@ -51,14 +52,14 @@ android {
 
         buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
 
-        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
-        manifestPlaceholders.TERMUX_APP_NAME = "Termux"
-        manifestPlaceholders.TERMUX_API_APP_NAME = "Termux:API"
-        manifestPlaceholders.TERMUX_BOOT_APP_NAME = "Termux:Boot"
-        manifestPlaceholders.TERMUX_FLOAT_APP_NAME = "Termux:Float"
-        manifestPlaceholders.TERMUX_STYLING_APP_NAME = "Termux:Styling"
-        manifestPlaceholders.TERMUX_TASKER_APP_NAME = "Termux:Tasker"
-        manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "Termux:Widget"
+        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.openclaw.assistant"
+        manifestPlaceholders.TERMUX_APP_NAME = "OpenClaw Assistant"
+        manifestPlaceholders.TERMUX_API_APP_NAME = "OpenClaw:API"
+        manifestPlaceholders.TERMUX_BOOT_APP_NAME = "OpenClaw:Boot"
+        manifestPlaceholders.TERMUX_FLOAT_APP_NAME = "OpenClaw:Float"
+        manifestPlaceholders.TERMUX_STYLING_APP_NAME = "OpenClaw:Styling"
+        manifestPlaceholders.TERMUX_TASKER_APP_NAME = "OpenClaw:Tasker"
+        manifestPlaceholders.TERMUX_WIDGET_APP_NAME = "OpenClaw:Widget"
 
         externalNativeBuild {
             ndkBuild {
@@ -132,10 +133,10 @@ android {
         variant.outputs.all { output ->
             if (variant.buildType.name == "debug") {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
+                outputFileName = new File("openclaw-assistant_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
             } else if (variant.buildType.name == "release") {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "release") + "_" + (abi ? abi : "universal") + ".apk")
+                outputFileName = new File("openclaw-assistant_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "release") + "_" + (abi ? abi : "universal") + ".apk")
             }
         }
     }

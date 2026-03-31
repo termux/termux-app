@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!DOCTYPE resources [
-    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
-    <!ENTITY TERMUX_APP_NAME "Termux">
-    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
-    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
-    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
-    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
-    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
-    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
-    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.termux/files/usr">
+    <!ENTITY TERMUX_PACKAGE_NAME "com.openclaw.assistant">
+    <!ENTITY TERMUX_APP_NAME "OpenClaw Assistant">
+    <!ENTITY TERMUX_API_APP_NAME "OpenClaw:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "OpenClaw:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "OpenClaw:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "OpenClaw:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "OpenClaw:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "OpenClaw:Widget">
+    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.openclaw.assistant/files/usr">
     ]>
 
 <resources>
@@ -71,9 +71,9 @@
     <string name="error_sending_sigkill_to_process">Sending SIGKILL to process on user request or because android is killing the execution service</string>
     <string name="error_executable_unset">Executable not set \"%1$s\" for shell command</string>
     <string name="error_execution_cancelled">Execution has been cancelled since execution service is being killed</string>
-    <string name="error_failed_to_execute_termux_session_command">Failed to execute \"%1$s\" termux session command</string>
+    <string name="error_failed_to_execute_termux_session_command">Failed to execute \"%1$s\" OpenClaw session command</string>
     <string name="error_failed_to_execute_app_shell_command">Failed to execute \"%1$s\" app shell command</string>
-    <string name="error_exception_received_while_executing_termux_session_command">Exception received while to executing \"%1$s\" termux session command.\nException: %2$s</string>
+    <string name="error_exception_received_while_executing_termux_session_command">Exception received while to executing \"%1$s\" OpenClaw session command.\nException: %2$s</string>
     <string name="error_exception_received_while_executing_app_shell_command">Exception received while to executing \"%1$s\" app shell command.\nException: %2$s</string>
 
 
@@ -82,17 +82,17 @@
     <string name="msg_report_issue">
         If you want to report this issue, then copy its text from the options menu (3-dots on top right) and post
         an issue on one of the following links.
-        \n\nIf you are posting a Termux app crash report, then please provide details on what you were doing that
+        \n\nIf you are posting an OpenClaw Assistant app crash report, then please provide details on what you were doing that
         caused the crash and how to reproduce it, if possible.
         \n\nIf you are posting an issue on GitHub, then post it in the repository at which the report belongs at.
         Issues opened or emails sent with **(partial) screenshots** instead of copied text or a file of this report
         **will likely be automatically closed/deleted**. You may optionally remove any device specific info that
         you consider private or don\'t want to share or that is not relevant to the issue.
         \n\nWe do not provide support for any hacking related tools/scripts. Any questions asked about them over email,
-        on GitHub or other official termux community forums **will likely be automatically closed/deleted** and may
-        even result in **temporary or permanent** ban. Check %1$s/wiki/Hacking for details.</string>
+        on GitHub or other official OpenClaw community forums **will likely be automatically closed/deleted** and may
+        even result in **temporary or permanent** ban. Check %1$s for details.</string>
 
-    <string name="msg_termux_app_required_by_app">The &TERMUX_APP_NAME; is required by the %1$s app to run termux commands.</string>
+    <string name="msg_termux_app_required_by_app">The &TERMUX_APP_NAME; is required by the %1$s app to run shell commands.</string>
     <string name="error_termux_app_package_context_not_accessible">The &TERMUX_APP_NAME; app (package context) is not accessible.</string>
     <string name="error_termux_prefix_dir_path_not_accessible">The &TERMUX_APP_NAME; app $PREFIX directory is not accessible by the %1$s app.
         This may be because you have not installed or setup &TERMUX_APP_NAME; app or

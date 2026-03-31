@@ -28,7 +28,7 @@ import com.termux.shared.shell.command.ExecutionCommand.Runner;
 
 /**
  * A service that receives {@link RUN_COMMAND_SERVICE#ACTION_RUN_COMMAND} intent from third party apps and
- * plugins that contains info on command execution and forwards the extras to {@link TermuxService}
+ * plugins that contains info on command execution and forwards the extras to {@link OpenClawService}
  * for the actual execution.
  *
  * Check https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent for more info.
@@ -206,7 +206,7 @@ public class RunCommandService extends Service {
 
         // Create execution intent with the action TERMUX_SERVICE#ACTION_SERVICE_EXECUTE to be sent to the TERMUX_SERVICE
         Intent execIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, executionCommand.executableUri);
-        execIntent.setClass(this, TermuxService.class);
+        execIntent.setClass(this, OpenClawService.class);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, executionCommand.arguments);
         execIntent.putExtra(TERMUX_SERVICE.EXTRA_STDIN, executionCommand.stdin);
         if (executionCommand.workingDirectory != null && !executionCommand.workingDirectory.isEmpty()) execIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, executionCommand.workingDirectory);

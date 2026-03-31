@@ -4,19 +4,19 @@
      https://material.io/develop/android/theming/dark
     -->
 
-    <!-- TermuxApp Light DarkActionBar theme. -->
-    <style name="Theme.TermuxApp.Light.DarkActionBar" parent="Theme.BaseActivity.Light.DarkActionBar"/>
-    <!-- TermuxApp Light NoActionBar theme. -->
-    <style name="Theme.TermuxApp.Light.NoActionBar" parent="Theme.BaseActivity.Light.NoActionBar"/>
+    <!-- OpenClawApp Light DarkActionBar theme. -->
+    <style name="Theme.OpenClawApp.Light.DarkActionBar" parent="Theme.BaseActivity.Light.DarkActionBar"/>
+    <!-- OpenClawApp Light NoActionBar theme. -->
+    <style name="Theme.OpenClawApp.Light.NoActionBar" parent="Theme.BaseActivity.Light.NoActionBar"/>
 
-    <!-- TermuxApp DayNight DarkActionBar theme. -->
-    <style name="Theme.TermuxApp.DayNight.DarkActionBar" parent="Theme.BaseActivity.DayNight.DarkActionBar"/>
-    <!-- TermuxApp DayNight NoActionBar theme. -->
-    <style name="Theme.TermuxApp.DayNight.NoActionBar" parent="Theme.BaseActivity.DayNight.NoActionBar"/>
+    <!-- OpenClawApp DayNight DarkActionBar theme. -->
+    <style name="Theme.OpenClawApp.DayNight.DarkActionBar" parent="Theme.BaseActivity.DayNight.DarkActionBar"/>
+    <!-- OpenClawApp DayNight NoActionBar theme. -->
+    <style name="Theme.OpenClawApp.DayNight.NoActionBar" parent="Theme.BaseActivity.DayNight.NoActionBar"/>
 
 
-    <!-- TermuxActivity DayNight NoActionBar theme. -->
-    <style name="Theme.TermuxActivity.DayNight.NoActionBar" parent="Theme.TermuxApp.DayNight.NoActionBar">
+    <!-- OpenClawActivity DayNight NoActionBar theme. -->
+    <style name="Theme.OpenClawActivity.DayNight.NoActionBar" parent="Theme.OpenClawApp.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/black</item>
         <item name="colorPrimaryVariant">@color/black</item>
@@ -35,7 +35,7 @@
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
 
         <!-- Left drawer. -->
-        <item name="buttonBarButtonStyle">@style/TermuxActivity.Drawer.ButtonBarStyle.Light</item>
+        <item name="buttonBarButtonStyle">@style/OpenClawActivity.Drawer.ButtonBarStyle.Light</item>
         <item name="termuxActivityDrawerBackground">@color/white</item>
         <item name="termuxActivityDrawerImageTint">@color/black</item>
 

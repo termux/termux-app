@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="internalOnly"
-    android:sharedUserId="${TERMUX_PACKAGE_NAME}"
+    android:sharedUserId="com.openclaw.assistant"
     android:sharedUserLabel="@string/shared_user_label">
 
     <uses-feature
@@ -13,7 +13,7 @@
         android:required="false" />
 
     <permission
-        android:name="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND"
+        android:name="com.openclaw.assistant.permission.RUN_COMMAND"
         android:description="@string/permission_run_command_description"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/permission_run_command_label"
@@ -38,7 +38,7 @@
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <application
-        android:name=".app.TermuxApplication"
+        android:name=".app.OpenClawApplication"
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
@@ -46,17 +46,17 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
-        android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
+        android:theme="@style/Theme.OpenClawApp.DayNight.DarkActionBar"
         tools:targetApi="m">
 
         <activity
-            android:name=".app.TermuxActivity"
+            android:name=".app.OpenClawActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|keyboard|keyboardHidden|navigation"
             android:label="@string/application_name"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
-            android:theme="@style/Theme.TermuxActivity.DayNight.NoActionBar"
+            android:theme="@style/Theme.OpenClawActivity.DayNight.NoActionBar"
             tools:targetApi="n">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -77,7 +77,7 @@
         <activity-alias
             android:name=".HomeActivity"
             android:exported="true"
-            android:targetActivity=".app.TermuxActivity">
+            android:targetActivity=".app.OpenClawActivity">
 
             <!-- Launch activity automatically on boot on Android Things devices -->
             <intent-filter>
@@ -92,15 +92,21 @@
             android:name=".app.activities.HelpActivity"
             android:exported="false"
             android:label="@string/application_name"
-            android:parentActivityName=".app.TermuxActivity"
+            android:parentActivityName=".app.OpenClawActivity"
             android:resizeableActivity="true"
             tools:targetApi="n" />
 
         <activity
             android:name=".app.activities.SettingsActivity"
             android:exported="true"
-            android:label="@string/title_activity_termux_settings"
-            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
+            android:label="@string/title_activity_openclaw_settings"
+            android:theme="@style/Theme.OpenClawApp.DayNight.NoActionBar" />
+
+        <activity
+            android:name=".app.activities.OpenClawDashboardActivity"
+            android:exported="false"
+            android:label="@string/open_claw_dashboard_title"
+            android:theme="@style/Theme.OpenClawApp.DayNight.DarkActionBar" />
 
         <activity
             android:name=".shared.activities.ReportActivity"
@@ -113,7 +119,7 @@
             android:exported="false"
             android:noHistory="true"
             android:resizeableActivity="true"
-            android:taskAffinity="${TERMUX_PACKAGE_NAME}.filereceiver"
+            android:taskAffinity="com.openclaw.assistant.filereceiver"
             tools:targetApi="n">
         </activity>
 
@@ -159,7 +165,7 @@
 
         <provider
             android:name=".filepicker.TermuxDocumentsProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.documents"
+            android:authorities="com.openclaw.assistant.documents"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
@@ -170,10 +176,10 @@
 
         <provider
             android:name=".app.TermuxOpenReceiver$ContentProvider"
-            android:authorities="${TERMUX_PACKAGE_NAME}.files"
+            android:authorities="com.openclaw.assistant.files"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
+            android:permission="com.openclaw.assistant.permission.RUN_COMMAND" />
 
 
         <receiver
@@ -194,15 +200,15 @@
 
 
         <service
-            android:name=".app.TermuxService"
+            android:name=".app.OpenClawService"
             android:exported="false" />
 
         <service
             android:name=".app.RunCommandService"
             android:exported="true"
-            android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND">
+            android:permission="com.openclaw.assistant.permission.RUN_COMMAND">
             <intent-filter>
-                <action android:name="${TERMUX_PACKAGE_NAME}.RUN_COMMAND" />
+                <action android:name="com.openclaw.assistant.RUN_COMMAND" />
             </intent-filter>
         </service>
 

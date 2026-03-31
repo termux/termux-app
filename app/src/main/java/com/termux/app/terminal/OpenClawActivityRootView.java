@@ -15,13 +15,13 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.termux.app.TermuxActivity;
+import com.termux.app.OpenClawActivity;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.view.ViewUtils;
 
 
 /**
- * The {@link TermuxActivity} relies on {@link android.view.WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE)}
+ * The {@link OpenClawActivity} relies on {@link android.view.WindowManager.LayoutParams#SOFT_INPUT_ADJUST_RESIZE)}
  * set by {@link TermuxTerminalViewClient#setSoftKeyboardState(boolean, boolean)} to automatically
  * resize the view and push the terminal up when soft keyboard is opened. However, this does not
  * always work properly. When `enforce-char-based-input=true` is set in `termux.properties`
@@ -52,7 +52,7 @@ import com.termux.shared.view.ViewUtils;
  *
  * To fix these issues, `activity_termux.xml` has the constant 1sp transparent
  * `activity_termux_bottom_space_view` View at the bottom. This will appear as a line matching the
- * activity theme. When {@link TermuxActivity} {@link ViewTreeObserver.OnGlobalLayoutListener} is
+ * activity theme. When {@link OpenClawActivity} {@link ViewTreeObserver.OnGlobalLayoutListener} is
  * called when any of the sub view layouts change,  like keyboard opening/closing keyboard,
  * extra keys/input view switched, etc, we check if the bottom space view is visible or not.
  * If its not, then we add a margin to the bottom of the root view, so that the keyboard does not
@@ -61,9 +61,9 @@ import com.termux.shared.view.ViewUtils;
  * hidden part equals the `header_height`. The updates to margins may cause a jitter in some cases
  * when the view is redrawn if the margin is incorrect, but logic has been implemented to avoid that.
  */
-public class TermuxActivityRootView extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
+public class OpenClawActivityRootView extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
 
-    public TermuxActivity mActivity;
+    public OpenClawActivity mActivity;
     public Integer marginBottom;
     public Integer lastMarginBottom;
     public long lastMarginBottomTime;
@@ -72,23 +72,23 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     /** Log root view events. */
     private boolean ROOT_VIEW_LOGGING_ENABLED = false;
 
-    private static final String LOG_TAG = "TermuxActivityRootView";
+    private static final String LOG_TAG = "OpenClawActivityRootView";
 
     private static int mStatusBarHeight;
 
-    public TermuxActivityRootView(Context context) {
+    public OpenClawActivityRootView(Context context) {
         super(context);
     }
 
-    public TermuxActivityRootView(Context context, @Nullable AttributeSet attrs) {
+    public OpenClawActivityRootView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public TermuxActivityRootView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public OpenClawActivityRootView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    public void setActivity(TermuxActivity activity) {
+    public void setActivity(OpenClawActivity activity) {
         mActivity = activity;
     }
 
@@ -120,7 +120,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
     public void onGlobalLayout() {
         if (mActivity == null || !mActivity.isVisible()) return;
 
-        View bottomSpaceView = mActivity.getTermuxActivityBottomSpaceView();
+        View bottomSpaceView = mActivity.getOpenClawActivityBottomSpaceView();
         if (bottomSpaceView == null) return;
 
         boolean root_view_logging_enabled = ROOT_VIEW_LOGGING_ENABLED;
@@ -161,7 +161,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             // will call OnGlobalLayoutListener again and next time bottom space view
             // will be visible and margin will be set to 0, which again will call
             // OnGlobalLayoutListener...
-            // Calling addTermuxActivityRootViewGlobalLayoutListener with a delay fails to
+            // Calling addOpenClawActivityRootViewGlobalLayoutListener with a delay fails to
             // set appropriate margins when views are changed quickly since some changes
             // may be missed.
             if (isVisibleBecauseMargin) {

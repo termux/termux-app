@@ -17,9 +17,9 @@ import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
 import com.termux.shared.termux.shell.TermuxShellManager;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
 
-public class TermuxApplication extends Application {
+public class OpenClawApplication extends Application {
 
-    private static final String LOG_TAG = "TermuxApplication";
+    private static final String LOG_TAG = "OpenClawApplication";
 
     public void onCreate() {
         super.onCreate();
@@ -55,7 +55,7 @@ public class TermuxApplication extends Application {
 
             error = TermuxFileUtils.isAppsTermuxAppDirectoryAccessible(true, true);
             if (error != null) {
-                Logger.logErrorExtended(LOG_TAG, "Create apps/termux-app directory failed\n" + error);
+                Logger.logErrorExtended(LOG_TAG, "Create apps/com.openclaw.assistant directory failed\n" + error);
                 return;
             }
 

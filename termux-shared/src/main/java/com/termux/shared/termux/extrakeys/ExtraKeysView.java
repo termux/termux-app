@@ -68,7 +68,7 @@ import com.termux.shared.theme.ThemeUtils;
  * inflates it in TerminalToolbarViewPager.instantiateItem() and sets the {@link ExtraKeysView} client
  * and calls {@link ExtraKeysView#reload(ExtraKeysInfo).
  * The {@link ExtraKeysInfo} is created by TermuxAppSharedProperties.setExtraKeys().
- * Then its got and the view height is adjusted in TermuxActivity.setTerminalToolbarHeight().
+ * Then its got and the view height is adjusted in OpenClawActivity.setTerminalToolbarHeight().
  * The client used is TermuxTerminalExtraKeys, which extends
  * {@link TerminalExtraKeys } to handle Termux app specific logic and
  * leave the rest to the super class.

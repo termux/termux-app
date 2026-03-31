@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="OpenClaw Gateway">
+        <EditTextPreference
+            app:key="open_claw_port"
+            app:title="Gateway Port"
+            app:summary="Default: 18789"
+            app:defaultValue="18789" />
+
+        <SwitchPreferenceCompat
+            app:key="open_claw_auto_start"
+            app:title="Auto-start Gateway"
+            app:summary="Automatically start gateway on app launch"
+            app:defaultValue="false" />
+
+        <SwitchPreferenceCompat
+            app:key="open_claw_background_persistence"
+            app:title="Background Persistence"
+            app:summary="Ensure gateway stays running in background"
+            app:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Ollama Runner">
+        <SwitchPreferenceCompat
+            app:key="ollama_auto_start"
+            app:title="Auto-start Ollama"
+            app:summary="Automatically start Ollama service on app launch"
+            app:defaultValue="false" />
+
+        <SwitchPreferenceCompat
+            app:key="ollama_auto_download"
+            app:title="Auto-download Models"
+            app:summary="Download missing models automatically when running"
+            app:defaultValue="true" />
+
+        <ListPreference
+            app:key="ollama_default_model"
+            app:title="Default Model"
+            app:summary="Model to run by default"
+            app:entries="@array/ollama_models"
+            app:entryValues="@array/ollama_models"
+            app:defaultValue="phi4-mini" />
+
+        <EditTextPreference
+            app:key="ollama_custom_command"
+            app:title="Custom Run Command"
+            app:summary="Command used for 'Run Model' (Default: ollama run [model])"
+            app:defaultValue="ollama run %s" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Installation Settings">
+        <EditTextPreference
+            app:key="open_claw_install_cmd"
+            app:title="OpenClaw Install Command"
+            app:defaultValue="pkg install -y nodejs &amp;&amp; npm install -g openclaw@latest" />
+
+        <EditTextPreference
+            app:key="ollama_install_cmd"
+            app:title="Ollama Install Command"
+            app:defaultValue="curl -L https://ollama.com/download/ollama-linux-arm64 -o $PREFIX/bin/ollama &amp;&amp; chmod +x $PREFIX/bin/ollama" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ollama_models">
+        <item>phi4-mini</item>
+        <item>llama3.2</item>
+        <item>mistral</item>
+        <item>gemma2</item>
+    </string-array>
+</resources>

@@ -20,10 +20,10 @@ import com.termux.R;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.shared.termux.interact.TextInputDialogUtils;
-import com.termux.app.TermuxActivity;
+import com.termux.app.OpenClawActivity;
 import com.termux.shared.termux.terminal.TermuxTerminalSessionClientBase;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.app.TermuxService;
+import com.termux.app.OpenClawService;
 import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.termux.terminal.io.BellHandler;
 import com.termux.shared.logger.Logger;
@@ -40,7 +40,7 @@ import java.util.Properties;
 /** The {@link TerminalSessionClient} implementation that may require an {@link Activity} for its interface methods. */
 public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionClientBase {
 
-    private final TermuxActivity mActivity;
+    private final OpenClawActivity mActivity;
 
     private static final int MAX_SESSIONS = 8;
 
@@ -50,7 +50,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     private static final String LOG_TAG = "TermuxTerminalSessionActivityClient";
 
-    public TermuxTerminalSessionActivityClient(TermuxActivity activity) {
+    public TermuxTerminalSessionActivityClient(OpenClawActivity activity) {
         this.mActivity = activity;
     }
 
@@ -69,7 +69,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         // The service has connected, but data may have changed since we were last in the foreground.
         // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
         // otherwise get the last session currently running.
-        if (mActivity.getTermuxService() != null) {
+        if (mActivity.getOpenClawService() != null) {
             setCurrentSession(getCurrentStoredSessionOrLast());
             termuxSessionListNotifyUpdated();
         }
@@ -137,7 +137,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     @Override
     public void onSessionFinished(@NonNull TerminalSession finishedSession) {
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
 
         if (service == null || service.wantsToStop()) {
             // The service wants to stop as soon as possible.
@@ -236,7 +236,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     @Override
     public void setTerminalShellPid(@NonNull TerminalSession terminalSession, int pid) {
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return;
         
         TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(terminalSession);
@@ -273,7 +273,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             try {
                 mBellSoundId = mBellSoundPool.load(mActivity, com.termux.shared.R.raw.bell, 1);
             } catch (Exception e){
-                // Catch java.lang.RuntimeException: Unable to resume activity {com.termux/com.termux.app.TermuxActivity}: android.content.res.Resources$NotFoundException: File res/raw/bell.ogg from drawable resource ID
+                // Catch java.lang.RuntimeException: Unable to resume activity {com.termux/com.termux.app.OpenClawActivity}: android.content.res.Resources$NotFoundException: File res/raw/bell.ogg from drawable resource ID
                 Logger.logStackTraceWithMessage(LOG_TAG, "Failed to load bell sound pool", e);
             }
         }
@@ -314,7 +314,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
     public void switchToSession(boolean forward) {
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return;
 
         TerminalSession currentTerminalSession = mActivity.getCurrentSession();
@@ -332,7 +332,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
     public void switchToSession(int index) {
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return;
 
         TermuxSession termuxSession = service.getTermuxSession(index);
@@ -353,7 +353,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     private void renameSession(TerminalSession sessionToRename, String text) {
         if (sessionToRename == null) return;
         sessionToRename.mSessionName = text;
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service != null) {
             TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(sessionToRename);
             if (termuxSession != null)
@@ -362,7 +362,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
     public void addNewSession(boolean isFailSafe, String sessionName) {
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return;
 
         if (service.getTermuxSessionsSize() >= MAX_SESSIONS) {
@@ -405,7 +405,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             return stored;
         } else {
             // Else return the last session currently running
-            TermuxService service = mActivity.getTermuxService();
+            OpenClawService service = mActivity.getOpenClawService();
             if (service == null) return null;
 
             TermuxSession termuxSession = service.getLastTermuxSession();
@@ -424,7 +424,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             return null;
 
         // Check if the session handle found matches one of the currently running sessions
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return null;
 
         return service.getTerminalSessionForHandle(sessionHandle);
@@ -432,7 +432,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     public void removeFinishedSession(TerminalSession finishedSession) {
         // Return pressed with finished session - remove it.
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return;
 
         int index = service.removeTermuxSession(finishedSession);
@@ -457,7 +457,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     public void checkAndScrollToSession(TerminalSession session) {
         if (!mActivity.isVisible()) return;
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return;
 
         final int indexOfSession = service.getIndexOfSession(session);
@@ -472,7 +472,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
 
     String toToastTitle(TerminalSession session) {
-        TermuxService service = mActivity.getTermuxService();
+        OpenClawService service = mActivity.getOpenClawService();
         if (service == null) return null;
 
         final int indexOfSession = service.getIndexOfSession(session);

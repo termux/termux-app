@@ -321,7 +321,7 @@ public class TermuxFileUtils {
      * or validating permissions failed, otherwise {@code null}.
      */
     public static Error isAppsTermuxAppDirectoryAccessible(boolean createDirectoryIfMissing, boolean setMissingPermissions) {
-        return FileUtils.validateDirectoryFileExistenceAndPermissions("apps/termux-app directory", TermuxConstants.TERMUX_APP.APPS_DIR_PATH,
+        return FileUtils.validateDirectoryFileExistenceAndPermissions("apps/com.openclaw.assistant directory", TermuxConstants.TERMUX_APP.APPS_DIR_PATH,
             null, createDirectoryIfMissing,
             FileUtils.APP_WORKING_DIRECTORY_PERMISSIONS, setMissingPermissions, true,
             false, false);
