@@ -68,7 +68,7 @@ import java.util.List;
 public final class TermuxService extends Service implements AppShell.AppShellClient, TermuxSession.TermuxSessionClient {
 
     /** This service is only bound from inside the same process and never uses IPC. */
-    class LocalBinder extends Binder {
+    public class LocalBinder extends Binder {
         public final TermuxService service = TermuxService.this;
     }
 

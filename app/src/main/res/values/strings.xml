@@ -235,4 +235,16 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
 
+
+    <!-- OpenClaw Dashboard -->
+    <string name="open_claw_dashboard_title">OpenClaw Dashboard</string>
+    <string name="action_open_claw_dashboard">AI Dashboard</string>
+    <string name="action_start_open_claw">Start OpenClaw</string>
+    <string name="action_stop_open_claw">Stop OpenClaw</string>
+    <string name="action_run_phi4_mini">Run Phi-4 Mini (Ollama)</string>
+    <string name="open_claw_status_running">OpenClaw is running</string>
+    <string name="open_claw_status_stopped">OpenClaw is stopped</string>
+    <string name="ollama_status_running">Ollama is running</string>
+    <string name="ollama_status_stopped">Ollama is stopped</string>
+
 </resources>

@@ -34,6 +34,7 @@ import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
+import com.termux.app.activities.OpenClawDashboardActivity;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
@@ -568,6 +569,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         settingsButton.setOnClickListener(v -> {
             ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
         });
+
+        View openClawDashboardButton = findViewById(R.id.open_claw_dashboard_button);
+        if (openClawDashboardButton != null) {
+            openClawDashboardButton.setOnClickListener(v -> {
+                ActivityUtils.startActivity(this, new Intent(this, OpenClawDashboardActivity.class));
+            });
+        }
     }
 
     private void setNewSessionButtonView() {

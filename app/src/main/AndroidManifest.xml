@@ -103,6 +103,12 @@
             android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
 
         <activity
+            android:name=".app.activities.OpenClawDashboardActivity"
+            android:exported="false"
+            android:label="@string/open_claw_dashboard_title"
+            android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar" />
+
+        <activity
             android:name=".shared.activities.ReportActivity"
             android:theme="@style/Theme.MarkdownViewActivity.DayNight"
             android:documentLaunchMode="intoExisting" />
