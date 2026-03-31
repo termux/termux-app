@@ -42,7 +42,7 @@ public final class TerminalRow {
     /** The text filling this terminal row. */
     public char[] mText;
     /** The number of java chars used in {@link #mText}. */
-    private short mSpaceUsed;
+    private int mSpaceUsed;
     /** If this row has been line wrapped due to text output at the end of line. */
     boolean mLineWrap;
     /** The style bits of each cell in the row. See {@link TextStyle}. */
@@ -144,7 +144,7 @@ public final class TerminalRow {
     public void clear(long style) {
         Arrays.fill(mText, ' ');
         Arrays.fill(mStyle, style);
-        mSpaceUsed = (short) mColumns;
+        mSpaceUsed = mColumns;
         mHasNonOneWidthOrSurrogateChars = false;
     }
 
@@ -256,7 +256,7 @@ public final class TerminalRow {
                 throw new IllegalArgumentException("Cannot put wide character in last column");
             } else if (columnToSet == mColumns - 2) {
                 // Truncate the line to the second part of this wide char:
-                mSpaceUsed = (short) newNextColumnIndex;
+                mSpaceUsed = newNextColumnIndex;
             } else {
                 // Overwrite the contents of the next column, which mean we actually remove java characters. Due to the
                 // check at the beginning of this method we know that we are not overwriting a wide char.
