@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!DOCTYPE resources [
-    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
-    <!ENTITY TERMUX_APP_NAME "Termux">
-    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
-    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
-    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
-    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
-    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
-    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
-    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.termux/files/usr">
+    <!ENTITY TERMUX_PACKAGE_NAME "com.openclaw.assistant">
+    <!ENTITY TERMUX_APP_NAME "OpenClaw Assistant">
+    <!ENTITY TERMUX_API_APP_NAME "OpenClaw:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "OpenClaw:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "OpenClaw:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "OpenClaw:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "OpenClaw:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "OpenClaw:Widget">
+    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.openclaw.assistant/files/usr">
     ]>
 
 <resources>

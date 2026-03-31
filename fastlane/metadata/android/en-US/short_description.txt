@@ -1,1 +1,1 @@
-Terminal emulator app with a large set of command line utilities
+AI Assistant with local models, OpenClaw gateway and terminal automation

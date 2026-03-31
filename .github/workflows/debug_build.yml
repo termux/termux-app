@@ -50,7 +50,7 @@ jobs:
 
           APK_DIR_PATH="./app/build/outputs/apk/debug"
           APK_VERSION_TAG="$RELEASE_VERSION_NAME-${{ env.PACKAGE_VARIANT }}-github-debug" # Note the "-", GITHUB_SHA will already have "+" before it
-          APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
+          APK_BASENAME_PREFIX="openclaw-assistant_$APK_VERSION_TAG"
 
           # Used by attachment steps later
           echo "APK_DIR_PATH=$APK_DIR_PATH" >> $GITHUB_ENV

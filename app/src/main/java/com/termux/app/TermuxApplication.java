@@ -55,7 +55,7 @@ public class TermuxApplication extends Application {
 
             error = TermuxFileUtils.isAppsTermuxAppDirectoryAccessible(true, true);
             if (error != null) {
-                Logger.logErrorExtended(LOG_TAG, "Create apps/termux-app directory failed\n" + error);
+                Logger.logErrorExtended(LOG_TAG, "Create apps/com.openclaw.assistant directory failed\n" + error);
                 return;
             }
 
