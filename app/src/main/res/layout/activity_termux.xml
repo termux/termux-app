@@ -1,14 +1,14 @@
-<com.termux.app.terminal.TermuxActivityRootView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.termux.app.terminal.OpenClawActivityRootView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_termux_root_view"
+    android:id="@+id/activity_openclaw_root_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
     <RelativeLayout
-        android:id="@+id/activity_termux_root_relative_layout"
+        android:id="@+id/activity_openclaw_root_relative_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -56,6 +56,21 @@
                         android:src="@drawable/ic_settings"
                         android:background="@null"
                         android:contentDescription="@string/action_open_settings"
+                        app:tint="?attr/termuxActivityDrawerImageTint" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/open_claw_dashboard_button"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_open_claw_dashboard"
+                        android:textAllCaps="false"
+                        app:icon="@drawable/ic_foreground"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
                 </LinearLayout>
 
@@ -105,9 +120,9 @@
     </RelativeLayout>
 
     <View
-        android:id="@+id/activity_termux_bottom_space_view"
+        android:id="@+id/activity_openclaw_bottom_space_view"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@android:color/transparent" />
 
-</com.termux.app.terminal.TermuxActivityRootView>
+</com.termux.app.terminal.OpenClawActivityRootView>

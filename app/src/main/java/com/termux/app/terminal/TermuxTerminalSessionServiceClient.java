@@ -4,7 +4,7 @@ import android.app.Service;
 
 import androidx.annotation.NonNull;
 
-import com.termux.app.TermuxService;
+import com.termux.app.OpenClawService;
 import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.shared.termux.terminal.TermuxTerminalSessionClientBase;
 import com.termux.terminal.TerminalSession;
@@ -15,9 +15,9 @@ public class TermuxTerminalSessionServiceClient extends TermuxTerminalSessionCli
 
     private static final String LOG_TAG = "TermuxTerminalSessionServiceClient";
 
-    private final TermuxService mService;
+    private final OpenClawService mService;
 
-    public TermuxTerminalSessionServiceClient(TermuxService service) {
+    public TermuxTerminalSessionServiceClient(OpenClawService service) {
         this.mService = service;
     }
 

@@ -55,9 +55,9 @@ import java.util.List;
 /**
  * A service holding a list of {@link TermuxSession} in {@link TermuxShellManager#mTermuxSessions} and background {@link AppShell}
  * in {@link TermuxShellManager#mTermuxTasks}, showing a foreground notification while running so that it is not terminated.
- * The user interacts with the session through {@link TermuxActivity}, but this service may outlive
+ * The user interacts with the session through {@link OpenClawActivity}, but this service may outlive
  * the activity when the user or the system disposes of the activity. In that case the user may
- * restart {@link TermuxActivity} later to yet again access the sessions.
+ * restart {@link OpenClawActivity} later to yet again access the sessions.
  * <p/>
  * In order to keep both terminal sessions and spawned processes (who may outlive the terminal sessions) alive as long
  * as wanted by the user this service is a foreground service, {@link Service#startForeground(int, Notification)}.
@@ -65,11 +65,11 @@ import java.util.List;
  * Optionally may hold a wake and a wifi lock, in which case that is shown in the notification - see
  * {@link #buildNotification()}.
  */
-public final class TermuxService extends Service implements AppShell.AppShellClient, TermuxSession.TermuxSessionClient {
+public final class OpenClawService extends Service implements AppShell.AppShellClient, TermuxSession.TermuxSessionClient {
 
     /** This service is only bound from inside the same process and never uses IPC. */
-    class LocalBinder extends Binder {
-        public final TermuxService service = TermuxService.this;
+    public class LocalBinder extends Binder {
+        public final OpenClawService service = OpenClawService.this;
     }
 
     private final IBinder mBinder = new LocalBinder();
@@ -105,14 +105,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     /** If the user has executed the {@link TERMUX_SERVICE#ACTION_STOP_SERVICE} intent. */
     boolean mWantsToStop = false;
 
-    private static final String LOG_TAG = "TermuxService";
+    private static final String LOG_TAG = "OpenClawService";
 
     @Override
     public void onCreate() {
         Logger.logVerbose(LOG_TAG, "onCreate");
 
         // Get Termux app SharedProperties without loading from disk since TermuxApplication handles
-        // load and TermuxActivity handles reloads
+        // load and OpenClawActivity handles reloads
         mProperties = TermuxAppSharedProperties.getProperties();
 
         mShellManager = TermuxShellManager.getShellManager();
@@ -192,7 +192,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     public boolean onUnbind(Intent intent) {
         Logger.logVerbose(LOG_TAG, "onUnbind");
 
-        // Since we cannot rely on {@link TermuxActivity.onDestroy()} to always complete,
+        // Since we cannot rely on {@link OpenClawActivity.onDestroy()} to always complete,
         // we unset clients here as well if it failed, so that we do not leave service and session
         // clients with references to the activity.
         if (mTermuxTerminalSessionActivityClient != null)
@@ -254,7 +254,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
      * Note that if don't kill the processes started by plugins which **expect** the result back
      * and notify their creators that they have been killed, then they may get stuck waiting for
      * the results forever like in case of commands started by Termux:Tasker or RUN_COMMAND intent,
-     * since once TermuxService has been killed, no result will be sent back. They may still get
+     * since once OpenClawService has been killed, no result will be sent back. They may still get
      * stuck if termux app process gets killed, so for this case reasonable timeout values should
      * be used, like in Tasker for the Termux:Tasker actions.
      *
@@ -371,7 +371,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         executionCommand.runner = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_RUNNER,
             (intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false) ? Runner.APP_SHELL.getName() : Runner.TERMINAL_SESSION.getName()));
         if (Runner.runnerOf(executionCommand.runner) == null) {
-            String errmsg = this.getString(R.string.error_termux_service_invalid_execution_command_runner, executionCommand.runner);
+            String errmsg = this.getString(R.string.error_openclaw_service_invalid_execution_command_runner, executionCommand.runner);
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return;
@@ -418,7 +418,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         else if (Runner.TERMINAL_SESSION.equalsRunner(executionCommand.runner))
             executeTermuxSessionCommand(executionCommand);
         else {
-            String errmsg = getString(R.string.error_termux_service_unsupported_execution_command_runner, executionCommand.runner);
+            String errmsg = getString(R.string.error_openclaw_service_unsupported_execution_command_runner, executionCommand.runner);
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
         }
@@ -620,7 +620,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         updateNotification();
 
         // No need to recreate the activity since it likely just started and theme should already have applied
-        TermuxActivity.updateTermuxActivityStyling(this, false);
+        OpenClawActivity.updateOpenClawActivityStyling(this, false);
 
         return newTermuxSession;
     }
@@ -668,14 +668,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         else if (ShellCreateMode.NO_SHELL_WITH_NAME.equalsMode(executionCommand.shellCreateMode))
             if (DataUtils.isNullOrEmpty(executionCommand.shellName)) {
                 TermuxPluginUtils.setAndProcessPluginExecutionCommandError(this, LOG_TAG, executionCommand, false,
-                    getString(R.string.error_termux_service_execution_command_shell_name_unset, executionCommand.shellCreateMode));
+                    getString(R.string.error_openclaw_service_execution_command_shell_name_unset, executionCommand.shellCreateMode));
                 return null;
             } else {
                return ShellCreateMode.NO_SHELL_WITH_NAME;
             }
         else {
             TermuxPluginUtils.setAndProcessPluginExecutionCommandError(this, LOG_TAG, executionCommand, false,
-                getString(R.string.error_termux_service_unsupported_execution_command_shell_create_mode, executionCommand.shellCreateMode));
+                getString(R.string.error_openclaw_service_unsupported_execution_command_shell_create_mode, executionCommand.shellCreateMode));
             return null;
         }
     }
@@ -689,12 +689,12 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                 setCurrentStoredTerminalSession(newTerminalSession);
                 if (mTermuxTerminalSessionActivityClient != null)
                     mTermuxTerminalSessionActivityClient.setCurrentSession(newTerminalSession);
-                startTermuxActivity();
+                startOpenClawActivity();
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY:
                 if (getTermuxSessionsSize() == 1)
                     setCurrentStoredTerminalSession(newTerminalSession);
-                startTermuxActivity();
+                startOpenClawActivity();
                 break;
             case TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_DONT_OPEN_ACTIVITY:
                 setCurrentStoredTerminalSession(newTerminalSession);
@@ -712,13 +712,22 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         }
     }
 
-    /** Launch the {@link }TermuxActivity} to bring it to foreground. */
-    private void startTermuxActivity() {
+    /** Switch to a specific termux session by name and bring it to foreground. */
+    public synchronized void switchToTermuxSession(String name) {
+        TermuxSession session = getTermuxSessionForShellName(name);
+        if (session != null) {
+            handleSessionAction(TERMUX_SERVICE.VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY,
+                session.getTerminalSession());
+        }
+    }
+
+    /** Launch the {@link }OpenClawActivity} to bring it to foreground. */
+    private void startOpenClawActivity() {
         // For android >= 10, apps require Display over other apps permission to start foreground activities
         // from background (services). If it is not granted, then TermuxSessions that are started will
         // show in Termux notification but will not run until user manually clicks the notification.
         if (PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(this, true)) {
-            TermuxActivity.startTermuxActivity(this);
+            OpenClawActivity.startOpenClawActivity(this);
         } else {
             TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(this);
             if (preferences == null) return;
@@ -731,16 +740,16 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
 
 
-    /** If {@link TermuxActivity} has not bound to the {@link TermuxService} yet or is destroyed, then
+    /** If {@link OpenClawActivity} has not bound to the {@link OpenClawService} yet or is destroyed, then
      * interface functions requiring the activity should not be available to the terminal sessions,
-     * so we just return the {@link #mTermuxTerminalSessionServiceClient}. Once {@link TermuxActivity} bind
+     * so we just return the {@link #mTermuxTerminalSessionServiceClient}. Once {@link OpenClawActivity} bind
      * callback is received, it should call {@link #setTermuxTerminalSessionClient} to set the
-     * {@link TermuxService#mTermuxTerminalSessionActivityClient} so that further terminal sessions are directly
+     * {@link OpenClawService#mTermuxTerminalSessionActivityClient} so that further terminal sessions are directly
      * passed the {@link TermuxTerminalSessionActivityClient} object which fully implements the
      * {@link TerminalSessionClient} interface.
      *
-     * @return Returns the {@link TermuxTerminalSessionActivityClient} if {@link TermuxActivity} has bound with
-     * {@link TermuxService}, otherwise {@link TermuxTerminalSessionServiceClient}.
+     * @return Returns the {@link TermuxTerminalSessionActivityClient} if {@link OpenClawActivity} has bound with
+     * {@link OpenClawService}, otherwise {@link TermuxTerminalSessionServiceClient}.
      */
     public synchronized TermuxTerminalSessionClientBase getTermuxTerminalSessionClient() {
         if (mTermuxTerminalSessionActivityClient != null)
@@ -749,8 +758,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             return mTermuxTerminalSessionServiceClient;
     }
 
-    /** This should be called when {@link TermuxActivity#onServiceConnected} is called to set the
-     * {@link TermuxService#mTermuxTerminalSessionActivityClient} variable and update the {@link TerminalSession}
+    /** This should be called when {@link OpenClawActivity#onServiceConnected} is called to set the
+     * {@link OpenClawService#mTermuxTerminalSessionActivityClient} variable and update the {@link TerminalSession}
      * and {@link TerminalEmulator} clients in case they were passed {@link TermuxTerminalSessionServiceClient}
      * earlier.
      *
@@ -764,8 +773,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             mShellManager.mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionActivityClient);
     }
 
-    /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
-     * so that the {@link TermuxService} and {@link TerminalSession} and {@link TerminalEmulator}
+    /** This should be called when {@link OpenClawActivity} has been destroyed and in {@link #onUnbind(Intent)}
+     * so that the {@link OpenClawService} and {@link TerminalSession} and {@link TerminalEmulator}
      * clients do not hold an activity references.
      */
     public synchronized void unsetTermuxTerminalSessionClient() {
@@ -783,7 +792,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         Resources res = getResources();
 
         // Set pending intent to be launched when notification is clicked
-        Intent notificationIntent = TermuxActivity.newInstance(this);
+        Intent notificationIntent = OpenClawActivity.newInstance(this);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
 
@@ -826,13 +835,13 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
 
         // Set Exit button action
-        Intent exitIntent = new Intent(this, TermuxService.class).setAction(TERMUX_SERVICE.ACTION_STOP_SERVICE);
+        Intent exitIntent = new Intent(this, OpenClawService.class).setAction(TERMUX_SERVICE.ACTION_STOP_SERVICE);
         builder.addAction(android.R.drawable.ic_delete, res.getString(R.string.notification_action_exit), PendingIntent.getService(this, 0, exitIntent, 0));
 
 
         // Set Wakelock button actions
         String newWakeAction = wakeLockHeld ? TERMUX_SERVICE.ACTION_WAKE_UNLOCK : TERMUX_SERVICE.ACTION_WAKE_LOCK;
-        Intent toggleWakeLockIntent = new Intent(this, TermuxService.class).setAction(newWakeAction);
+        Intent toggleWakeLockIntent = new Intent(this, OpenClawService.class).setAction(newWakeAction);
         String actionTitle = res.getString(wakeLockHeld ? R.string.notification_action_wake_unlock : R.string.notification_action_wake_lock);
         int actionIcon = wakeLockHeld ? android.R.drawable.ic_lock_idle_lock : android.R.drawable.ic_lock_lock;
         builder.addAction(actionIcon, actionTitle, PendingIntent.getService(this, 0, toggleWakeLockIntent, 0));

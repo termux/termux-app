@@ -28,12 +28,15 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.api.file.FileReceiverActivity;
-import com.termux.app.terminal.TermuxActivityRootView;
+import com.termux.app.terminal.OpenClawActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
+import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
+import com.termux.app.activities.OpenClawDashboardActivity;
 import com.termux.shared.data.IntentUtils;
 import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
@@ -77,29 +80,29 @@ import java.util.Arrays;
  * </ul>
  * about memory leaks.
  */
-public final class TermuxActivity extends AppCompatActivity implements ServiceConnection {
+public final class OpenClawActivity extends AppCompatActivity implements ServiceConnection {
 
     /**
-     * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
+     * The connection to the {@link OpenClawService}. Requested in {@link #onCreate(Bundle)} with a call to
      * {@link #bindService(Intent, ServiceConnection, int)}, and obtained and stored in
      * {@link #onServiceConnected(ComponentName, IBinder)}.
      */
-    TermuxService mTermuxService;
+    OpenClawService mOpenClawService;
 
     /**
-     * The {@link TerminalView} shown in  {@link TermuxActivity} that displays the terminal.
+     * The {@link TerminalView} shown in  {@link OpenClawActivity} that displays the terminal.
      */
     TerminalView mTerminalView;
 
     /**
      *  The {@link TerminalViewClient} interface implementation to allow for communication between
-     *  {@link TerminalView} and {@link TermuxActivity}.
+     *  {@link TerminalView} and {@link OpenClawActivity}.
      */
     TermuxTerminalViewClient mTermuxTerminalViewClient;
 
     /**
      *  The {@link TerminalSessionClient} interface implementation to allow for communication between
-     *  {@link TerminalSession} and {@link TermuxActivity}.
+     *  {@link TerminalSession} and {@link OpenClawActivity}.
      */
     TermuxTerminalSessionActivityClient mTermuxTerminalSessionActivityClient;
 
@@ -114,14 +117,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private TermuxAppSharedProperties mProperties;
 
     /**
-     * The root view of the {@link TermuxActivity}.
+     * The root view of the {@link OpenClawActivity}.
      */
-    TermuxActivityRootView mTermuxActivityRootView;
+    OpenClawActivityRootView mOpenClawActivityRootView;
 
     /**
-     * The space at the bottom of {@link @mTermuxActivityRootView} of the {@link TermuxActivity}.
+     * The space at the bottom of {@link @mOpenClawActivityRootView} of the {@link OpenClawActivity}.
      */
-    View mTermuxActivityBottomSpaceView;
+    View mOpenClawActivityBottomSpaceView;
 
     /**
      * The terminal extra keys view.
@@ -139,9 +142,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     TermuxSessionsListViewController mTermuxSessionListViewController;
 
     /**
-     * The {@link TermuxActivity} broadcast receiver for various things like terminal style configuration changes.
+     * The {@link OpenClawActivity} broadcast receiver for various things like terminal style configuration changes.
      */
-    private final BroadcastReceiver mTermuxActivityBroadcastReceiver = new TermuxActivityBroadcastReceiver();
+    private final BroadcastReceiver mOpenClawActivityBroadcastReceiver = new OpenClawActivityBroadcastReceiver();
 
     /**
      * The last toast shown, used cancel current toast before showing new in {@link #showToast(String, boolean)}.
@@ -167,7 +170,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private boolean mIsActivityRecreated = false;
 
     /**
-     * The {@link TermuxActivity} is in an invalid state and must not be run.
+     * The {@link OpenClawActivity} is in an invalid state and must not be run.
      */
     private boolean mIsInvalidState;
 
@@ -192,7 +195,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
 
-    private static final String LOG_TAG = "TermuxActivity";
+    private static final String LOG_TAG = "OpenClawActivity";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -226,10 +229,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setMargins();
 
-        mTermuxActivityRootView = findViewById(R.id.activity_termux_root_view);
-        mTermuxActivityRootView.setActivity(this);
-        mTermuxActivityBottomSpaceView = findViewById(R.id.activity_termux_bottom_space_view);
-        mTermuxActivityRootView.setOnApplyWindowInsetsListener(new TermuxActivityRootView.WindowInsetsListener());
+        mOpenClawActivityRootView = findViewById(R.id.activity_openclaw_root_view);
+        mOpenClawActivityRootView.setActivity(this);
+        mOpenClawActivityBottomSpaceView = findViewById(R.id.activity_openclaw_bottom_space_view);
+        mOpenClawActivityRootView.setOnApplyWindowInsetsListener(new OpenClawActivityRootView.WindowInsetsListener());
 
         View content = findViewById(android.R.id.content);
         content.setOnApplyWindowInsetsListener((v, insets) -> {
@@ -256,8 +259,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
 
         try {
-            // Start the {@link TermuxService} and make it run regardless of who is bound to it
-            Intent serviceIntent = new Intent(this, TermuxService.class);
+            // Start the {@link OpenClawService} and make it run regardless of who is bound to it
+            Intent serviceIntent = new Intent(this, OpenClawService.class);
             startService(serviceIntent);
 
             // Attempt to bind to the service, this will call the {@link #onServiceConnected(ComponentName, IBinder)}
@@ -265,10 +268,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             if (!bindService(serviceIntent, this, 0))
                 throw new RuntimeException("bindService() failed");
         } catch (Exception e) {
-            Logger.logStackTraceWithMessage(LOG_TAG,"TermuxActivity failed to start TermuxService", e);
+            Logger.logStackTraceWithMessage(LOG_TAG,"OpenClawActivity failed to start OpenClawService", e);
             Logger.showToast(this,
                 getString(e.getMessage() != null && e.getMessage().contains("app is in background") ?
-                    R.string.error_termux_service_start_failed_bg : R.string.error_termux_service_start_failed_general),
+                    R.string.error_openclaw_service_start_failed_bg : R.string.error_openclaw_service_start_failed_general),
                 true);
             mIsInvalidState = true;
             return;
@@ -296,9 +299,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient.onStart();
 
         if (mPreferences.isTerminalMarginAdjustmentEnabled())
-            addTermuxActivityRootViewGlobalLayoutListener();
+            addOpenClawActivityRootViewGlobalLayoutListener();
 
-        registerTermuxActivityBroadcastReceiver();
+        registerOpenClawActivityBroadcastReceiver();
     }
 
     @Override
@@ -338,9 +341,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onStop();
 
-        removeTermuxActivityRootViewGlobalLayoutListener();
+        removeOpenClawActivityRootViewGlobalLayoutListener();
 
-        unregisterTermuxActivityBroadcastReceiver();
+        unregisterOpenClawActivityBroadcastReceiver();
         getDrawer().closeDrawers();
     }
 
@@ -352,10 +355,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mIsInvalidState) return;
 
-        if (mTermuxService != null) {
+        if (mOpenClawService != null) {
             // Do not leave service and session clients with references to activity.
-            mTermuxService.unsetTermuxTerminalSessionClient();
-            mTermuxService = null;
+            mOpenClawService.unsetTermuxTerminalSessionClient();
+            mOpenClawService = null;
         }
 
         try {
@@ -387,17 +390,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onServiceConnected(ComponentName componentName, IBinder service) {
         Logger.logDebug(LOG_TAG, "onServiceConnected");
 
-        mTermuxService = ((TermuxService.LocalBinder) service).service;
+        mOpenClawService = ((OpenClawService.LocalBinder) service).service;
 
         setTermuxSessionsListView();
 
         final Intent intent = getIntent();
         setIntent(null);
 
-        if (mTermuxService.isTermuxSessionsEmpty()) {
+        if (mOpenClawService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
-                TermuxInstaller.setupBootstrapIfNeeded(TermuxActivity.this, () -> {
-                    if (mTermuxService == null) return; // Activity might have been destroyed.
+                TermuxInstaller.setupBootstrapIfNeeded(OpenClawActivity.this, () -> {
+                    if (mOpenClawService == null) return; // Activity might have been destroyed.
                     try {
                         boolean launchFailsafe = false;
                         if (intent != null && intent.getExtras() != null) {
@@ -426,14 +429,39 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
 
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
-        mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+        mOpenClawService.setTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+
+        checkAndAutoStartAIServices();
+    }
+
+    private void checkAndAutoStartAIServices() {
+        if (mOpenClawService == null) return;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean autoStartGateway = prefs.getBoolean("open_claw_auto_start", false);
+        boolean autoStartOllama = prefs.getBoolean("ollama_auto_start", false);
+
+        if (autoStartGateway && mOpenClawService.getTermuxSessionForShellName("OpenClaw") == null) {
+            Logger.logDebug(LOG_TAG, "Auto-starting OpenClaw Gateway");
+            String port = prefs.getString("open_claw_port", "18789");
+            String cmd = "openclaw gateway --port " + port;
+            mOpenClawService.createTermuxSession(null, new String[]{"-c", cmd}, null, null, false, "OpenClaw");
+        }
+
+        if (autoStartOllama && mOpenClawService.getTermuxSessionForShellName("Ollama") == null) {
+            Logger.logDebug(LOG_TAG, "Auto-starting Ollama Service");
+            String defaultModel = prefs.getString("ollama_default_model", "phi4-mini");
+            String cmdTemplate = prefs.getString("ollama_custom_command", "ollama run %s");
+            String cmd = String.format(cmdTemplate, defaultModel);
+            mOpenClawService.createTermuxSession(null, new String[]{"-c", cmd}, null, null, false, "Ollama");
+        }
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         Logger.logDebug(LOG_TAG, "onServiceDisconnected");
 
-        // Respect being stopped from the {@link TermuxService} notification action.
+        // Respect being stopped from the {@link OpenClawService} notification action.
         finishActivityIfNotFinishing();
     }
 
@@ -462,7 +490,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
     private void setMargins() {
-        RelativeLayout relativeLayout = findViewById(R.id.activity_termux_root_relative_layout);
+        RelativeLayout relativeLayout = findViewById(R.id.activity_openclaw_root_relative_layout);
         int marginHorizontal = mProperties.getTerminalMarginHorizontal();
         int marginVertical = mProperties.getTerminalMarginVertical();
         ViewUtils.setLayoutMarginsInDp(relativeLayout, marginHorizontal, marginVertical, marginHorizontal, marginVertical);
@@ -470,13 +498,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
 
-    public void addTermuxActivityRootViewGlobalLayoutListener() {
-        getTermuxActivityRootView().getViewTreeObserver().addOnGlobalLayoutListener(getTermuxActivityRootView());
+    public void addOpenClawActivityRootViewGlobalLayoutListener() {
+        getOpenClawActivityRootView().getViewTreeObserver().addOnGlobalLayoutListener(getOpenClawActivityRootView());
     }
 
-    public void removeTermuxActivityRootViewGlobalLayoutListener() {
-        if (getTermuxActivityRootView() != null)
-            getTermuxActivityRootView().getViewTreeObserver().removeOnGlobalLayoutListener(getTermuxActivityRootView());
+    public void removeOpenClawActivityRootViewGlobalLayoutListener() {
+        if (getOpenClawActivityRootView() != null)
+            getOpenClawActivityRootView().getViewTreeObserver().removeOnGlobalLayoutListener(getOpenClawActivityRootView());
     }
 
 
@@ -499,7 +527,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void setTermuxSessionsListView() {
         ListView termuxSessionsListView = findViewById(R.id.terminal_sessions_list);
-        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mTermuxService.getTermuxSessions());
+        mTermuxSessionListViewController = new TermuxSessionsListViewController(this, mOpenClawService.getTermuxSessions());
         termuxSessionsListView.setAdapter(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemClickListener(mTermuxSessionListViewController);
         termuxSessionsListView.setOnItemLongClickListener(mTermuxSessionListViewController);
@@ -568,13 +596,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         settingsButton.setOnClickListener(v -> {
             ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
         });
+
+        View openClawDashboardButton = findViewById(R.id.open_claw_dashboard_button);
+        if (openClawDashboardButton != null) {
+            openClawDashboardButton.setOnClickListener(v -> {
+                ActivityUtils.startActivity(this, new Intent(this, OpenClawDashboardActivity.class));
+            });
+        }
     }
 
     private void setNewSessionButtonView() {
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> mTermuxTerminalSessionActivityClient.addNewSession(false, null));
         newSessionButton.setOnLongClickListener(v -> {
-            TextInputDialogUtils.textInput(TermuxActivity.this, R.string.title_create_named_session, null,
+            TextInputDialogUtils.textInput(OpenClawActivity.this, R.string.title_create_named_session, null,
                 R.string.action_create_named_session_confirm, text -> mTermuxTerminalSessionActivityClient.addNewSession(false, text),
                 R.string.action_new_session_failsafe, text -> mTermuxTerminalSessionActivityClient.addNewSession(true, text),
                 -1, null, null);
@@ -610,7 +645,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public void finishActivityIfNotFinishing() {
         // prevent duplicate calls to finish() if called from multiple places
-        if (!TermuxActivity.this.isFinishing()) {
+        if (!OpenClawActivity.this.isFinishing()) {
             finish();
         }
     }
@@ -619,7 +654,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void showToast(String text, boolean longDuration) {
         if (text == null || text.isEmpty()) return;
         if (mLastToast != null) mLastToast.cancel();
-        mLastToast = Toast.makeText(TermuxActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+        mLastToast = Toast.makeText(OpenClawActivity.this, text, longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
         mLastToast.setGravity(Gravity.TOP, 0, 0);
         mLastToast.show();
     }
@@ -774,15 +809,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
                 // If permission is granted, then also setup storage symlinks.
                 if(PermissionUtils.checkAndRequestLegacyOrManageExternalStoragePermission(
-                    TermuxActivity.this, requestCode, !isPermissionCallback)) {
+                    OpenClawActivity.this, requestCode, !isPermissionCallback)) {
                     if (isPermissionCallback)
-                        Logger.logInfoAndShowToast(TermuxActivity.this, LOG_TAG,
+                        Logger.logInfoAndShowToast(OpenClawActivity.this, LOG_TAG,
                             getString(com.termux.shared.R.string.msg_storage_permission_granted_on_request));
 
-                    TermuxInstaller.setupStorageSymlinks(TermuxActivity.this);
+                    TermuxInstaller.setupStorageSymlinks(OpenClawActivity.this);
                 } else {
                     if (isPermissionCallback)
-                        Logger.logInfoAndShowToast(TermuxActivity.this, LOG_TAG,
+                        Logger.logInfoAndShowToast(OpenClawActivity.this, LOG_TAG,
                             getString(com.termux.shared.R.string.msg_storage_permission_not_granted_on_request));
                 }
             }
@@ -813,12 +848,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return mNavBarHeight;
     }
 
-    public TermuxActivityRootView getTermuxActivityRootView() {
-        return mTermuxActivityRootView;
+    public OpenClawActivityRootView getOpenClawActivityRootView() {
+        return mOpenClawActivityRootView;
     }
 
-    public View getTermuxActivityBottomSpaceView() {
-        return mTermuxActivityBottomSpaceView;
+    public View getOpenClawActivityBottomSpaceView() {
+        return mOpenClawActivityBottomSpaceView;
     }
 
     public ExtraKeysView getExtraKeysView() {
@@ -873,8 +908,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
 
-    public TermuxService getTermuxService() {
-        return mTermuxService;
+    public OpenClawService getOpenClawService() {
+        return mOpenClawService;
     }
 
     public TerminalView getTerminalView() {
@@ -908,27 +943,27 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
 
-    public static void updateTermuxActivityStyling(Context context, boolean recreateActivity) {
+    public static void updateOpenClawActivityStyling(Context context, boolean recreateActivity) {
         // Make sure that terminal styling is always applied.
         Intent stylingIntent = new Intent(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
         stylingIntent.putExtra(TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY, recreateActivity);
         context.sendBroadcast(stylingIntent);
     }
 
-    private void registerTermuxActivityBroadcastReceiver() {
+    private void registerOpenClawActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
 
-        registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
+        registerReceiver(mOpenClawActivityBroadcastReceiver, intentFilter);
     }
 
-    private void unregisterTermuxActivityBroadcastReceiver() {
-        unregisterReceiver(mTermuxActivityBroadcastReceiver);
+    private void unregisterOpenClawActivityBroadcastReceiver() {
+        unregisterReceiver(mOpenClawActivityBroadcastReceiver);
     }
 
-    private void fixTermuxActivityBroadcastReceiverIntent(Intent intent) {
+    private void fixOpenClawActivityBroadcastReceiverIntent(Intent intent) {
         if (intent == null) return;
 
         String extraReloadStyle = intent.getStringExtra(TERMUX_ACTIVITY.EXTRA_RELOAD_STYLE);
@@ -938,13 +973,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
     }
 
-    class TermuxActivityBroadcastReceiver extends BroadcastReceiver {
+    class OpenClawActivityBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent == null) return;
 
             if (mIsVisible) {
-                fixTermuxActivityBroadcastReceiverIntent(intent);
+                fixOpenClawActivityBroadcastReceiverIntent(intent);
 
                 switch (intent.getAction()) {
                     case TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH:
@@ -994,18 +1029,18 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // will be called again. Extra keys input text, terminal sessions and transcripts will be preserved.
         if (recreateActivity) {
             Logger.logDebug(LOG_TAG, "Recreating activity");
-            TermuxActivity.this.recreate();
+            OpenClawActivity.this.recreate();
         }
     }
 
 
 
-    public static void startTermuxActivity(@NonNull final Context context) {
+    public static void startOpenClawActivity(@NonNull final Context context) {
         ActivityUtils.startActivity(context, newInstance(context));
     }
 
     public static Intent newInstance(@NonNull final Context context) {
-        Intent intent = new Intent(context, TermuxActivity.class);
+        Intent intent = new Intent(context, OpenClawActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }

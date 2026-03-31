@@ -2,12 +2,12 @@
 
     <PreferenceCategory
         app:key="logging"
-        app:title="@string/termux_logging_header">
+        app:title="@string/openclaw_logging_header">
 
         <ListPreference
             app:defaultValue="1"
             app:key="log_level"
-            app:title="@string/termux_log_level_title"
+            app:title="@string/openclaw_log_level_title"
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>

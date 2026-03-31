@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
-public class TermuxActivityTest {
+public class OpenClawActivityTest {
 
     private void assertUrlsAre(String text, String... urls) {
         LinkedHashSet<String> expected = new LinkedHashSet<>();

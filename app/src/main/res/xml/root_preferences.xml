@@ -1,36 +1,42 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
-        app:key="termux"
-        app:title="@string/termux_preferences_title"
-        app:summary="@string/termux_preferences_summary"
+        app:key="openclaw"
+        app:title="@string/openclaw_preferences_title"
+        app:summary="@string/openclaw_preferences_summary"
         app:fragment="com.termux.app.fragments.settings.TermuxPreferencesFragment"/>
 
     <Preference
-        app:key="termux_api"
-        app:title="@string/termux_api_preferences_title"
-        app:summary="@string/termux_api_preferences_summary"
+        app:key="ai_settings"
+        app:title="AI Settings"
+        app:summary="Configure OpenClaw and Ollama"
+        app:fragment="com.termux.app.fragments.settings.AISettingsFragment"/>
+
+    <Preference
+        app:key="openclaw_api"
+        app:title="@string/openclaw_api_preferences_title"
+        app:summary="@string/openclaw_api_preferences_summary"
         app:isPreferenceVisible="false"
         app:fragment="com.termux.app.fragments.settings.TermuxAPIPreferencesFragment"/>
 
     <Preference
-        app:key="termux_float"
-        app:title="@string/termux_float_preferences_title"
-        app:summary="@string/termux_float_preferences_summary"
+        app:key="openclaw_float"
+        app:title="@string/openclaw_float_preferences_title"
+        app:summary="@string/openclaw_float_preferences_summary"
         app:isPreferenceVisible="false"
         app:fragment="com.termux.app.fragments.settings.TermuxFloatPreferencesFragment"/>
 
     <Preference
-        app:key="termux_tasker"
-        app:title="@string/termux_tasker_preferences_title"
-        app:summary="@string/termux_tasker_preferences_summary"
+        app:key="openclaw_tasker"
+        app:title="@string/openclaw_tasker_preferences_title"
+        app:summary="@string/openclaw_tasker_preferences_summary"
         app:isPreferenceVisible="false"
         app:fragment="com.termux.app.fragments.settings.TermuxTaskerPreferencesFragment"/>
 
     <Preference
-        app:key="termux_widget"
-        app:title="@string/termux_widget_preferences_title"
-        app:summary="@string/termux_widget_preferences_summary"
+        app:key="openclaw_widget"
+        app:title="@string/openclaw_widget_preferences_title"
+        app:summary="@string/openclaw_widget_preferences_summary"
         app:isPreferenceVisible="false"
         app:fragment="com.termux.app.fragments.settings.TermuxWidgetPreferencesFragment"/>
 
