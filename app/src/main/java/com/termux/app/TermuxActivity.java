@@ -456,11 +456,18 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             // then the original intent will be re-delivered, resulting in a new session being re-added
             // each time.
             if (!mIsActivityRecreated && intent != null && Intent.ACTION_RUN.equals(intent.getAction())) {
-                // Android 7.1 app shortcut from res/xml/shortcuts.xml.
-                boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
-                mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
-            } else {
-                // In multi-window mode, try to atomically claim first unattached session
+                if (intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_NEW_WINDOW, false)) {
+                    // Android 7.1 app shortcut: open a new window
+                    addNewWindow();
+                } else {
+                    // Android 7.1 app shortcut from res/xml/shortcuts.xml.
+                    boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
+                    mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
+                }
+            }
+
+            // Ensure this activity is attached to a session
+            if (getCurrentSession() == null) {
                 TerminalSession sessionToAttach = mTermuxService.claimFirstUnattachedSession(mActivityId);
                 if (sessionToAttach != null) {
                     mTermuxTerminalSessionActivityClient.setCurrentSession(sessionToAttach);
