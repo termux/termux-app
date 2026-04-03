@@ -93,7 +93,8 @@ public final class TerminalBuffer {
 
                if (lastPrintingCharIndex >= x1Index && line[lastPrintingCharIndex] == ' ') {
         int prevPrintingCharIndex = lastPrintingCharIndex - 1;
-        if (prevPrintingCharIndex >= x1Index && WcWidth.width(Character.codePointAt(line, prevPrintingCharIndex)) == 2) {
+                int prevCodePointIndex = Character.isLowSurrogate(line[prevPrintingCharIndex]) ? prevPrintingCharIndex - 1 : prevPrintingCharIndex;
+        if (prevCodePointIndex >= x1Index && WcWidth.width(Character.codePointAt(line, prevCodePointIndex)) == 2) {
             // Only trim if the double-width char starts at the last column.
             // This is when the terminal inserts a synthetic trailing blank.
             int colOfPrev = lineObject.findStartOfColumn(columns - 1);
