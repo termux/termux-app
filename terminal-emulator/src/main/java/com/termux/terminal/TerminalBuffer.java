@@ -87,6 +87,16 @@ public final class TerminalBuffer {
             if (rowLineWrap && x2 == columns) {
                 // If the line was wrapped, we shouldn't lose trailing space:
                 lastPrintingCharIndex = x2Index - 1;
+                        // Keep trailing spaces for wrapped lines, except for the synthetic
+        // blank that can appear when a double-width character wraps at the
+        // last available column.
+
+        if (lastPrintingCharIndex >= x1Index && line[lastPrintingCharIndex] == ' ') {
+            int prevPrintingCharIndex = lastPrintingCharIndex - 1;
+            if (prevPrintingCharIndex >= x1Index && WcWidth.width(line[prevPrintingCharIndex]) == 2) {
+                lastPrintingCharIndex--;
+            }
+        }
             } else {
                 for (i = x1Index; i < x2Index; ++i) {
                     char c = line[i];
