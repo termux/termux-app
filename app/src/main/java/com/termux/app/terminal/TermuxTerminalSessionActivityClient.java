@@ -54,6 +54,10 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         this.mActivity = activity;
     }
 
+    public TermuxActivity getActivity() {
+        return mActivity;
+    }
+
     /**
      * Should be called when mActivity.onCreate() is called
      */
@@ -67,10 +71,13 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
      */
     public void onStart() {
         // The service has connected, but data may have changed since we were last in the foreground.
-        // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
-        // otherwise get the last session currently running.
         if (mActivity.getTermuxService() != null) {
-            setCurrentSession(getCurrentStoredSessionOrLast());
+            TerminalSession currentSession = mActivity.getCurrentSession();
+            // In multi-window mode, keep the current attached session if it's still valid.
+            // Only restore from preferences if we don't have a valid session attached.
+            if (currentSession == null || mActivity.getTermuxService().getTermuxSessionForTerminalSession(currentSession) == null) {
+                setCurrentSession(getCurrentStoredSessionOrLast());
+            }
             termuxSessionListNotifyUpdated();
         }
 
@@ -293,14 +300,30 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     public void setCurrentSession(TerminalSession session) {
         if (session == null) return;
 
-        if (mActivity.getTerminalView().attachSession(session)) {
+        TermuxService service = mActivity.getTermuxService();
+        TerminalSession previousSession = mActivity.getTerminalView().attachSession(session);
+        if (previousSession != session) {
+            // Session changed - update attachment state through the service
+            if (service != null) {
+                // Detach the previous session from this activity
+                if (previousSession != null) {
+                    service.detachSession(previousSession, mActivity.getActivityId());
+                }
+                // Attach the new session to this activity
+                service.attachSession(session, mActivity.getActivityId());
+            }
+
             // notify about switched session if not already displaying the session
             notifyOfSessionChange();
         }
 
+        // Set this activity's client on the session so it receives callbacks (render updates, etc.)
+        // This is important for multi-window support where each window needs its own client.
+        session.updateTerminalSessionClient(this);
+
         // We call the following even when the session is already being displayed since config may
         // be stale, like current session not selected or scrolled to.
-        checkAndScrollToSession(session);
+        scrollToSession(session);
         updateBackgroundColor();
     }
 
@@ -318,17 +341,31 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (service == null) return;
 
         TerminalSession currentTerminalSession = mActivity.getCurrentSession();
-        int index = service.getIndexOfSession(currentTerminalSession);
+        int currentIndex = service.getIndexOfSession(currentTerminalSession);
         int size = service.getTermuxSessionsSize();
-        if (forward) {
-            if (++index >= size) index = 0;
-        } else {
-            if (--index < 0) index = size - 1;
-        }
+        int activityId = mActivity.getActivityId();
 
-        TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        // Find the next session in the given direction
+        int index = currentIndex;
+        for (int i = 0; i < size; i++) {
+            if (forward) {
+                if (++index >= size) index = 0;
+            } else {
+                if (--index < 0) index = size - 1;
+            }
+
+            TermuxSession termuxSession = service.getTermuxSession(index);
+            if (termuxSession != null) {
+                TerminalSession session = termuxSession.getTerminalSession();
+                if (service.isSessionAttachedToOther(session, activityId)) {
+                    // Session is attached to another window - focus that window
+                    service.focusActivityForSession(session);
+                } else {
+                    setCurrentSession(session);
+                }
+                return;
+            }
+        }
     }
 
     public void switchToSession(int index) {
@@ -336,8 +373,15 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (service == null) return;
 
         TermuxSession termuxSession = service.getTermuxSession(index);
-        if (termuxSession != null)
-            setCurrentSession(termuxSession.getTerminalSession());
+        if (termuxSession != null) {
+            TerminalSession session = termuxSession.getTerminalSession();
+            if (service.isSessionAttachedToOther(session, mActivity.getActivityId())) {
+                // Session is attached to another window - focus that window
+                service.focusActivityForSession(session);
+            } else {
+                setCurrentSession(session);
+            }
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -442,12 +486,15 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             // There are no sessions to show, so finish the activity.
             mActivity.finishActivityIfNotFinishing();
         } else {
-            if (index >= size) {
-                index = size - 1;
+            // Try to atomically claim an unattached session to switch to
+            TerminalSession unattachedSession = service.claimFirstUnattachedSession(mActivity.getActivityId());
+            if (unattachedSession != null) {
+                setCurrentSession(unattachedSession);
+            } else {
+                // All remaining sessions are attached to other windows.
+                // Close this activity instead of stealing a session from another window.
+                mActivity.finishActivityIfNotFinishing();
             }
-            TermuxSession termuxSession = service.getTermuxSession(index);
-            if (termuxSession != null)
-                setCurrentSession(termuxSession.getTerminalSession());
         }
     }
 
@@ -455,7 +502,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         mActivity.termuxSessionListNotifyUpdated();
     }
 
-    public void checkAndScrollToSession(TerminalSession session) {
+    public void scrollToSession(TerminalSession session) {
         if (!mActivity.isVisible()) return;
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
@@ -465,7 +512,6 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         final ListView termuxSessionsListView = mActivity.findViewById(R.id.terminal_sessions_list);
         if (termuxSessionsListView == null) return;
 
-        termuxSessionsListView.setItemChecked(indexOfSession, true);
         // Delay is necessary otherwise sometimes scroll to newly added session does not happen
         termuxSessionsListView.postDelayed(() -> termuxSessionsListView.smoothScrollToPosition(indexOfSession), 1000);
     }
