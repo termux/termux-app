@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@android:color/white"/>
+            android:textColor="?android:attr/textColorPrimaryInverse"/>
     </LinearLayout>
 
     <ScrollView
@@ -37,8 +37,8 @@
                 android:layout_height="wrap_content"
                 android:autoLink="web|email"
                 android:textSize="14sp"
-                android:textColor="@android:color/tab_indicator_text"
-                android:textColorLink="@android:color/black"/>
+                android:textColor="?android:attr/textColorPrimary"
+                android:textColorLink="?android:attr/textColorLink"/>
         </LinearLayout>
     </ScrollView>
 
