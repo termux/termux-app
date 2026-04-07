@@ -265,4 +265,30 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
     }
 
+    @Override
+    public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
+        File file = getFileForDocId(documentId);
+        if (file != null) {
+            File target = new File(file.getParentFile(), displayName);
+            if (file.renameTo(target)) {
+                int i = documentId.lastIndexOf('/', documentId.length() - 2);
+                return documentId.substring(0, i) + "/" + displayName;
+            }
+        }
+        throw new FileNotFoundException("Failed to rename document " + documentId + " to " + displayName);
+    }
+
+    @Override
+    public String moveDocument(String sourceDocumentId, String sourceParentDocumentId, String targetParentDocumentId) throws FileNotFoundException {
+        File sourceFile = getFileForDocId(sourceDocumentId);
+        File targetDir = getFileForDocId(targetParentDocumentId);
+        if (sourceFile != null && targetDir != null) {
+            File targetFile = new File(targetDir, sourceFile.getName());
+            if (!targetFile.exists() && sourceFile.renameTo(targetFile)) {
+                return targetParentDocumentId.endsWith("/") ? targetParentDocumentId + targetFile.getName() : targetParentDocumentId + "/" + targetFile.getName();
+            }
+        }
+        throw new FileNotFoundException("Filed to move document " + sourceDocumentId + " to " + targetParentDocumentId);
+    }
+
 }
