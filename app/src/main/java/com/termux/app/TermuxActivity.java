@@ -305,6 +305,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     public void onResume() {
         super.onResume();
 
+        // Use the existing mTerminalView variable to get the current terminal view
+        TerminalView terminalView = mTerminalView;
+        if (terminalView != null) {
+            terminalView.reloadPreferences();
+        }
+
         Logger.logVerbose(LOG_TAG, "onResume");
 
         if (mIsInvalidState) return;
