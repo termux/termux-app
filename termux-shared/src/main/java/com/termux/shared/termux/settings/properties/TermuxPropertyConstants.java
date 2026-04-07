@@ -3,18 +3,13 @@ package com.termux.shared.termux.settings.properties;
 import com.google.common.collect.ImmutableBiMap;
 import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
 import com.termux.shared.theme.NightMode;
-import com.termux.shared.file.FileUtils;
-import com.termux.shared.file.filesystem.FileType;
 import com.termux.shared.settings.properties.SharedProperties;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.view.TerminalView;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /*
@@ -120,6 +115,8 @@ public final class TermuxPropertyConstants {
     /** Defines the key for whether to enforce character based input to fix the issue where for some devices like Samsung, the letters might not appear until enter is pressed */
     public static final String KEY_ENFORCE_CHAR_BASED_INPUT =  "enforce-char-based-input"; // Default: "enforce-char-based-input"
 
+
+    public static final String KEY_DISABLE_INPUT_COMPOSING = "disable-input-composing";
 
 
     /** Defines the key for whether text for the extra keys buttons should be all capitalized automatically */
@@ -396,6 +393,7 @@ public final class TermuxPropertyConstants {
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
+        KEY_DISABLE_INPUT_COMPOSING,
         KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_RUN_TERMUX_AM_SOCKET_SERVER,
@@ -459,7 +457,8 @@ public final class TermuxPropertyConstants {
      */
     public static final Set<String> TERMUX_DEFAULT_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
-        KEY_RUN_TERMUX_AM_SOCKET_SERVER
+        KEY_RUN_TERMUX_AM_SOCKET_SERVER,
+        KEY_DISABLE_INPUT_COMPOSING
     ));
 
     /** Defines the set for keys loaded by termux that have default inverted boolean behaviour with false as default.
