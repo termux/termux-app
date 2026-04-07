@@ -87,6 +87,22 @@ public final class TerminalBuffer {
             if (rowLineWrap && x2 == columns) {
                 // If the line was wrapped, we shouldn't lose trailing space:
                 lastPrintingCharIndex = x2Index - 1;
+                        // Keep trailing spaces for wrapped lines, except for the synthetic
+        // blank that can appear when a double-width character wraps at the
+        // last available column.
+
+               if (lastPrintingCharIndex >= x1Index && line[lastPrintingCharIndex] == ' ') {
+        int prevPrintingCharIndex = lastPrintingCharIndex - 1;
+                int prevCodePointIndex = Character.isLowSurrogate(line[prevPrintingCharIndex]) ? prevPrintingCharIndex - 1 : prevPrintingCharIndex;
+        if (prevCodePointIndex >= x1Index && WcWidth.width(Character.codePointAt(line, prevCodePointIndex)) == 2) {
+            // Only trim if the double-width char starts at the last column.
+            // This is when the terminal inserts a synthetic trailing blank.
+            int colOfPrev = lineObject.findStartOfColumn(columns - 1);
+            if (colOfPrev == prevPrintingCharIndex) {
+                lastPrintingCharIndex--;
+            }
+        }
+    }
             } else {
                 for (i = x1Index; i < x2Index; ++i) {
                     char c = line[i];
