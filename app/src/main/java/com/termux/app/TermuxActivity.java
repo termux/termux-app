@@ -523,8 +523,11 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (savedInstanceState != null)
             savedTextInput = savedInstanceState.getString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT);
 
-        terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
-        terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+        TerminalToolbarViewPager.PageAdapter pageAdapter = new TerminalToolbarViewPager.PageAdapter(this, savedTextInput);
+        TerminalToolbarViewPager.OnPageChangeListener pageChangeListener = new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager);
+        pageChangeListener.setPageAdapter(pageAdapter);
+        terminalToolbarViewPager.setAdapter(pageAdapter);
+        terminalToolbarViewPager.addOnPageChangeListener(pageChangeListener);
     }
 
     private void setTerminalToolbarHeight() {
