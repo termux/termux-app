@@ -235,4 +235,71 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
 
+
+
+    <!-- Remote File Browser -->
+    <string name="title_remote_file_browser">Remote File Browser</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="back_to_parent_directory">Back to parent directory</string>
+    <string name="file_type_icon">File type icon</string>
+    <string name="empty_directory">Empty directory</string>
+    <string name="error_listing_directory">Failed to list directory contents</string>
+    <string name="error_not_connected">Not connected to SSH server</string>
+    <string name="directory_size">-</string>
+
+    <!-- Remote File Context Menu -->
+    <string name="action_rename">Rename</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_move">Move</string>
+    <string name="action_new_folder">New Folder</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="message_confirm_delete_file">Delete file \"%s\"?</string>
+    <string name="message_confirm_delete_directory">Delete directory \"%s\" and all contents?</string>
+    <string name="message_confirm_delete_symlink_directory">Delete symbolic link \"%s\"?\n\nOnly the link will be removed. The target directory and its contents will remain unchanged.</string>
+    <string name="title_rename_file">Rename File</string>
+    <string name="title_rename_directory">Rename Directory</string>
+    <string name="title_new_folder">New Folder</string>
+    <string name="hint_folder_name">Folder name</string>
+    <string name="error_rename_failed">Failed to rename</string>
+    <string name="error_delete_failed">Failed to delete</string>
+    <string name="error_mkdir_failed">Failed to create folder</string>
+    <string name="success_file_deleted">File deleted</string>
+    <string name="success_directory_deleted">Directory deleted</string>
+    <string name="success_file_renamed">File renamed</string>
+    <string name="success_directory_renamed">Directory renamed</string>
+    <string name="success_folder_created">Folder created</string>
+
+    <!-- File Transfer -->
+    <string name="action_upload">Upload</string>
+    <string name="action_download">Download</string>
+    <string name="title_uploading">Uploading…</string>
+    <string name="title_downloading">Downloading…</string>
+    <string name="transfer_progress">%1$d / %2$d bytes</string>
+    <string name="success_file_uploaded">File uploaded successfully</string>
+    <string name="success_file_downloaded">File downloaded successfully</string>
+    <string name="error_upload_failed">Upload failed</string>
+    <string name="error_download_failed">Download failed</string>
+    <string name="error_transfer_connection">Connection not available</string>
+    <string name="error_transfer_timeout">Connection timeout</string>
+
+    <!-- Code Editor -->
+    <string name="title_code_editor">Code Editor</string>
+    <string name="action_save">Save</string>
+    <string name="action_search">Search</string>
+    <string name="action_replace">Replace</string>
+    <string name="title_unsaved_changes">Unsaved Changes</string>
+    <string name="message_unsaved_changes">Discard unsaved changes?</string>
+    <string name="action_discard">Discard</string>
+    <string name="success_file_saved">File saved</string>
+    <string name="error_file_load_failed">Failed to load file</string>
+    <string name="error_file_save_failed">Failed to save file</string>
+    <string name="hint_search">Search</string>
+    <string name="hint_replace">Replace with</string>
+
+    <!-- Image Preview -->
+    <string name="title_image_preview">Image Preview</string>
+    <string name="error_image_load_failed">Failed to load image</string>
+    <string name="error_image_not_supported">File is not a supported image format</string>
+
 </resources>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Morandi Theme Colors for Remote File Browser (Dark Mode) -->
+    <!-- Semantic color names for file manager components - Dark variant -->
+
+    <!-- Primary palette - Using Sage Green as primary brand color -->
+    <color name="morandi_primary">@color/morandi_sage_green_light</color>
+    <color name="morandi_primary_variant">@color/morandi_sage_green</color>
+    <color name="morandi_primary_light">@color/morandi_sage_green_light</color>
+
+    <!-- Secondary palette - Using Muted Blue for secondary actions -->
+    <color name="morandi_secondary">@color/morandi_muted_blue_light</color>
+    <color name="morandi_secondary_variant">@color/morandi_muted_blue</color>
+
+    <!-- Background colors - Charcoal and dark tones for dark mode -->
+    <color name="morandi_background">#2A2A2A</color>          <!-- Dark charcoal -->
+    <color name="morandi_background_variant">#353535</color> <!-- Slightly lighter -->
+    <color name="morandi_surface">#404040</color>            <!-- Card/dialog surface -->
+    <color name="morandi_surface_variant">#4A4A4A</color>    <!-- Elevated surface -->
+
+    <!-- Text colors - Cream and light tones for readability on dark -->
+    <color name="morandi_text_primary">@color/morandi_cream</color>
+    <color name="morandi_text_secondary">@color/morandi_stone</color>
+    <color name="morandi_text_tertiary">@color/morandi_warm_grey</color>
+    <color name="morandi_text_hint">@color/morandi_ash</color>
+
+    <!-- File browser specific semantic colors -->
+    <color name="morandi_directory_name">@color/morandi_sage_green_light</color>
+    <color name="morandi_directory_icon">@color/morandi_sage_green</color>
+    <color name="morandi_file_name">@color/morandi_cream</color>
+    <color name="morandi_file_icon">@color/morandi_stone</color>
+    <color name="morandi_file_size">@color/morandi_warm_grey</color>
+    <color name="morandi_file_modified">@color/morandi_ash</color>
+    <color name="morandi_symlink_name">@color/morandi_muted_blue_light</color>
+    <color name="morandi_hidden_file_name">@color/morandi_taupe</color>
+
+    <!-- Breadcrumb navigation colors -->
+    <color name="morandi_breadcrumb_background">@color/morandi_background_variant</color>
+    <color name="morandi_breadcrumb_text">@color/morandi_text_secondary</color>
+    <color name="morandi_breadcrumb_current">@color/morandi_primary</color>
+    <color name="morandi_breadcrumb_separator">@color/morandi_warm_grey</color>
+
+    <!-- Action and state colors -->
+    <color name="morandi_selected_background">#4A4A4A</color>  <!-- Elevated surface for selection -->
+    <color name="morandi_selected_text">@color/morandi_cream</color>
+    <color name="morandi_pressed_background">@color/morandi_sage_green</color>
+    <color name="morandi_focused_background">@color/morandi_dusty_rose</color>
+
+    <!-- Divider and border colors -->
+    <color name="morandi_divider">#555555</color>
+    <color name="morandi_border">@color/morandi_charcoal</color>
+    <color name="morandi_border_light">#606060</color>
+
+    <!-- Icon colors -->
+    <color name="morandi_icon_primary">@color/morandi_stone</color>
+    <color name="morandi_icon_active">@color/morandi_sage_green_light</color>
+    <color name="morandi_icon_disabled">@color/morandi_charcoal</color>
+
+    <!-- Error and warning colors (subtle Morandi variants for dark) -->
+    <color name="morandi_error">@color/morandi_dusty_rose</color>
+    <color name="morandi_error_background">#3A3030</color>
+    <color name="morandi_warning">@color/morandi_clay</color>
+    <color name="morandi_warning_background">#3A3525</color>
+    <color name="morandi_success">@color/morandi_moss</color>
+    <color name="morandi_success_background">#303A30</color>
+
+    <!-- Status bar and navigation bar -->
+    <color name="morandi_status_bar">#1A1A1A</color>
+    <color name="morandi_navigation_bar">#2A2A2A</color>
+
+    <!-- Floating action button -->
+    <color name="morandi_fab_background">@color/morandi_sage_green</color>
+    <color name="morandi_fab_icon">@color/morandi_cream</color>
+
+    <!-- Toolbar and app bar -->
+    <color name="morandi_toolbar_background">#353535</color>
+    <color name="morandi_toolbar_text">@color/morandi_cream</color>
+    <color name="morandi_toolbar_icon">@color/morandi_stone</color>
+</resources>

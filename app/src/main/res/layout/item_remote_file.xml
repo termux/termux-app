@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:gravity="start|center_vertical">
+
+    <!-- File type icon -->
+    <ImageView
+        android:id="@+id/file_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="12dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/file_type_icon"
+        tools:src="@drawable/ic_folder" />
+
+    <!-- File info container -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="start|center_vertical">
+
+        <!-- File name row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- File/directory name -->
+            <TextView
+                android:id="@+id/file_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:gravity="start"
+                tools:text="filename.txt" />
+
+            <!-- File size (for files only) -->
+            <TextView
+                android:id="@+id/file_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="12sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:gravity="end"
+                tools:text="1.5 KB" />
+
+        </LinearLayout>
+
+        <!-- Secondary info row (permissions, date, symlink target) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Permissions -->
+            <TextView
+                android:id="@+id/file_permissions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:gravity="start"
+                tools:text="rwxr-xr-x" />
+
+            <!-- Modification time -->
+            <TextView
+                android:id="@+id/file_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:textSize="11sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:gravity="end"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Mar 15 10:30" />
+
+        </LinearLayout>
+
+        <!-- Symlink target (shown only for symlinks) -->
+        <TextView
+            android:id="@+id/symlink_target"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="?android:attr/textColorLink"
+            android:visibility="gone"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="→ /path/to/target"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</LinearLayout>

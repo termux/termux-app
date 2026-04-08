@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.termux.BuildConfig;
+import com.termux.app.ssh.SSHControlMasterInstaller;
 import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxBootstrap;
@@ -70,6 +71,12 @@ public class TermuxApplication extends Application {
 
         if (isTermuxFilesDirectoryAccessible) {
             TermuxShellEnvironment.writeEnvironmentToFile(this);
+
+            // Start event-driven SSH ControlMaster wrapper installation
+            // If openssh already installed: install immediately
+            // If not installed yet: watch for ssh binary creation via FileObserver
+            // Silent failure design - installation errors don't block app startup
+            SSHControlMasterInstaller.startWatchingSSHBinary(this);
         }
     }
 

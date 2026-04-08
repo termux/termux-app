@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Code Editor</title>
+
+    <!-- CodeMirror 5 Core Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+
+    <!-- CodeMirror Theme (optional - using default for now) -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"> -->
+
+    <!-- Dialog Addon Style (for search/replace) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css">
+
+    <style>
+        /* Base styles */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        /* CodeMirror container */
+        .CodeMirror {
+            height: 100%;
+            width: 100%;
+            font-family: 'Roboto Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Mobile-friendly adjustments */
+        .CodeMirror-lines {
+            padding: 8px 0;
+        }
+
+        .CodeMirror pre {
+            padding-left: 8px;
+        }
+
+        /* Line number styling */
+        .CodeMirror-gutters {
+            background-color: #f7f7f7;
+            border-right: 1px solid #ddd;
+        }
+
+        .CodeMirror-linenumber {
+            padding: 0 8px;
+            color: #999;
+        }
+
+        /* Search dialog styling */
+        .CodeMirror-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+            z-index: 100;
+        }
+
+        .CodeMirror-dialog input {
+            width: 60%;
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .CodeMirror-dialog button {
+            margin-left: 8px;
+            padding: 4px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        /* Loading indicator */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Editor container -->
+    <textarea id="editor"></textarea>
+
+    <!-- Loading indicator (hidden once editor is ready) -->
+    <div id="loading" class="loading">Loading editor...</div>
+
+    <!-- CodeMirror 5 Core JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+
+    <!-- Language Modes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/perl/perl.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/lua/lua.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/diff/diff.min.js"></script>
+
+    <!-- Search Addons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+
+    <!-- Editor Initialization -->
+    <script>
+        // Global editor instance
+        var editor = null;
+
+        // Current mode and file info
+        var currentMode = 'text/plain';
+        var currentFilename = '';
+
+        // Initialize CodeMirror when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+                lineNumbers: true,
+                mode: currentMode,
+                indentUnit: 4,
+                tabSize: 4,
+                indentWithTabs: false,
+                lineWrapping: false,
+                autofocus: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                styleActiveLine: true,
+                extraKeys: {
+                    // Ctrl+F for search
+                    "Ctrl-F": "find",
+                    // Ctrl+H for replace
+                    "Ctrl-H": "replace",
+                    // Ctrl+G for find next
+                    "Ctrl-G": "findNext",
+                    // Shift+Ctrl+G for find previous
+                    "Shift-Ctrl-G": "findPrev",
+                    // Shift+Ctrl+F for replace all
+                    "Shift-Ctrl-F": "replaceAll",
+                    // Tab key handling
+                    "Tab": function(cm) {
+                        if (cm.somethingSelected()) {
+                            cm.indentSelection("add");
+                        } else {
+                            cm.replaceSelection("    ", "end");
+                        }
+                    }
+                }
+            });
+
+            // Hide loading indicator
+            document.getElementById('loading').style.display = 'none';
+
+            // Notify Android that editor is ready
+            if (window.AndroidInterface && AndroidInterface.onEditorReady) {
+                AndroidInterface.onEditorReady();
+            }
+
+            // Track content changes
+            editor.on('change', function() {
+                if (window.AndroidInterface && AndroidInterface.onContentChanged) {
+                    AndroidInterface.onContentChanged(editor.getValue());
+                }
+            });
+        });
+
+        /**
+         * Set editor content and mode.
+         * Called from Android via JavaScriptInterface.
+         *
+         * @param {string} content File content to display
+         * @param {string} mode CodeMirror mode name (MIME type)
+         * @param {string} filename Current filename (for display)
+         */
+        function setContent(content, mode, filename) {
+            if (!editor) {
+                console.error('Editor not initialized');
+                return false;
+            }
+
+            try {
+                currentMode = mode || 'text/plain';
+                currentFilename = filename || '';
+
+                editor.setValue(content || '');
+                editor.setOption('mode', currentMode);
+
+                // Clear history to prevent undo back to empty state
+                editor.clearHistory();
+
+                // Focus editor
+                editor.focus();
+
+                return true;
+            } catch (e) {
+                console.error('setContent error: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Get current editor content.
+         * Called from Android via JavaScriptInterface.
+         *
+         * @returns {string} Current editor content
+         */
+        function getContent() {
+            if (!editor) {
+                console.error('Editor not initialized');
+                return '';
+            }
+            return editor.getValue();
+        }
+
+        /**
+         * Trigger search dialog.
+         * Called from Android menu/toolbar action.
+         */
+        function triggerSearch() {
+            if (!editor) {
+                console.error('Editor not initialized');
+                return;
+            }
+            editor.execCommand('find');
+        }
+
+        /**
+         * Trigger replace dialog.
+         * Called from Android menu/toolbar action.
+         */
+        function triggerReplace() {
+            if (!editor) {
+                console.error('Editor not initialized');
+                return;
+            }
+            editor.execCommand('replace');
+        }
+
+        /**
+         * Find next occurrence.
+         */
+        function findNext() {
+            if (!editor) return;
+            editor.execCommand('findNext');
+        }
+
+        /**
+         * Find previous occurrence.
+         */
+        function findPrevious() {
+            if (!editor) return;
+            editor.execCommand('findPrev');
+        }
+
+        /**
+         * Replace current selection and find next.
+         */
+        function replaceAndFindNext() {
+            if (!editor) return;
+            editor.execCommand('replace');
+        }
+
+        /**
+         * Replace all occurrences.
+         */
+        function replaceAll() {
+            if (!editor) return;
+            editor.execCommand('replaceAll');
+        }
+
+        /**
+         * Set editor mode.
+         *
+         * @param {string} mode CodeMirror mode name
+         */
+        function setMode(mode) {
+            if (!editor) return false;
+            try {
+                currentMode = mode || 'text/plain';
+                editor.setOption('mode', currentMode);
+                return true;
+            } catch (e) {
+                console.error('setMode error: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Get current mode.
+         *
+         * @returns {string} Current mode name
+         */
+        function getMode() {
+            return currentMode;
+        }
+
+        /**
+         * Get current filename.
+         *
+         * @returns {string} Current filename
+         */
+        function getFilename() {
+            return currentFilename;
+        }
+
+        /**
+         * Go to specific line.
+         *
+         * @param {number} lineNumber Line number (1-based)
+         */
+        function goToLine(lineNumber) {
+            if (!editor) return false;
+            try {
+                var line = Math.max(0, Math.min(lineNumber - 1, editor.lineCount() - 1));
+                editor.setCursor(line, 0);
+                editor.scrollIntoView(null, 100);
+                editor.focus();
+                return true;
+            } catch (e) {
+                console.error('goToLine error: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Get current line number.
+         *
+         * @returns {number} Current line (1-based)
+         */
+        function getCurrentLine() {
+            if (!editor) return 0;
+            return editor.getCursor().line + 1;
+        }
+
+        /**
+         * Get total line count.
+         *
+         * @returns {number} Total lines in editor
+         */
+        function getLineCount() {
+            if (!editor) return 0;
+            return editor.lineCount();
+        }
+
+        /**
+         * Insert text at current cursor position.
+         *
+         * @param {string} text Text to insert
+         */
+        function insertText(text) {
+            if (!editor) return false;
+            try {
+                editor.replaceSelection(text || '', 'end');
+                return true;
+            } catch (e) {
+                console.error('insertText error: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Set editor read-only state.
+         *
+         * @param {boolean} readOnly Whether editor should be read-only
+         */
+        function setReadOnly(readOnly) {
+            if (!editor) return false;
+            try {
+                editor.setOption('readOnly', readOnly);
+                return true;
+            } catch (e) {
+                console.error('setReadOnly error: ' + e.message);
+                return false;
+            }
+        }
+
+        /**
+         * Check if editor has unsaved changes.
+         *
+         * @returns {boolean} true if content has changed since last save
+         */
+        function hasChanges() {
+            if (!editor) return false;
+            // This requires tracking clean state - simplified version
+            return editor.historySize().undo > 0;
+        }
+
+        /**
+         * Mark current state as clean (saved).
+         */
+        function markClean() {
+            if (!editor) return;
+            editor.clearHistory();
+        }
+
+        /**
+         * Undo last change.
+         */
+        function undo() {
+            if (!editor) return;
+            editor.undo();
+        }
+
+        /**
+         * Redo last undone change.
+         */
+        function redo() {
+            if (!editor) return;
+            editor.redo();
+        }
+
+        /**
+         * Log message for debugging (called from Android).
+         *
+         * @param {string} message Message to log
+         */
+        function log(message) {
+            console.log('[CodeEditor] ' + message);
+        }
+    </script>
+</body>
+</html>

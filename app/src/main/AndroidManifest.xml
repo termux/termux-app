@@ -103,6 +103,34 @@
             android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
 
         <activity
+            android:name=".app.activities.RemoteFileBrowserActivity"
+            android:exported="false"
+            android:label="@string/title_remote_file_browser"
+            android:parentActivityName=".app.TermuxActivity"
+            android:resizeableActivity="true"
+            android:theme="@style/Theme.RemoteFileBrowser.DayNight.NoActionBar"
+            tools:targetApi="n" />
+
+        <activity
+            android:name=".app.activities.RemoteCodeEditorActivity"
+            android:exported="false"
+            android:label="@string/title_code_editor"
+            android:parentActivityName=".app.activities.RemoteFileBrowserActivity"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.RemoteFileBrowser.DayNight.NoActionBar"
+            tools:targetApi="n" />
+
+        <activity
+            android:name=".app.activities.RemoteImagePreviewActivity"
+            android:exported="false"
+            android:label="@string/title_image_preview"
+            android:parentActivityName=".app.activities.RemoteFileBrowserActivity"
+            android:resizeableActivity="true"
+            android:theme="@style/Theme.RemoteFileBrowser.DayNight.NoActionBar"
+            tools:targetApi="n" />
+
+        <activity
             android:name=".shared.activities.ReportActivity"
             android:theme="@style/Theme.MarkdownViewActivity.DayNight"
             android:documentLaunchMode="intoExisting" />
