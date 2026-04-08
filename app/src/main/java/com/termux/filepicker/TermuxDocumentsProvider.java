@@ -12,6 +12,10 @@ import android.provider.DocumentsProvider;
 import android.webkit.MimeTypeMap;
 
 import com.termux.R;
+import com.termux.shared.errors.Error;
+import com.termux.shared.file.filesystem.FileType;
+import com.termux.shared.file.filesystem.FileTypes;
+import com.termux.shared.file.FileUtils;
 import com.termux.shared.termux.TermuxConstants;
 
 import java.io.File;
@@ -138,11 +142,145 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         return newFile.getPath();
     }
 
+    @Override 
+    public String renameDocument(String documentId, String displayName) 
+        throws FileNotFoundException {
+        File oldFile = getFileForDocId(documentId);
+        File newFile = new File(oldFile.getParent(), displayName);
+
+        if (oldFile.renameTo(newFile)) {
+            try {
+                revokeDocumentsPermission(oldFile);
+                return getDocIdForFile(newFile);
+            } catch (IOException e) {
+                throw new FileNotFoundException(e.getMessage());
+            }
+        } else {
+            throw new FileNotFoundException("Unable to rename " + documentId);
+        }
+    }
+
     @Override
     public void deleteDocument(String documentId) throws FileNotFoundException {
         File file = getFileForDocId(documentId);
-        if (!file.delete()) {
-            throw new FileNotFoundException("Failed to delete document with id " + documentId);
+        FileType type = FileUtils.getFileType(file.getAbsolutePath(), false);
+        Error error;
+
+        switch(type) {
+            case NO_EXIST:
+                throw new FileNotFoundException("File/Directory does not exist");
+            case REGULAR:
+            case DIRECTORY:
+            case SYMLINK:
+                error = FileUtils
+                    .deleteFile("deleteDocument", file.getAbsolutePath(), false);
+                break;
+            default:
+                error = FileUtils
+                    .deleteFile("deleteDocument",
+                            file.getAbsolutePath(), 
+                            false, false, 
+                            FileTypes.FILE_TYPE_ANY_FLAGS);
+        }
+
+        if (error != null) {
+            throw new FileNotFoundException(error.getMessage());
+        }
+
+        try {
+            revokeDocumentsPermission(file);
+        } catch (IOException e) {
+            throw new FileNotFoundException(e.getMessage());
+        }
+    }
+
+    // call this method after delete directory
+    private void revokeDocumentsPermission(File document) throws IOException {
+        if (FileUtils.getFileType(document.getAbsolutePath(), false) == FileType.DIRECTORY) {
+            java.util.List<String> tree = FileUtils.getContentOfDirectoryAsList(document) ;
+
+            for (String docId : tree) {
+                revokeDocumentPermission(docId); // docId is nothing but file.getAbsolutePath()
+            }
+        } else {
+            revokeDocumentPermission(getDocIdForFile(document));
+        }
+    }
+
+    @Override
+    public String copyDocument(String sourceDocumentId,
+            String targetParentDocumentId)
+        throws FileNotFoundException {
+        File srcFile = getFileForDocId(sourceDocumentId);
+        File destFile = new File(getFileForDocId(targetParentDocumentId), srcFile.getName());
+        FileType type = FileTypes.getFileType(srcFile.getAbsolutePath(), false);
+        Error error;
+
+        switch(type) {
+            case NO_EXIST:
+                throw new FileNotFoundException("file/directory does not exist " + sourceDocumentId);
+            case REGULAR:
+            case DIRECTORY:
+            case SYMLINK:
+                error = FileUtils
+                    .copyFile("copyDocument", srcFile.getAbsolutePath(), destFile.getAbsolutePath(), false);
+                break;
+            default:
+                error = FileUtils
+                    .copyOrMoveFile("copyDocument",
+                            srcFile.getAbsolutePath(),
+                            destFile.getAbsolutePath(),
+                            false, false, 
+                            FileTypes.FILE_TYPE_ANY_FLAGS,
+                            false, false);
+        }
+
+        if (error != null) {
+            throw new FileNotFoundException(error.getMessage());
+        }
+
+        return getDocIdForFile(destFile);
+    }
+
+    @Override
+    public String moveDocument(
+            String sourceDocumentId, 
+            String sourceParentDocumentId, 
+            String targetParentDocumentId) 
+        throws FileNotFoundException {
+        File srcFile = getFileForDocId(sourceDocumentId);
+        File destFile = new File(getFileForDocId(targetParentDocumentId), srcFile.getName());
+        FileType type = FileTypes.getFileType(srcFile.getAbsolutePath(), false);
+        Error error;
+
+        switch(type) {
+            case NO_EXIST:
+                throw new FileNotFoundException("file/directory does not exist " + sourceDocumentId);
+            case REGULAR:
+            case DIRECTORY:
+            case SYMLINK:
+                error = FileUtils
+                    .moveFile("moveDocument", srcFile.getAbsolutePath(), destFile.getAbsolutePath(), false);
+                break;
+            default:
+                error = FileUtils
+                    .copyOrMoveFile("moveDocument",
+                            srcFile.getAbsolutePath(),
+                            destFile.getAbsolutePath(),
+                            true, false, 
+                            FileTypes.FILE_TYPE_ANY_FLAGS,
+                            false, false);
+        }
+
+        if (error != null) {
+            throw new FileNotFoundException(error.getMessage());
+        }
+
+        try {
+            revokeDocumentsPermission(srcFile);
+            return getDocIdForFile(destFile);
+        } catch(IOException e) {
+            throw new FileNotFoundException(e.getMessage());
         }
     }
 

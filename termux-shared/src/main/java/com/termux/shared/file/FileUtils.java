@@ -2041,4 +2041,33 @@ public class FileUtils {
         return (lastDot == -1) ? fileBasename : fileBasename.substring(0, lastDot);
     }
 
+    /**
+     * Get tree or content of directory.
+     *
+     * @param directory {@link File} represents directory
+     * @return Returns content of directory as {@link List} of {@link String} 
+     * and if directory is empty then returns {@link List} of {@link String}
+     * which contains only one element which is directory itself.
+     */
+    public static List<String> getContentOfDirectoryAsList(@NonNull final File directory) throws IOException {
+        List<String> content;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            content = new java.util.ArrayList<>();
+            java.nio.file.Path path = java.nio.file.Paths.get(directory.getAbsolutePath());
+            java.nio.file.Files.walk(path).forEach(p -> content.add(p.toFile().getAbsolutePath()));
+        } else {
+            Iterator<File> files = org.apache.commons.io.FileUtils
+                .iterateFilesAndDirs(directory, 
+                        org.apache.commons.io.filefilter.TrueFileFilter.INSTANCE, 
+                        org.apache.commons.io.filefilter.TrueFileFilter.INSTANCE);
+            content = new java.util.ArrayList<>();
+            while(files.hasNext()) {
+                content.add(files.next().getAbsolutePath());
+            }
+        }
+
+        return content;
+    }
+
 }
