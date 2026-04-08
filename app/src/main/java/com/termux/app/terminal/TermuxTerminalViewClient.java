@@ -113,6 +113,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         // Show the soft keyboard if required
         setSoftKeyboardState(true, mActivity.isActivityRecreated());
 
+        // Update extra keys visibility based on hardware keyboard state
+        mActivity.updateExtraKeysVisibility();
+
         mTerminalCursorBlinkerStateAlreadySet = false;
 
         if (mActivity.getTerminalView().mEmulator != null) {

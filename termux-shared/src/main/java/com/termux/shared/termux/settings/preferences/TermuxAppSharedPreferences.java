@@ -110,6 +110,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE, value, false);
     }
 
+    public boolean isExtraKeysOnlyIfNoHardware() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_EXTRA_KEYS_ONLY_IF_NO_HARDWARE, TERMUX_APP.DEFAULT_VALUE_EXTRA_KEYS_ONLY_IF_NO_HARDWARE);
+    }
+
+    public void setExtraKeysOnlyIfNoHardware(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_EXTRA_KEYS_ONLY_IF_NO_HARDWARE, value, false);
+    }
+
 
 
     public boolean shouldKeepScreenOn() {
