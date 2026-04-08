@@ -54,8 +54,8 @@
 
     <string name="action_toggle_soft_keyboard">Keyboard</string>
 
-    <string name="msg_enabling_terminal_toolbar">Enabling Terminal Toolbar</string>
-    <string name="msg_disabling_terminal_toolbar">Disabling Terminal Toolbar</string>
+    <string name="msg_enabling_terminal_toolbar">Enabling terminal toolbar</string>
+    <string name="msg_disabling_terminal_toolbar">Disabling terminal toolbar</string>
 
 
 
@@ -70,7 +70,7 @@
     <string name="title_share_transcript_with">Send transcript to:</string>
 
     <string name="action_share_selected_text">Share selected text</string>
-    <string name="title_share_selected_text">Terminal Text</string>
+    <string name="title_share_selected_text">Terminal text</string>
     <string name="title_share_selected_text_with">Send selected text to:</string>
 
     <string name="action_autofill_username">Autofill username</string>

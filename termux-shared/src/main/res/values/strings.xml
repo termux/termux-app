@@ -20,7 +20,7 @@
 
     <!-- PackageUtils -->
     <string name="error_app_not_installed_or_disabled_warning">The %1$s (%2$s) app is not installed or is disabled.</string>
-    <string name="error_get_package_context_failed_title">Failed To Get Package Context</string>
+    <string name="error_get_package_context_failed_title">Failed to get package context</string>
     <string name="error_get_package_context_failed_message">Failed to get package context for the \"%1$s\" package.
         This may be because the app package is not installed or it has different APK signature from the current app.</string>
     <string name="error_get_package_context_failed_help_url_message">Check %1$s for more details.</string>
@@ -53,15 +53,15 @@
 
 
     <!-- ReportActivity -->
-    <string name="title_report_text">Report Text</string>
+    <string name="title_report_text">Report text</string>
     <string name="msg_report_truncated">**Report Truncated**\n\nReport is too large to view here.
         Use `Save To File` option from options menu (3-dots on top right) and view it in an external text editor app.\n\n##\n\n</string>
 
 
 
     <!-- ShareUtils -->
-    <string name="title_share_with">Share With</string>
-    <string name="title_open_url_with">Open URL With</string>
+    <string name="title_share_with">Share with</string>
+    <string name="title_open_url_with">Open URL with</string>
     <string name="msg_storage_permission_not_granted">The storage permission not granted.</string>
     <string name="msg_file_saved_successfully">The %1$s file saved successfully at \"%2$s\"</string>
 
@@ -108,7 +108,7 @@
     <string name="action_copy">Copy</string>
     <string name="action_share">Share</string>
     <string name="action_cancel">Cancel</string>
-    <string name="action_save_to_file">Save To File</string>
+    <string name="action_save_to_file">Save to file</string>
 
     <string name="msg_storage_permission_granted_on_request">The storage permission granted by user on request</string>
     <string name="msg_storage_permission_not_granted_on_request">The storage permission not granted by user on request</string>
@@ -116,18 +116,18 @@
 
 
     <!-- Launcher Icons -->
-    <string name="action_enable_launcher_icon">Enable Launcher Icon</string>
-    <string name="action_disable_launcher_icon">Disable Launcher Icon</string>
+    <string name="action_enable_launcher_icon">Enable launcher icon</string>
+    <string name="action_disable_launcher_icon">Disable launcher icon</string>
     <string name="msg_enabling_launcher_icon">Enabling %1$s app launcher icon</string>
     <string name="msg_disabling_launcher_icon">Disabling %1$s app launcher icon</string>
-    <string name="setting_launcher_icon_title">Launcher Icon Enabled</string>
-    <string name="setting_launcher_icon_enabled_off">Launcher Icon will be disabled.</string>
-    <string name="setting_launcher_icon_enabled_on">Launcher Icon will be enabled. (Default)</string>
+    <string name="setting_launcher_icon_title">Launcher icon enabled</string>
+    <string name="setting_launcher_icon_enabled_off">Launcher icon will be disabled.</string>
+    <string name="setting_launcher_icon_enabled_on">Launcher icon will be enabled. (Default)</string>
 
 
 
     <!-- Log Level -->
-    <string name="log_level_title">Log Level</string>
+    <string name="log_level_title">Log level</string>
     <string name="log_level_off">Off</string>
     <string name="log_level_normal">Normal</string>
     <string name="log_level_debug">Debug</string>
