@@ -12,6 +12,8 @@ import java.util.Stack;
  * Renders text into a screen. Contains all the terminal-specific knowledge and state. Emulates a subset of the X Window
  * System xterm terminal, which in turn is an emulator for a subset of the Digital Equipment Corporation vt100 terminal.
  * <p>
+ * See also 7-bit Code Table defined at https://vt100.net/docs/vt220-rm/chapter2.html#S2.3.1
+ * <p>
  * References:
  * <ul>
  * <li>http://invisible-island.net/xterm/ctlseqs/ctlseqs.html</li>
@@ -41,6 +43,15 @@ public final class TerminalEmulator {
     /** Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
     public static final int UNICODE_REPLACEMENT_CHAR = 0xFFFD;
 
+    /*
+     * Escape sequences starting with an ESC character.
+     *
+     * - https://vt100.net/docs/vt220-rm/chapter2.html#S2.5.1
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Controls-beginning-with-ESC
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-C1-lparen-8-Bit-rparen-Control-Characters
+     * - https://en.wikipedia.org/wiki/C0_and_C1_control_codes
+     */
+
     /** Escape processing: Not currently in an escape sequence. */
     private static final int ESC_NONE = 0;
     /** Escape processing: Have seen an ESC character - proceed to {@link #doEsc(int)} */
@@ -59,14 +70,66 @@ public final class TerminalEmulator {
     private static final int ESC_CSI_DOLLAR = 8;
     /** Escape processing: ESC % */
     private static final int ESC_PERCENT = 9;
-    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) */
+    /**
+     * Escape processing: `ESC ]` for Operating System Command (OSC)
+     * <p>
+     * `OSC` commands may be in one of the following formats:
+     * - `OSC Ps ; Pt BEL` where `BEL` is the bell control passed as `\a`.
+     * - `OSC Ps ; Pt ST` where `ST` is the string terminator passed as `ESC \`.
+     * `ST` is the preferred standard for modern terminals.
+     * <p>
+     * If an `OSC` escape sequence is received, then {@link #mEscapeState} is set to {@link #ESC_OSC}
+     * and {@link #receiveOsc(int)} is called by {@link #processCodePoint(int)}.
+     * - By default it will add bytes received after `OSC` escape sequence to {@link #mTerminalControlArgs}.
+     * - If a `BEL` is received, then {@link #doOsc(String)} is called to process
+     *   the OSC command.
+     * - If an `ESC` is received, then {@link #mEscapeState} is set to {@link #ESC_OSC__ESC} and
+     *   {@link #receiveOscEsc(int)} is called for the next code point.
+     *   - If the next code point is a `\` for `ST`, then {@link #doOsc(String)} is
+     *     called to process the OSC command.
+     *   - If the next code point is not a `\`, then {@link #mEscapeState} is set back to
+     *     {@link #ESC_OSC} as `ESC` may be part of command data as so it is added to
+     *     {@link #mTerminalControlArgs}, and for later code points {@link #receiveOsc(int)} is called
+     *     instead.
+     * <p>
+     * While an `OSC` is being received, {@link #mOscType} may be set to the command type when it
+     * has been fully received by {@link #setOscTypeVariables()}.
+     * <p>
+     * See also {@link #mIsFastPathOsc} for enabling fast path for specific `OSC` commands if required
+     * via {@link #setOscTypeVariables()}.
+     * <p>
+     * See also {@link #mIgnoreCrLfForOsc} to prevent printing of CR/LF characters for specific
+     * `OSC` commands if required via {@link #setOscTypeVariables()}.
+     * <p>
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
+     */
     private static final int ESC_OSC = 10;
-    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) ESC */
-    private static final int ESC_OSC_ESC = 11;
+    /** Escape processing: `ESC` received while receiving a {@link #ESC_OSC} command.  */
+    private static final int ESC_OSC__ESC = 11;
     /** Escape processing: ESC [ > */
     private static final int ESC_CSI_BIGGERTHAN = 12;
-    /** Escape procession: "ESC P" or Device Control String (DCS) */
-    private static final int ESC_P = 13;
+    /**
+     * Escape procession: `ESC P` for Device Control String (DCS)
+     * <p>
+     * `DCS` commands are in the format `DCS data ST` where `ST` is the string terminator passed as `ESC \`.
+     * `data` is application defined raw data without any specific standards.
+     * <p>
+     * If an `DCS` escape sequence is received, then {@link #mEscapeState} is set to {@link #ESC_DCS}
+     * and {@link #doDcs(int)} is called by {@link #processCodePoint(int)}.
+     * - By default it will add bytes received after `DCS` escape sequence to {@link #mTerminalControlArgs}.
+     * - If an `ESC` is received by {@link #processCodePoint(int)}, then {@link #ESC_DCS__ESC} set
+     *   to `true`.
+     * - If the next code point is a `\` for `ST`, then {@link #doDcs(int)} processes the DCS command.
+     * - If the next code point is not a `\`, then {@link #ESC_DCS__ESC} is set back to `false` as
+     *   `ESC` may be part of command data as so it is added to {@link #mTerminalControlArgs}.
+     *  - For certain commands like sixel commands, {@link #doDcs(int)} alters the default behaviour.
+     * <p>
+     * See also {@link #mIsFastPathDcs} for enabling fast path for specific `DCS` commands if required.
+     * <p>
+     * <p>
+     * - https://vt100.net/docs/vt220-rm/chapter2.html#S2.5.3
+     */
+    private static final int ESC_DCS = 13;
     /** Escape processing: CSI > */
     private static final int ESC_CSI_QUESTIONMARK_ARG_DOLLAR = 14;
     /** Escape processing: CSI $ARGS ' ' */
@@ -79,10 +142,31 @@ public final class TerminalEmulator {
     private static final int ESC_CSI_SINGLE_QUOTE = 18;
     /** Escape processing: CSI ! */
     private static final int ESC_CSI_EXCLAMATION = 19;
-    /** Escape processing: "ESC _" or Application Program Command (APC). */
+    /**
+     * Escape processing: `ESC _` for Application Program Command (APC).
+     * <p>
+     * `APC` commands are in the format `APC data ST` where `ST` is the string terminator passed as `ESC \`.
+     * `data` is application defined raw data without any specific standards.
+     * <p>
+     * If an `APC` escape sequence is received, then {@link #mEscapeState} is set to {@link #ESC_APC}
+     * and {@link #receiveApc(int)} is called by {@link #processCodePoint(int)}.
+     * - By default it will add bytes received after `APC` escape sequence to {@link #mTerminalControlArgs}.
+     * - If an `ESC` is received, then {@link #mEscapeState} is set to {@link #ESC_APC__ESC} and
+     *   {@link #receiveApcEsc(int)} is called for the next code point.
+     *   - If the next code point is a `\` for `ST`, then {@link #doApc()} is called to
+     *     process the APC command.
+     *   - If the next code point is not a `\`, then {@link #mEscapeState} is set back to
+     *     {@link #ESC_APC} as `ESC` may be part of command data as so it is added to
+     *     {@link #mTerminalControlArgs}, and for later code points {@link #receiveApc(int)} is called
+     *     instead.
+     * <p>
+     * Currently, APC commands are only parsed, but ignored as none are supported.
+     * <p>
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Application-Program-Command-functions
+     */
     private static final int ESC_APC = 20;
-    /** Escape processing: "ESC _" or Application Program Command (APC), followed by Escape. */
-    private static final int ESC_APC_ESCAPE = 21;
+    /** Escape processing: `ESC` received while receiving a {@link #ESC_APC} command.  */
+    private static final int ESC_APC__ESC = 21;
     /** Escape processing: ESC [ <parameter bytes> */
     private static final int ESC_CSI_UNSUPPORTED_PARAMETER_BYTE = 22;
     /** Escape processing: ESC [ <parameter bytes> <intermediate bytes> */
@@ -90,9 +174,6 @@ public final class TerminalEmulator {
 
     /** The number of parameter arguments including colon separated sub-parameters. */
     private static final int MAX_ESCAPE_PARAMETERS = 32;
-
-    /** Needs to be large enough to contain reasonable OSC 52 pastes. */
-    private static final int MAX_OSC_STRING_LENGTH = 8192;
 
     /** DECSET 1 - application cursor keys. */
     private static final int DECSET_BIT_APPLICATION_CURSOR_KEYS = 1;
@@ -185,8 +266,60 @@ public final class TerminalEmulator {
     /** Holds the bit flags which arguments are sub parameters (after a colon) - bit N is set if <code>mArgs[N]</code> is a sub parameter. */
     private int mArgsSubParamsBitSet = 0;
 
-    /** Holds OSC and device control arguments, which can be strings. */
-    private final StringBuilder mOSCOrDeviceControlArgs = new StringBuilder();
+
+
+    /**
+     * The initial capacity for {@link #mTerminalControlArgs}.
+     */
+    private static final int TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY = 16;
+
+    /**
+     * The max length for {@link #mTerminalControlArgs}.
+     * Needs to be large enough to contain reasonable OSC 52 pastes, sixel and iterm images data.
+     */
+    private static final int TERMINAL_CONTROL_ARGS__MAX_LENGTH = 16384;
+
+    /** The terminal control arguments string buffer, like for OSC, DCS, APC commands. */
+    private StringBuilder mTerminalControlArgs = new StringBuilder(TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY);
+
+
+
+    /**
+     * The integer Operating System Command `type` received as `ESC ] type ;`.
+     * This will be set as soon as `type` followed by `;` is received, and before any further
+     * optional parameters are received.
+     */
+    private int mOscType = -1;
+
+    /**
+     * If `true`, then `processCodePoint()` will directly call `receiveOsc()` as a fast path
+     * without additional checks.
+     *
+     * Can be enabled for OSC commands via {@link #setOscTypeVariables()}.
+     */
+    private boolean mIsFastPathOsc = false;
+
+    /**
+     * If `true`, then `processCodePoint()` will not print any CR/LF characters received.
+     * This is ignored if `mIsFastPathOsc` is already `true` for a command.
+     *
+     * Can be enabled for OSC commands via {@link #setOscTypeVariables()}.
+     */
+    private boolean mIgnoreCrLfForOsc = false;
+
+
+    /**
+     * If `true`, then `processCodePoint()` will directly call `doDcs()` as a fast path
+     * without additional checks.
+     *
+     * Can be enabled for DCS commands via {@link #doDcs(int)}.
+     */
+    private boolean mIsFastPathDcs = false;
+
+    /** Whether processing an `ESC` for a DCS command. */
+    private boolean ESC_DCS__ESC = false;
+
+
 
     /**
      * True if the current escape sequence should continue, false if the current escape sequence should be terminated.
@@ -358,6 +491,8 @@ public final class TerminalEmulator {
         else
             return transcriptRows;
     }
+
+
 
     /**
      * @param mouseButton one of the MOUSE_* constants of this class.
@@ -568,12 +703,34 @@ public final class TerminalEmulator {
     }
 
     public void processCodePoint(int b) {
+        if (mEscapeState == ESC_OSC && mIsFastPathOsc) {
+            mContinueSequence = false;
+            receiveOsc(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
+            return;
+        }
+
+        if (mEscapeState == ESC_DCS && mIsFastPathDcs) {
+            if (b == 27) { // ESC
+                ESC_DCS__ESC = true;
+                return;
+            }
+            mContinueSequence = false;
+            doDcs(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
+            return;
+        }
+
         // The Application Program-Control (APC) string might be arbitrary non-printable characters, so handle that early.
         if (mEscapeState == ESC_APC) {
-            doApc(b);
+            mContinueSequence = false;
+            receiveApc(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
             return;
-        } else if (mEscapeState == ESC_APC_ESCAPE) {
-            doApcEscape(b);
+        } else if (mEscapeState == ESC_APC__ESC) {
+            mContinueSequence = false;
+            receiveApcEsc(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
             return;
         }
 
@@ -582,7 +739,7 @@ public final class TerminalEmulator {
                 break;
             case 7: // Bell (BEL, ^G, \a). If in an OSC sequence, BEL may terminate a string; otherwise signal bell.
                 if (mEscapeState == ESC_OSC)
-                    doOsc(b);
+                    receiveOsc(b);
                 else
                     mSession.onBell();
                 break;
@@ -632,13 +789,14 @@ public final class TerminalEmulator {
                 break;
             case 27: // ESC
                 // Starts an escape sequence unless we're parsing a string
-                if (mEscapeState == ESC_P) {
+                if (mEscapeState == ESC_DCS) {
                     // XXX: Ignore escape when reading device control sequence, since it may be part of string terminator.
+                    ESC_DCS__ESC = true;
                     return;
                 } else if (mEscapeState != ESC_OSC) {
                     startEscapeSequence();
                 } else {
-                    doOsc(b);
+                    receiveOsc(b);
                 }
                 break;
             default:
@@ -838,13 +996,13 @@ public final class TerminalEmulator {
                     case ESC_PERCENT:
                         break;
                     case ESC_OSC:
-                        doOsc(b);
+                        receiveOsc(b);
                         break;
-                    case ESC_OSC_ESC:
-                        doOscEsc(b);
+                    case ESC_OSC__ESC:
+                        receiveOscEsc(b);
                         break;
-                    case ESC_P:
-                        doDeviceControl(b);
+                    case ESC_DCS:
+                        doDcs(b);
                         break;
                     case ESC_CSI_QUESTIONMARK_ARG_DOLLAR:
                         if (b == 'p') {
@@ -914,12 +1072,18 @@ public final class TerminalEmulator {
         }
     }
 
-    /** When in {@link #ESC_P} ("device control") sequence. */
-    private void doDeviceControl(int b) {
-        switch (b) {
-            case (byte) '\\': // End of ESC \ string Terminator
-            {
-                String dcs = mOSCOrDeviceControlArgs.toString();
+
+
+    /**
+     * Do {@link #ESC_DCS}. Check its docs for more info.
+     */
+    private void doDcs(final int b) {
+        if (
+            // End of DCS if string terminator ST `ESC \` received.
+            (ESC_DCS__ESC && b == '\\')
+        ) {
+                String dcs = mTerminalControlArgs.toString();
+
                 // DCS $ q P t ST. Request Status String (DECRQSS)
                 if (dcs.startsWith("$q")) {
                     if (dcs.equals("$q\"p")) {
@@ -1022,43 +1186,21 @@ public final class TerminalEmulator {
                     if (LOG_ESCAPE_SEQUENCES)
                         Logger.logError(mClient, LOG_TAG, "Unrecognized device control string: " + dcs);
                 }
+
+                // Clear DCS args buffer and variables and finish sequence.
+                clearTerminalControlArgs();
+                clearDcsTypeVariables();
                 finishSequence();
-            }
-            break;
-            default:
-                if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
-                    // Too long.
-                    mOSCOrDeviceControlArgs.setLength(0);
-                    finishSequence();
-                } else {
-                    mOSCOrDeviceControlArgs.appendCodePoint(b);
-                    continueSequence(mEscapeState);
-                }
-        }
-    }
-
-    /**
-     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
-     */
-    private void doApc(int b) {
-        if (b == 27) {
-            continueSequence(ESC_APC_ESCAPE);
-        }
-        // Eat APC sequences silently for now.
-    }
-
-    /**
-     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
-     */
-    private void doApcEscape(int b) {
-        if (b == '\\') {
-            // A String Terminator (ST), ending the APC escape sequence.
-            finishSequence();
         } else {
-            // The Escape character was not the start of a String Terminator (ST),
-            // but instead just data inside of the APC escape sequence.
-            continueSequence(ESC_APC);
+                ESC_DCS__ESC = false;
+
+                if (!collectTerminalControlArgs(b)) return;
         }
+    }
+
+    public void clearDcsTypeVariables() {
+        ESC_DCS__ESC = false;
+        mIsFastPathDcs = false;
     }
 
     private int nextTabStop(int numTabs) {
@@ -1472,8 +1614,9 @@ public final class TerminalEmulator {
             case '0': // SS3, ignore.
                 break;
             case 'P': // Device control string
-                mOSCOrDeviceControlArgs.setLength(0);
-                continueSequence(ESC_P);
+                clearTerminalControlArgs();
+                clearDcsTypeVariables();
+                continueSequence(ESC_DCS);
                 break;
             case '[':
                 continueSequence(ESC_CSI);
@@ -1482,13 +1625,15 @@ public final class TerminalEmulator {
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
                 break;
             case ']': // OSC
-                mOSCOrDeviceControlArgs.setLength(0);
+                clearTerminalControlArgs();
+                clearOscTypeVariables();
                 continueSequence(ESC_OSC);
                 break;
             case '>': // DECKPNM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
                 break;
             case '_': // APC - Application Program Command.
+                clearTerminalControlArgs();
                 continueSequence(ESC_APC);
                 break;
             default:
@@ -1981,44 +2126,154 @@ public final class TerminalEmulator {
         }
     }
 
-    private void doOsc(int b) {
+
+
+    /**
+     * Receive {@link #ESC_APC}. Check its docs for more info.
+     */
+    private void receiveApc(final int b) {
         switch (b) {
-            case 7: // Bell.
-                doOscSetTextParameters("\007");
-                break;
             case 27: // Escape.
-                continueSequence(ESC_OSC_ESC);
+                continueSequence(ESC_APC__ESC);
                 break;
             default:
-                collectOSCArgs(b);
-                break;
+                if (!collectTerminalControlArgs(b)) return;
         }
     }
 
-    private void doOscEsc(int b) {
+    /**
+     * Receive {@link #ESC_APC__ESC}. Check its docs for more info.
+     */
+    private void receiveApcEsc(final int b) {
         switch (b) {
             case '\\':
-                doOscSetTextParameters("\033\\");
+                //doApc();
+                //clearApcTypeVariables();
                 break;
             default:
                 // The ESC character was not followed by a \, so insert the ESC and
                 // the current character in arg buffer.
-                collectOSCArgs(27);
-                collectOSCArgs(b);
+                if (!collectTerminalControlArgs(27)) return;
+                if (!collectTerminalControlArgs(b)) return;
+                continueSequence(ESC_APC);
+                break;
+        }
+    }
+
+    /**
+     * Clear {@link #ESC_APC} type variables.
+     */
+    public void clearApcTypeVariables() {}
+
+    /**
+     * Do {@link #ESC_APC}. Check its docs for more info.
+     */
+    private void doApc() {}
+
+
+
+
+    /**
+     * Receive {@link #ESC_OSC}. Check its docs for more info.
+     */
+    private void receiveOsc(final int b) {
+        switch (b) {
+            case 7: // Bell.
+                doOsc("\007");
+                clearOscTypeVariables();
+                break;
+            case 27: // Escape.
+                continueSequence(ESC_OSC__ESC);
+                break;
+            default:
+                if (!collectTerminalControlArgs(b)) return;
+                if (mOscType == -1) {
+                    setOscTypeVariables();
+                }
+                break;
+        }
+    }
+
+    /**
+     * Receive {@link #ESC_OSC__ESC}. Check its docs for more info.
+     */
+    private void receiveOscEsc(final int b) {
+        switch (b) {
+            case '\\':
+                doOsc("\033\\");
+                clearOscTypeVariables();
+                break;
+            default:
+                // The ESC character was not followed by a \, so insert the ESC and
+                // the current character in arg buffer.
+                if (!collectTerminalControlArgs(27)) return;
+                if (!collectTerminalControlArgs(b)) return;
                 continueSequence(ESC_OSC);
                 break;
         }
     }
 
-    /** An Operating System Controls (OSC) Set Text Parameters. May come here from BEL or ST. */
-    private void doOscSetTextParameters(String bellOrStringTerminator) {
+    /**
+     * Set {@link #ESC_OSC} type variables.
+     */
+    void setOscTypeVariables() {
+        if (mOscType >= 0) return;
+        if (mTerminalControlArgs.indexOf(":") < 0) return;
+
+        int value = -1;
+        int argsLength = mTerminalControlArgs.length();
+
+        // Extract initial $value from initial "$value;..." string.
+        for (int i = 0; i < argsLength; i++) {
+            char b = mTerminalControlArgs.charAt(i);
+            if (b == ';') {
+                mOscType = value;
+                break;
+            } else if (b >= '0' && b <= '9') {
+                value = ((value < 0) ? 0 : value * 10) + (b - '0');
+            } else {
+                mOscType = -2; // Unknown sequence.
+                return;
+            }
+        }
+
+        if (mOscType >= 0) {
+            Integer terminalControlArgsCapacity = null;
+            switch (mOscType) {
+            }
+
+            if (terminalControlArgsCapacity != null) {
+                ensureTerminalControlArgsCapacity(terminalControlArgsCapacity);
+            }
+        }
+    }
+
+    /**
+     * Clear {@link #ESC_OSC} type variables.
+     */
+    public void clearOscTypeVariables() {
+        mOscType = -1;
+        mIsFastPathOsc = false;
+        mIgnoreCrLfForOsc = false;
+    }
+
+    /**
+     * Do {@link #ESC_OSC}. Check its docs for more info.
+     *
+     * This handles Set Text Parameters commands.
+     *
+     * The `bellOrStringTerminator` defines whether `OSC` command terminated with a `BEL` or `ST`.
+     */
+    private void doOsc(String bellOrStringTerminator) {
         int value = -1;
         String textParameter = "";
+        int argsLength = mTerminalControlArgs.length();
+
         // Extract initial $value from initial "$value;..." string.
-        for (int mOSCArgTokenizerIndex = 0; mOSCArgTokenizerIndex < mOSCOrDeviceControlArgs.length(); mOSCArgTokenizerIndex++) {
-            char b = mOSCOrDeviceControlArgs.charAt(mOSCArgTokenizerIndex);
+        for (int i = 0; i < argsLength; i++) {
+            char b = mTerminalControlArgs.charAt(i);
             if (b == ';') {
-                textParameter = mOSCOrDeviceControlArgs.substring(mOSCArgTokenizerIndex + 1);
+                textParameter = mTerminalControlArgs.substring(i + 1);
                 break;
             } else if (b >= '0' && b <= '9') {
                 value = ((value < 0) ? 0 : value * 10) + (b - '0');
@@ -2282,14 +2537,76 @@ public final class TerminalEmulator {
         return result;
     }
 
-    private void collectOSCArgs(int b) {
-        if (mOSCOrDeviceControlArgs.length() < MAX_OSC_STRING_LENGTH) {
-            mOSCOrDeviceControlArgs.appendCodePoint(b);
-            continueSequence(mEscapeState);
+
+
+    /** Collect code point in {@link #mTerminalControlArgs}. */
+    private boolean collectTerminalControlArgs(int b) {
+        if (mTerminalControlArgs.length() < TERMINAL_CONTROL_ARGS__MAX_LENGTH) {
+            try {
+                // Appending can cause an increase in capacity and cause an OOM.
+                mTerminalControlArgs.appendCodePoint(b);
+                continueSequence(mEscapeState);
+                return true;
+            } catch (Throwable t) {
+                if (t instanceof OutOfMemoryError) System.gc();
+                Logger.logError(mClient, LOG_TAG, "Terminal control args collect failed for" +
+                " char '" + (char) b + "' (numeric value=" + b + ") and" +
+                " args string '" + mTerminalControlArgs.substring(0, Math.min(16, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length() +
+                ": " + t.getMessage());
+            }
         } else {
-            unknownSequence(b);
+            Logger.logError(mClient, LOG_TAG, "Terminal control args overflow for" +
+                " char '" + (char) b + "' (numeric value=" + b + ") and" +
+                " args string '" + mTerminalControlArgs.substring(0, Math.min(16, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length());
+        }
+
+        clearTerminalControlArgs();
+        finishSequence();
+        return false;
+    }
+
+    /** Clear {@link #mTerminalControlArgs}. */
+    private void clearTerminalControlArgs() {
+        if (mTerminalControlArgs.capacity() <= TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY) {
+            // Mark existing buffer as empty and reuse old array already allocated in
+            // `StringBuffer` for future commands if required.
+            mTerminalControlArgs.setLength(0);
+        } else {
+            // `setLength()` will only update internal length marker and not reduce internal array
+            // capacity, and to deallocate extra memory `trimToSize()` needs to be called, which
+            // creates another smaller array.
+            // So just allocate a new object with an array with required initial capacity directly
+            // instead of setting length to 0, then trimming to create a smaller array, then
+            // increasing capacity again by creating a new array with required initial capacity by
+            // calling `ensureCapacity()`.
+            mTerminalControlArgs = new StringBuilder(TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY);
         }
     }
+
+    /**
+     * Ensure enough capacity for {@link #mTerminalControlArgs} to prevent repeated reallocation of
+     * memory and copying as more data is received and appended, like with `append(char)`.
+     *
+     * The default capacity for {@link #mTerminalControlArgs} is defined by
+     * {@link #TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY}.
+     *
+     * By default, if `StringBuilder` reaches capacity, it sets new capacity to `(oldCapacity * 2) + 2`.
+     * So if initial capacity is `16`, and data to be received is 1024 bytes, then 6 reallocations
+     * will be done, so command processors should
+     * - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:libcore/ojluni/src/main/java/java/lang/AbstractStringBuilder.java;l=758
+     * - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:libcore/ojluni/src/main/java/java/lang/AbstractStringBuilder.java;l=183
+     * - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:libcore/ojluni/src/main/java/java/lang/AbstractStringBuilder.java;l=210
+     *
+     * See also {@link StringBuilder#ensureCapacity(int)}.
+     *
+     * @param capacity The new capacity.
+     */
+    private void ensureTerminalControlArgsCapacity(int capacity) {
+        mTerminalControlArgs.ensureCapacity(capacity);
+    }
+
+
+
 
     private void unimplementedSequence(int b) {
         logError("Unimplemented sequence char '" + (char) b + "' (U+" + String.format("%04x", b) + ")");
@@ -2565,6 +2882,9 @@ public final class TerminalEmulator {
 
         mColors.reset();
         mSession.onColorsChanged();
+
+        clearTerminalControlArgs();
+        clearOscTypeVariables();
     }
 
     public String getSelectedText(int x1, int y1, int x2, int y2) {
