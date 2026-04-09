@@ -69,7 +69,6 @@ public final class TerminalRenderer {
         final TerminalBuffer screen = mEmulator.getScreen();
         final int[] palette = mEmulator.mColors.mCurrentColors;
         final int cursorShape = mEmulator.getCursorStyle();
-        mEmulator.setCellSize((int)mFontWidth, (int)mFontLineSpacing);
 
         if (reverseVideo)
             canvas.drawColor(palette[TextStyle.COLOR_INDEX_FOREGROUND], PorterDuff.Mode.SRC);
@@ -104,13 +103,14 @@ public final class TerminalRenderer {
                 final int charsForCodePoint = charIsHighsurrogate ? 2 : 1;
                 final int codePoint = charIsHighsurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
                 final long style = lineObject.getStyle(column);
-                if (TextStyle.isBitmap(style)) {
-                    Bitmap bm = mEmulator.getScreen().getSixelBitmap(codePoint, style);
-                    if (bm != null) {
+                if (TextStyle.isTerminalBitmap(style)) {
+                    Bitmap bitmap = mEmulator.getScreen().getSixelBitmap(style);
+                    if (bitmap != null) {
                         float left = column * mFontWidth;
                         float top = heightOffset - mFontLineSpacing;
-                        RectF r = new RectF(left, top, left + mFontWidth, top + mFontLineSpacing);
-                        canvas.drawBitmap(mEmulator.getScreen().getSixelBitmap(codePoint, style), mEmulator.getScreen().getSixelRect(codePoint, style), r, null);
+                        Rect bitmapSrcRect = mEmulator.getScreen().getSixelRect(style);
+                        RectF bitmapDestRect = new RectF(left, top, left + mFontWidth, top + mFontLineSpacing);
+                        canvas.drawBitmap(bitmap, bitmapSrcRect, bitmapDestRect, null);
                     }
                     column += 1;
                     measuredWidthForRun = 0.f;
