@@ -31,6 +31,7 @@ import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
 import com.termux.terminal.TextStyle;
+import com.termux.view.TerminalRenderer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -494,7 +495,6 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     public void checkForFontAndColors() {
         try {
             File colorsFile = TermuxConstants.TERMUX_COLOR_PROPERTIES_FILE;
-            File fontFile = TermuxConstants.TERMUX_FONT_FILE;
 
             final Properties props = new Properties();
             if (colorsFile.isFile()) {
@@ -510,10 +510,19 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             }
             updateBackgroundColor();
 
-            final Typeface newTypeface = (fontFile.exists() && fontFile.length() > 0) ? Typeface.createFromFile(fontFile) : Typeface.MONOSPACE;
-            mActivity.getTerminalView().setTypeface(newTypeface);
+            setTypeface(TermuxConstants.TERMUX_FONT_FILE, TerminalRenderer.TypefaceStyle.NORMAL);
+            setTypeface(TermuxConstants.TERMUX_ITALIC_FONT_FILE, TerminalRenderer.TypefaceStyle.ITALIC);
+            setTypeface(TermuxConstants.TERMUX_BOLD_FONT_FILE, TerminalRenderer.TypefaceStyle.BOLD);
+            setTypeface(TermuxConstants.TERMUX_BOLD_ITALIC_FONT_FILE, TerminalRenderer.TypefaceStyle.BOLD_ITALIC);
         } catch (Exception e) {
             Logger.logStackTraceWithMessage(LOG_TAG, "Error in checkForFontAndColors()", e);
+        }
+    }
+
+    private void setTypeface(File fontFile, TerminalRenderer.TypefaceStyle style) {
+        if (fontFile.exists() && fontFile.length() > 0) {
+            final Typeface newTypeface = Typeface.createFromFile(fontFile);
+            mActivity.getTerminalView().setTypeface(newTypeface, style);
         }
     }
 
