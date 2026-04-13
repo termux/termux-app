@@ -439,9 +439,13 @@ public final class TerminalBuffer {
             throw new IllegalArgumentException(
                 "Illegal arguments! blockSet(" + sx + ", " + sy + ", " + w + ", " + h + ", " + val + ", " + mColumns + ", " + mScreenRows + ")");
         }
-        for (int y = 0; y < h; y++)
+        for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++)
                 setChar(sx + x, sy + y, val, style);
+            if (sx+w == mColumns && val == ' ') {
+                clearLineWrap(sy + y);
+            }
+        }
     }
 
     public TerminalRow allocateFullLineIfNecessary(int row) {
