@@ -274,10 +274,15 @@ public final class TerminalEmulator {
     private static final int TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY = 16;
 
     /**
-     * The max length for {@link #mTerminalControlArgs}.
+     * The default max length for {@link #mTerminalControlArgs}.
      * Needs to be large enough to contain reasonable OSC 52 pastes, sixel and iterm images data.
      */
-    private static final int TERMINAL_CONTROL_ARGS__MAX_LENGTH = 16384;
+    private static final int TERMINAL_CONTROL_ARGS__DEFAULT_MAX_LENGTH = 16384;
+
+    /**
+     * The max length for {@link #mTerminalControlArgs} used by {@link #collectTerminalControlArgs(int)}.
+     */
+    private int mTerminalControlArgsMaxLength = TERMINAL_CONTROL_ARGS__DEFAULT_MAX_LENGTH;
 
     /** The terminal control arguments string buffer, like for OSC, DCS, APC commands. */
     private StringBuilder mTerminalControlArgs = new StringBuilder(TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY);
@@ -1145,7 +1150,7 @@ public final class TerminalEmulator {
             // command, then it is added to buffer in code below and more input is waited for as
             // further arguments need to be received for its command before it can be processed,
             // which is not until the next command is received.
-            // We wait till at least `TERMINAL_CONTROL_ARGS__MAX_LENGTH / 2` commands string has
+            // We wait till at least `mTerminalControlArgsMaxLength / 2` commands string has
             // been received. The divide by 2 is done since if near the max length, a new command
             // starts and it does not end before the max length, then `Terminal control args overflow
             // error would occur.
@@ -1156,7 +1161,7 @@ public final class TerminalEmulator {
             // `mTerminalControlArgs.length() > 1` is done so that loop does not engage on first
             // character after `q` and only after first command has been fully received.
             (ESC_DCS__SIXEL && ((b == '#' || b == '!' || b == '"') &&
-                ((mTerminalControlArgs.length() >= (TERMINAL_CONTROL_ARGS__MAX_LENGTH / 2)) || (mTerminalControlArgs.length() > 1 && mSixelCommandPartNum == 1))))
+                ((mTerminalControlArgs.length() >= (mTerminalControlArgsMaxLength / 2)) || (mTerminalControlArgs.length() > 1 && mSixelCommandPartNum == 1))))
         ) {
                 String dcs = mTerminalControlArgs.toString();
 
@@ -1411,6 +1416,9 @@ public final class TerminalEmulator {
         int color;
         boolean isValidDcs = true;
 
+        // FIXME: Use `StringUtils.truncateLogStringWithSnippet()` when its added for logging `dcs` input
+        //  in errors as it may be truncated from end before index if error length is greater than
+        //  `Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD`.
         while (index < dcs.length()) {
             ch = dcs.charAt(index);
 
@@ -1439,8 +1447,8 @@ public final class TerminalEmulator {
                     ch = dcs.charAt(index);
                     if (ch >= '0' && ch <= '9') {
                         color = color * 10 + ch - '0';
-                        if (color > 255) {
-                            Logger.logError(mClient, LOG_TAG, "The sixel color command Pc value " + color + " is not between 0-255 at index " + index + " of sixel input: " + dcs);
+                        if (color < 0) { // Overflow.
+                            Logger.logError(mClient, LOG_TAG, "The sixel color command Pc value overflow at index " + index + " of sixel input: " + dcs);
                             isValidDcs = false;
                             break;
                         }
@@ -1448,6 +1456,12 @@ public final class TerminalEmulator {
                     } else {
                         break;
                     }
+                }
+
+                if (color > 255) {
+                    Logger.logError(mClient, LOG_TAG, "The sixel color command Pc value " + color + " is not between 0-255 at index " + index + " of sixel input: " + dcs);
+                    isValidDcs = false;
+                    break;
                 }
 
                 if (!isValidDcs) {
@@ -1471,22 +1485,12 @@ public final class TerminalEmulator {
                         if (ch >= '0' && ch <= '9') {
                             if (incArg) { arg++; incArg = false; }
                             args[arg] = args[arg] * 10 + ch - '0';
-                            if (arg == 0) { // Pu must equal 1 or 2.
-                                if ((args[arg] != 1 && args[arg] != 2)) {
-                                    Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command Pu value " + args[arg] + " is not 1 or 2 at index " + index + " of sixel input: " + dcs);
-                                    isValidDcs = false;
-                                    break;
-                                }
-                            } else {
-                                int limit = 100;
-                                if (args[0] == 1 && arg == 1) limit = 360;
-                                if (args[arg] > limit) {
-                                    String argName = "";
-                                    switch (arg) { case 1: argName = "pX"; break; case 2: argName = "pY"; break; case 3: argName = "pZ"; break; }
-                                    Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command " + argName + " value " + args[arg] + " is not between 0-" + limit + " at index " + index + " of sixel input: " + dcs);
-                                    isValidDcs = false;
-                                    break;
-                                }
+                            if (args[arg] < 0) { // Overflow.
+                                String argName = "";
+                                switch (arg) { case 0: argName = "Pu"; break; case 1: argName = "pX"; break; case 2: argName = "pY"; break; case 3: argName = "pZ"; break; }
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command " + argName + " value overflow at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
                             }
                         } else if (ch == ';') {
                             if (arg == 3) { // Pz must not end with a ';'.
@@ -1502,9 +1506,37 @@ public final class TerminalEmulator {
                         index++;
                     }
 
+                    if (!isValidDcs) {
+                        break;
+                    }
+
+                    for (int i = 0; i < args.length; i++) {
+                        if (i == 0) { // Pu must equal 1 or 2.
+                            if ((args[i] != 1 && args[i] != 2)) {
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command Pu value " + args[i] + " is not 1 or 2 at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
+                            }
+                        } else {
+                            int limit = 100;
+                            if (args[0] == 1 && i == 1) limit = 360;
+                            if (args[i] < 0 || args[i] > limit) {
+                                String argName = "";
+                                switch (i) { case 1: argName = "pX"; break; case 2: argName = "pY"; break; case 3: argName = "pZ"; break; }
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command " + argName + " value " + args[i] + " is not between 0-" + limit + " at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
+                            }
+                        }
+                    }
+
                     if (isValidDcs && arg == 3) { // If complete spec is received and is valid.
                         if (args[0] == 2) { // Only RGB is supported.
                             mScreen.sixelSetRGBColor(color, args[1], args[2], args[3]);
+                        } else if (args[0] == 1) { // HLS is not supported.
+                            Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command Pu value " + args[0] + " is not supported at index " + index + " of sixel input: " + dcs);
+                            mScreen.sixelIgnore();
+                            break;
                         }
                     } else {
                         if (isValidDcs)
@@ -1524,9 +1556,8 @@ public final class TerminalEmulator {
                     ch = dcs.charAt(index);
                     if (ch >= '0' && ch <= '9') {
                         repeat = repeat * 10 + ch - '0';
-                        if (repeat > TerminalSixel.SIXEL__MAX_REPEAT) {
-                            Logger.logError(mClient, LOG_TAG, "The sixel repeat command Pn value " + repeat + " is greater than max repeat value " +
-                                TerminalSixel.SIXEL__MAX_REPEAT + " at index " + index + " of sixel input: " + dcs);
+                        if (repeat < 0) { // Overflow.
+                            Logger.logError(mClient, LOG_TAG, "The sixel repeat command Pn value overflow at index " + index + " of sixel input: " + dcs);
                             isValidDcs = false;
                             break;
                         }
@@ -1534,6 +1565,13 @@ public final class TerminalEmulator {
                     } else {
                         break;
                     }
+                }
+
+                if (repeat > TerminalSixel.SIXEL__MAX_REPEAT) {
+                    Logger.logError(mClient, LOG_TAG, "The sixel repeat command Pn value " + repeat + " is greater than max repeat value " +
+                        TerminalSixel.SIXEL__MAX_REPEAT + " at index " + index + " of sixel input: " + dcs);
+                    mScreen.sixelIgnore();
+                    break;
                 }
 
                 if (!isValidDcs) {
@@ -1586,9 +1624,9 @@ public final class TerminalEmulator {
                         // 2% extra for sixel commands/parameters in addition to image data.
                         int sixelArgsExpectedLength = (int) (sixelWidth * sixelHeight * 1.02);
                         // If sixel commands are too long, they are divided into parts, and if a
-                        // new command starts near `TERMINAL_CONTROL_ARGS__MAX_LENGTH / 2`, it could
+                        // new command starts near `mTerminalControlArgsMaxLength / 2`, it could
                         // contain image data for 1 pixel line of image width, so add that.
-                        int sixelArgsPartsExpectedLength = (int) ((((double) TERMINAL_CONTROL_ARGS__MAX_LENGTH / 2) + sixelWidth) * 1.02);
+                        int sixelArgsPartsExpectedLength = (int) ((((double) mTerminalControlArgsMaxLength / 2) + sixelWidth) * 1.02);
                         int sixelArgsExpectedCapacity = Math.min(sixelArgsPartsExpectedLength, sixelArgsExpectedLength);
                         if (sixelArgsExpectedCapacity > SIXEL_ARGS__INITIAL_CAPACITY) {
                             mSixelArgsCapacity = sixelArgsExpectedCapacity;
@@ -2654,6 +2692,7 @@ public final class TerminalEmulator {
 
         if (mOscType >= 0) {
             Integer terminalControlArgsCapacity = null;
+            Integer terminalControlArgsMaxLength = null;
             switch (mOscType) {
                 case 1337: // iTerm image command sends the base64 encoded image, do not run complex logic for each byte.
                     mIsFastPathOsc = true;
@@ -2664,11 +2703,17 @@ public final class TerminalEmulator {
                     // > Older versions of tmux have a limit of 256 bytes for the entire sequence.
                     // - https://iterm2.com/documentation-images.html
                     terminalControlArgsCapacity = 256;
+                    terminalControlArgsMaxLength = TerminalBitmap.MAX_BITMAP_SIZE +
+                        /* `1337;File=inline=1;size=209715200;name=xxxxxxxxxxxxxxxxxxxxxxxx;width=8192px;height=8192px;preserveAspectRatio=1:` */ 150;
                     break;
             }
 
             if (terminalControlArgsCapacity != null) {
                 ensureTerminalControlArgsCapacity(terminalControlArgsCapacity);
+            }
+
+            if (terminalControlArgsMaxLength != null) {
+                setTerminalControlArgsMaxLength(terminalControlArgsMaxLength);
             }
         }
     }
@@ -3085,7 +3130,9 @@ public final class TerminalEmulator {
 
     /** Collect code point in {@link #mTerminalControlArgs}. */
     private boolean collectTerminalControlArgs(int b) {
-        if (mTerminalControlArgs.length() < TERMINAL_CONTROL_ARGS__MAX_LENGTH) {
+        // FIXME: Use `Logger.logErrorDebug()` and elsewhere in terminal code when support is added
+        //  to prevent logging potentially private data to logcat unless user has increased log level.
+        if (mTerminalControlArgs.length() < mTerminalControlArgsMaxLength) {
             try {
                 // Appending can cause an increase in capacity and cause an OOM.
                 mTerminalControlArgs.appendCodePoint(b);
@@ -3095,13 +3142,14 @@ public final class TerminalEmulator {
                 if (t instanceof OutOfMemoryError) System.gc();
                 Logger.logError(mClient, LOG_TAG, "Terminal control args collect failed for" +
                 " char '" + (char) b + "' (numeric value=" + b + ") and" +
-                " args string '" + mTerminalControlArgs.substring(0, Math.min(16, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length() +
+                " args string '" + mTerminalControlArgs.substring(0, Math.min(100, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length() +
                 ": " + t.getMessage());
             }
         } else {
-            Logger.logError(mClient, LOG_TAG, "Terminal control args overflow for" +
+            Logger.logError(mClient, LOG_TAG, "Terminal control args input will" +
+                " overflow max args length " + mTerminalControlArgsMaxLength + " for" +
                 " char '" + (char) b + "' (numeric value=" + b + ") and" +
-                " args string '" + mTerminalControlArgs.substring(0, Math.min(16, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length());
+                " args string '" + mTerminalControlArgs.substring(0, Math.min(100, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length());
         }
 
         clearTerminalControlArgs();
@@ -3111,6 +3159,8 @@ public final class TerminalEmulator {
 
     /** Clear {@link #mTerminalControlArgs}. */
     private void clearTerminalControlArgs() {
+        mTerminalControlArgsMaxLength = TERMINAL_CONTROL_ARGS__DEFAULT_MAX_LENGTH;
+
         if (mTerminalControlArgs.capacity() <= TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY) {
             // Mark existing buffer as empty and reuse old array already allocated in
             // `StringBuffer` for future commands if required.
@@ -3148,6 +3198,18 @@ public final class TerminalEmulator {
     private void ensureTerminalControlArgsCapacity(int capacity) {
         mTerminalControlArgs.ensureCapacity(capacity);
     }
+
+    /**
+     * Set {@link #mTerminalControlArgsMaxLength} in case a command expects a larger input.
+     *
+     * @param length The new max length.
+     */
+    private void setTerminalControlArgsMaxLength(int length) {
+        if (length > 0) {
+            mTerminalControlArgsMaxLength = length;
+        }
+    }
+
 
 
 

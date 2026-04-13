@@ -630,13 +630,22 @@ public final class TerminalBuffer {
         mTerminalSixel = null;
     }
 
+    /**
+     * Clears the {@link #mTerminalSixel} by setting it to `null` and logs error.
+     * Call this on error if further sixel commands/data should be parsed to prevent them from
+     * printing on terminal, but sixel rendering should be ignored.
+     */
+    public synchronized void sixelIgnore() {
+        Logger.logError(mClient, LOG_TAG, "Ignoring sixel rendering");
+        mTerminalSixel = null;
+    }
+
     public synchronized boolean sixelReadData(int codePoint, int repeat) {
         //  If an error occurred during processing (like OOM), then remaining sixel command is
         //  completely read, but is ignored.
         if (mTerminalSixel != null) {
             if (!mTerminalSixel.readData(codePoint, repeat)) {
-                // Ignore further commands/data.
-                mTerminalSixel = null;
+                sixelIgnore();
                 return false;
             }
         }
@@ -648,8 +657,7 @@ public final class TerminalBuffer {
         //  completely read, but is ignored.
         if (mTerminalSixel != null) {
             if (!mTerminalSixel.resize(sixelWidth, sixelHeight)) {
-                // Ignore further commands/data.
-                mTerminalSixel = null;
+                sixelIgnore();
                 return false;
             }
         }

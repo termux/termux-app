@@ -28,23 +28,20 @@ public class TerminalSixel {
     public static final int SIXEL__LINE_LEN = 6;
 
     /**
-     * The max pixel dimensions of a sixel image bitmap.
-     *
-     * Each pixel is stored on 4 bytes for a {@link Bitmap.Config#ARGB_8888} bitmap color config,
-     * so a 2048x2048 sixel image will take 16,777,216 bytes/16MB.
+     * The amount of extra dimension added when resizing a sixel when receiving more image data.
      */
-    public static final int SIXEL__MAX_BITMAP_DIMENSION = 2048;
-
-    public static final int SIXEL__BITMAP_RESIZE_EXTRA = 100;
+    public static final int SIXEL__BITMAP_RESIZE_EXTRA_DIMENSION = 100;
 
     /**
      * The max value for the sixel Graphics Repeat Introducer.
+     *
+     * The value `8192` can support 8K images, see also {@link TerminalBitmap#MAX_BITMAP_SIZE}.
      *
      * Each repeat creates a new sixel line of `1x6` pixels, where `6` is the {@link #SIXEL__LINE_LEN}.
      *
      *  - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.1
      */
-    public static final int SIXEL__MAX_REPEAT = SIXEL__MAX_BITMAP_DIMENSION;
+    public static final int SIXEL__MAX_REPEAT = 8192;
 
 
 
@@ -141,6 +138,11 @@ public class TerminalSixel {
             return false;
         }
 
+        if (repeat > TerminalSixel.SIXEL__MAX_REPEAT) {
+            Logger.logError(mClient, LOG_TAG, "The sixel repeat value " + repeat + " is greater than max repeat value " + TerminalSixel.SIXEL__MAX_REPEAT);
+            return false;
+        }
+
         // Graphics Carriage Return `$`.
         // > The $ (2/4) character indicates the end of the sixel line. The active position returns
         // > to the left page border of the same sixel line. You can use this character to overprint lines.
@@ -161,15 +163,11 @@ public class TerminalSixel {
         }
 
         if (mBitmap.getWidth() < mCurX + repeat) {
-            int newBitmapWidth = mCurX + repeat + SIXEL__BITMAP_RESIZE_EXTRA;
+            int newBitmapWidth = mCurX + repeat + SIXEL__BITMAP_RESIZE_EXTRA_DIMENSION;
 
             if (newBitmapWidth < 0) {
-                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap width overflowed: " + mCurX + " (cursor x) + " + repeat + " (repeat) + " + SIXEL__BITMAP_RESIZE_EXTRA);
-                return false;
-            }
-
-            if (newBitmapWidth > TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION) {
-                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap width " + newBitmapWidth + " is greater than max bitmap dimension " + TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION);
+                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap width overflowed: " +
+                    mCurX + " (cursor x) + " + repeat + " (repeat) + " + SIXEL__BITMAP_RESIZE_EXTRA_DIMENSION);
                 return false;
             }
 
@@ -181,15 +179,11 @@ public class TerminalSixel {
 
         if (mBitmap.getHeight() < mCurY + SIXEL__LINE_LEN) {
             // Very unlikely to resize both at the same time.
-            int newBitmapHeight = mCurY + SIXEL__BITMAP_RESIZE_EXTRA;
+            int newBitmapHeight = mCurY + SIXEL__BITMAP_RESIZE_EXTRA_DIMENSION;
 
             if (newBitmapHeight < 0) {
-                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap height overflowed: " + mCurY + " (cursor y) + " + SIXEL__BITMAP_RESIZE_EXTRA);
-                return false;
-            }
-
-            if (newBitmapHeight > TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION) {
-                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap height " + newBitmapHeight + " is greater than max bitmap dimension " + TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION);
+                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap height overflowed: " +
+                    mCurY + " (cursor y) + " + SIXEL__BITMAP_RESIZE_EXTRA_DIMENSION);
                 return false;
             }
 
@@ -251,20 +245,8 @@ public class TerminalSixel {
         int newBitmapHeight = Math.max(sixelHeight, bitmapHeight);
 
         if (bitmapWidth < newBitmapWidth || bitmapHeight < newBitmapHeight) {
-            if (newBitmapWidth > TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION) {
-                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap resize width " + newBitmapWidth + " is greater than max bitmap dimension " + TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION);
-                return false;
-            }
-
-            if (newBitmapHeight > TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION) {
-                Logger.logError(mClient, LOG_TAG, "The new sixel bitmap resize height " + newBitmapHeight + " is greater than max bitmap dimension " + TerminalSixel.SIXEL__MAX_BITMAP_DIMENSION);
-                return false;
-            }
-
             mBitmap = TerminalBitmap.resizeBitmap(LOG_TAG, "sixel", mClient, mBitmap, newBitmapWidth, newBitmapHeight);
-            if (mBitmap == null) {
-                return false;
-            }
+            return mBitmap != null;
         }
 
         return true;
