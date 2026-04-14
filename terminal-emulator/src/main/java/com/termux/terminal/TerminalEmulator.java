@@ -2694,6 +2694,14 @@ public final class TerminalEmulator {
             Integer terminalControlArgsCapacity = null;
             Integer terminalControlArgsMaxLength = null;
             switch (mOscType) {
+                case 52:
+                    // Android has a `~100KB` limit for sharing/sending `UTF-16` encoded `String`
+                    // with binder tranasactions, including clipboard, otherwise can result in a
+                    // `TransactionTooLargeException`.
+                    // - https://www.reddit.com/r/tasker/comments/prro8t/autoshare_crashed_when_i_pasted_the_file_path/
+                    terminalControlArgsMaxLength = (100 * 1024)  +
+                        /* `52;Pc;` */ 10;
+                    break;
                 case 1337: // iTerm image command sends the base64 encoded image, do not run complex logic for each byte.
                     mIsFastPathOsc = true;
                     mIgnoreCrLfForOsc = true;
