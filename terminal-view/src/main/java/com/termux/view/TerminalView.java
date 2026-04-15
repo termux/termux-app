@@ -460,24 +460,25 @@ public final class TerminalView extends View {
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
         if (mTopRow < -rowsInHistory) mTopRow = -rowsInHistory;
 
-        if (isSelectingText() || mEmulator.isAutoScrollDisabled()) {
+        boolean keepScrollPosition = isSelectingText() || mEmulator.isAutoScrollDisabled() || mTopRow != 0;
+        if (keepScrollPosition) {
 
-            // Do not scroll when selecting text.
+            // Keep viewport pinned when selecting text, when auto-scroll is disabled,
+            // or when user has manually scrolled up from bottom.
             int rowShift = mEmulator.getScrollCounter();
             if (-mTopRow + rowShift > rowsInHistory) {
-                // .. unless we're hitting the end of history transcript, in which
-                // case we abort text selection and scroll to end.
+                // We cannot keep the exact viewport if old transcript rows have already
+                // been dropped, so clamp to the oldest available row in history.
                 if (isSelectingText())
                     stopTextSelectionMode();
 
-                if (mEmulator.isAutoScrollDisabled()) {
-                    mTopRow = -rowsInHistory;
-                    skipScrolling = true;
-                }
+                mTopRow = -rowsInHistory;
+                skipScrolling = true;
             } else {
                 skipScrolling = true;
                 mTopRow -= rowShift;
-                decrementYTextSelectionCursors(rowShift);
+                if (isSelectingText())
+                    decrementYTextSelectionCursors(rowShift);
             }
         }
 
