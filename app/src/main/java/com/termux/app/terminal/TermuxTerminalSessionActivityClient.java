@@ -224,10 +224,10 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
                 .getTermuxOrPluginAppNotificationBuilder(
                     mActivity,
                     mActivity,
-                    "termux_notification_channel",
+                    TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID,
                     Notification.PRIORITY_DEFAULT,
-                    "Command Complete",
-                    "Remote command finished - Bell signal received",
+                    mActivity.getString(R.string.notification_bell_title),
+                    mActivity.getString(R.string.notification_bell_text),
                     null,
                     null,
                     null,
@@ -270,13 +270,15 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         }
         
         // Handle notifications - these work both foreground and background
-        // BUGFIX P2: Notifications don't have the visibility restriction
+        // BUGFIX P2: Notifications don't have the visibility restriction.
+        // For vibrate-and-notification, only add vibration to the notification when the app is
+        // not visible; when visible, BellHandler.doBell() already handles vibration above.
         switch (bellBehaviour) {
             case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_NOTIFICATION:
                 sendBellNotification(session, false);
                 break;
             case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE_AND_NOTIFICATION:
-                sendBellNotification(session, true);
+                sendBellNotification(session, !mActivity.isVisible());
                 break;
         }
     }
