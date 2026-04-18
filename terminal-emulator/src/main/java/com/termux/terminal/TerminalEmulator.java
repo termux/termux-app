@@ -135,7 +135,7 @@ public final class TerminalEmulator {
     private final Stack<String> mTitleStack = new Stack<>();
 
     /** The cursor position. Between (0,0) and (mRows-1, mColumns-1). */
-    private int mCursorRow, mCursorCol;
+    private volatile int mCursorRow, mCursorCol;
 
     /** The number of character rows and columns in the terminal screen. */
     public int mRows, mColumns;
@@ -421,12 +421,21 @@ public final class TerminalEmulator {
         mCursorRow = cursor[1];
     }
 
-    public int getCursorRow() {
+    public synchronized int getCursorRow() {
         return mCursorRow;
     }
 
-    public int getCursorCol() {
+    public synchronized int getCursorCol() {
         return mCursorCol;
+    }
+
+    /** 
+     * Set cursor position safely with thread synchronization.
+     * BUGFIX P1: Thread-safe cursor updates
+     */
+    public synchronized void setCursorRowCol(int row, int col) {
+        mCursorRow = row;
+        mCursorCol = col;
     }
 
     /** Get the terminal cursor style. It will be one of {@link #TERMINAL_CURSOR_STYLES_LIST} */
