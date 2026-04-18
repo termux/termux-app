@@ -295,6 +295,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onStart();
 
+        // BUGFIX P1: Force synchronization of screen when returning from background
+        // This ensures that any background terminal updates are properly displayed
+        if (mTerminalView != null && mTerminalView.mEmulator != null) {
+            mTerminalView.onScreenUpdated();
+            mTerminalView.setTopRow(0); // Ensure scroll position is synchronized
+        }
+
         if (mPreferences.isTerminalMarginAdjustmentEnabled())
             addTermuxActivityRootViewGlobalLayoutListener();
 

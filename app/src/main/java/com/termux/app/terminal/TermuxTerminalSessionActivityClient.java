@@ -8,6 +8,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.text.TextUtils;
@@ -116,9 +118,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
 
     @Override
     public void onTextChanged(@NonNull TerminalSession changedSession) {
-        if (!mActivity.isVisible()) return;
-
-        if (mActivity.getCurrentSession() == changedSession) mActivity.getTerminalView().onScreenUpdated();
+        // IMPORTANT: Always update the screen, even if Activity is in background
+        // This prevents character overlay issues when app resumes from background.
+        // Background updates ensure the display is synchronized when app becomes visible again.
+        if (mActivity.getCurrentSession() == changedSession) {
+            mActivity.getTerminalView().onScreenUpdated();
+        }
     }
 
     @Override
@@ -196,21 +201,82 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
             mActivity.getTerminalView().mEmulator.paste(text);
     }
 
+
+    /**
+     * Send a notification for the bell character event.
+     * BUGFIX P2: Implement notifications for SSH task completion signals
+     * 
+     * @param session The terminal session that rang the bell
+     * @param includeVibration Whether to include vibration in the notification
+     */
+    private void sendBellNotification(@NonNull TerminalSession session, boolean includeVibration) {
+        try {
+            NotificationManager nm = (NotificationManager) 
+                mActivity.getSystemService(Context.NOTIFICATION_SERVICE);
+            
+            if (nm == null) return;
+            
+            // Get a unique notification ID
+            int notificationId = com.termux.shared.termux.notification.TermuxNotificationUtils.getNextNotificationId(mActivity);
+            
+            // Build the notification
+            Notification.Builder builder = com.termux.shared.termux.notification.TermuxNotificationUtils
+                .getTermuxOrPluginAppNotificationBuilder(
+                    mActivity,
+                    mActivity,
+                    "termux_notification_channel",
+                    Notification.PRIORITY_DEFAULT,
+                    "Command Complete",
+                    "Remote command finished - Bell signal received",
+                    null,
+                    null,
+                    null,
+                    0);
+            
+            if (builder != null) {
+                if (includeVibration) {
+                    builder.setVibrate(new long[]{0, 250, 250, 250});
+                }
+                nm.notify(notificationId, builder.build());
+                Logger.logDebug(LOG_TAG, "Bell notification sent with ID: " + notificationId);
+            }
+        } catch (Exception e) {
+            Logger.logError(LOG_TAG, "Error sending bell notification: " + e.getMessage());
+        }
+    }
+
     @Override
     public void onBell(@NonNull TerminalSession session) {
-        if (!mActivity.isVisible()) return;
-
-        switch (mActivity.getProperties().getBellBehaviour()) {
-            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE:
-                BellHandler.getInstance(mActivity).doBell();
+        int bellBehaviour = mActivity.getProperties().getBellBehaviour();
+        
+        // Handle vibrate/beep only when app is visible
+        if (mActivity.isVisible()) {
+            switch (bellBehaviour) {
+                case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE:
+                    BellHandler.getInstance(mActivity).doBell();
+                    break;
+                case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_BEEP:
+                    loadBellSoundPool();
+                    if (mBellSoundPool != null)
+                        mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
+                    break;
+                case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE_AND_NOTIFICATION:
+                    BellHandler.getInstance(mActivity).doBell();
+                    break;
+                case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_IGNORE:
+                    // Ignore the bell character.
+                    break;
+            }
+        }
+        
+        // Handle notifications - these work both foreground and background
+        // BUGFIX P2: Notifications don't have the visibility restriction
+        switch (bellBehaviour) {
+            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_NOTIFICATION:
+                sendBellNotification(session, false);
                 break;
-            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_BEEP:
-                loadBellSoundPool();
-                if (mBellSoundPool != null)
-                    mBellSoundPool.play(mBellSoundId, 1.f, 1.f, 1, 0, 1.f);
-                break;
-            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_IGNORE:
-                // Ignore the bell character.
+            case TermuxPropertyConstants.IVALUE_BELL_BEHAVIOUR_VIBRATE_AND_NOTIFICATION:
+                sendBellNotification(session, true);
                 break;
         }
     }

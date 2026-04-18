@@ -290,10 +290,18 @@ public final class TerminalBuffer {
                     lastNonSpaceIndex = oldLine.getSpaceUsed();
                     if (cursorAtThisRow) justToCursor = true;
                 } else {
-                    for (int i = 0; i < oldLine.getSpaceUsed(); i++)
-                        // NEWLY INTRODUCED BUG! Should not index oldLine.mStyle with char indices
-                        if (oldLine.mText[i] != ' '/* || oldLine.mStyle[i] != currentStyle */)
-                            lastNonSpaceIndex = i + 1;
+                    for (int i = 0; i < oldLine.getSpaceUsed(); i++) {
+                        if (oldLine.mText[i] != ' ') {
+                            // BUGFIX P1: mStyle is indexed by columns, not character indices
+                            // Only count non-space characters to find last non-space index
+                            char c = oldLine.mText[i];
+                            int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
+                            int columnForChar = WcWidth.width(codePoint);
+                            if (columnForChar > 0) {
+                                lastNonSpaceIndex = i + 1;
+                            }
+                        }
+                    }
                 }
 
                 int currentOldCol = 0;
