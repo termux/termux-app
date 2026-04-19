@@ -12,7 +12,7 @@ import java.util.Formatter;
 import java.util.List;
 
 /*
- * Version: v0.53.0
+ * Version: v0.54.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -282,6 +282,9 @@ import java.util.List;
  * - 0.53.0 (2025-01-12)
  *      - Renamed `TERMUX_API`, `TERMUX_STYLING`, `TERMUX_TASKER`, `TERMUX_WIDGET` classes with `_APP` suffix added.
  *      - Added `TERMUX_*_MAIN_ACTIVITY_NAME` and `TERMUX_*_LAUNCHER_ACTIVITY_NAME` constants to each app class.
+ *
+ * - 0.54.0 (2026-04-20)
+ *      - Added `TERMUX_APP.TERMUX_ACTIVITY.ACTION_TOGGLE_TERMINAL_TOOLBAR`.
  */
 
 /**
@@ -959,6 +962,8 @@ public final class TermuxConstants {
             /**  Intent {@code boolean} extra for whether to recreate activity for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent. */
             public static final String EXTRA_RECREATE_ACTIVITY = TERMUX_APP.TERMUX_ACTIVITY_NAME + ".EXTRA_RECREATE_ACTIVITY"; // Default: "com.termux.app.TermuxActivity.EXTRA_RECREATE_ACTIVITY"
 
+            /** Intent action to make termux toggle terminal toolbar visibility */
+            public static final String ACTION_TOGGLE_TERMINAL_TOOLBAR = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.toggle_terminal_toolbar"; // Default: "com.termux.app.toggle_terminal_toolbar"
 
             /** Intent action to make termux request storage permissions */
             public static final String ACTION_REQUEST_PERMISSIONS = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.request_storage_permissions"; // Default: "com.termux.app.request_storage_permissions"
