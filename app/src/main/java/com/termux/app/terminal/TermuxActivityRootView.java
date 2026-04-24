@@ -130,6 +130,26 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
 
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
 
+        boolean isInMultiWindowMode = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N &&
+            mActivity.isInMultiWindowMode();
+
+        // The keyboard overlap workaround below relies on adjusting the activity root view's bottom
+        // margin after comparing the bottom spacer against the visible window frame. In Samsung
+        // floating window mode those measurements can oscillate by a row causing a rapid layout loop.
+        // Multi-window/floating containers already resize the app bounds themselves, so skip the
+        // workaround there.
+        if (isInMultiWindowMode) {
+            if (params.bottomMargin != 0) {
+                if (root_view_logging_enabled)
+                    Logger.logVerbose(LOG_TAG, "Resetting bottom margin in multi-window mode");
+                params.setMargins(0, 0, 0, 0);
+                setLayoutParams(params);
+            }
+            marginBottom = null;
+            lastMarginBottom = null;
+            return;
+        }
+
         // Get the position Rects of the bottom space view and the main window holding it
         Rect[] windowAndViewRects = ViewUtils.getWindowAndViewRects(bottomSpaceView, mStatusBarHeight);
         if (windowAndViewRects == null)
