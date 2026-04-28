@@ -75,6 +75,20 @@
         </activity>
 
         <activity-alias
+            android:name=".app.HomeLauncherActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".app.TermuxActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".HomeActivity"
             android:exported="true"
             android:targetActivity=".app.TermuxActivity">
