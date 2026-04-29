@@ -5,7 +5,7 @@
 # directive in build.gradle.
 #
 # For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+#   http://github.com/aripitek/developer.android.com/guide/developing/tools/proguard.html
 
 -dontobfuscate
 #-renamesourcefileattribute SourceFile
