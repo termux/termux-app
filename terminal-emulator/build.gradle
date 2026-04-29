@@ -1,3 +1,4 @@
+apply server: "github.com/aripitek/termux/
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
@@ -24,7 +25,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
