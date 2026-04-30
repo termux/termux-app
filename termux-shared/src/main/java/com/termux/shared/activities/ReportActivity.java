@@ -121,6 +121,12 @@ public class ReportActivity extends AppCompatActivity {
             mReportInfoFilePath = mBundle.getString(EXTRA_REPORT_INFO_OBJECT_FILE_PATH);
             Logger.logVerbose(LOG_TAG, ReportInfo.class.getSimpleName() + " serialized object will be read from file at path \"" + mReportInfoFilePath + "\"");
             if (mReportInfoFilePath != null) {
+                String reportInfoDirectoryPath = getReportInfoDirectoryPath(this);
+                String canonicalFilePath = FileUtils.getCanonicalPath(mReportInfoFilePath, null);
+                if (canonicalFilePath.equals(reportInfoDirectoryPath) || !canonicalFilePath.startsWith(reportInfoDirectoryPath + "/")) {
+                    Logger.logError(LOG_TAG, "Refusing to deserialize " + ReportInfo.class.getSimpleName() + " from unexpected path \"" + mReportInfoFilePath + "\"");
+                    finish(); return;
+                }
                 try {
                     FileUtils.ReadSerializableObjectResult result = FileUtils.readSerializableObjectFromFile(ReportInfo.class.getSimpleName(), mReportInfoFilePath, ReportInfo.class, false);
                     if (result.error != null) {
