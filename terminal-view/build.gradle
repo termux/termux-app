@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
-android {
+android{
     namespace "com.termux.view"
     compileSdk project.properties.compileSdkVersion.toInteger()
 
