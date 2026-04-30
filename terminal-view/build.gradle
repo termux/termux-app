@@ -12,8 +12,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion project.properties.minSdkVersion.toInteger()
-        targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        minSdkVersion minSdk(project.properties.minSdkVersion.toInteger())
+        targetSdkVersion targetSdk(project.properties.targetSdkVersion.toInteger())
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
