@@ -21,6 +21,10 @@ public final class TerminalRenderer {
     final int mTextSize;
     final Typeface mTypeface;
     private final Paint mTextPaint = new Paint();
+    private Typeface regularTypeface;
+    private Typeface boldTypeface;
+    private Typeface italicTypeface;
+    private Typeface boldItalicTypeface;
 
     /** The width of a single mono spaced character obtained by {@link Paint#measureText(String)} on a single 'X'. */
     final float mFontWidth;
@@ -286,10 +290,10 @@ public final class TerminalRenderer {
     }
 
     public int getFontLineSpacing() {
-    return mFontLineSpacing;
+        return mFontLineSpacing;
     }
 
-// 🔥 ADD HERE
+
     private Typeface loadFontOrFallback(File file, Typeface base, int style) {
         return file.exists()
             ? Typeface.createFromFile(file)
