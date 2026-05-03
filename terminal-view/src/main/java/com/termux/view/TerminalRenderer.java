@@ -1,5 +1,5 @@
 package com.termux.view;
-
+import java.io.File;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -51,6 +51,28 @@ public final class TerminalRenderer {
             sb.setCharAt(0, (char) i);
             asciiMeasures[i] = mTextPaint.measureText(sb, 0, 1);
         }
+
+        // 🔥 ADD THIS BLOCK (your feature starts here)
+
+        regularTypeface = typeface;
+
+        boldTypeface = loadFontOrFallback(
+            com.termux.shared.termux.TermuxConstants.TERMUX_FONT_BOLD_FILE,
+            regularTypeface,
+            Typeface.BOLD
+        );
+
+        italicTypeface = loadFontOrFallback(
+            com.termux.shared.termux.TermuxConstants.TERMUX_FONT_ITALIC_FILE,
+            regularTypeface,
+            Typeface.ITALIC
+        );
+
+        boldItalicTypeface = loadFontOrFallback(
+            com.termux.shared.termux.TermuxConstants.TERMUX_FONT_BOLD_ITALIC_FILE,
+            regularTypeface,
+            Typeface.BOLD_ITALIC
+        );
     }
 
     /** Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection. */
@@ -214,26 +236,46 @@ public final class TerminalRenderer {
         }
 
         if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
+
             if (dim) {
                 int red = (0xFF & (foreColor >> 16));
                 int green = (0xFF & (foreColor >> 8));
                 int blue = (0xFF & foreColor);
-                // Dim color handling used by libvte which in turn took it from xterm
-                // (https://bug735245.bugzilla-attachments.gnome.org/attachment.cgi?id=284267):
+
                 red = red * 2 / 3;
                 green = green * 2 / 3;
                 blue = blue * 2 / 3;
+
                 foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
-            mTextPaint.setFakeBoldText(bold);
+            // 🔥 THIS is your new logic
+            if (bold && italic) {
+                mTextPaint.setTypeface(boldItalicTypeface);
+            } else if (bold) {
+                mTextPaint.setTypeface(boldTypeface);
+            } else if (italic) {
+                mTextPaint.setTypeface(italicTypeface);
+            } else {
+                mTextPaint.setTypeface(regularTypeface);
+            }
+
+            // ✅ Keep these
             mTextPaint.setUnderlineText(underline);
-            mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
 
-            // The text alignment is the default Paint.Align.LEFT.
-            canvas.drawTextRun(text, startCharIndex, runWidthChars, startCharIndex, runWidthChars, left, y - mFontLineSpacingAndAscent, false, mTextPaint);
+            canvas.drawTextRun(
+                text,
+                startCharIndex,
+                runWidthChars,
+                startCharIndex,
+                runWidthChars,
+                left,
+                y - mFontLineSpacingAndAscent,
+                false,
+                mTextPaint
+            );
         }
 
         if (savedMatrix) canvas.restore();
@@ -244,6 +286,13 @@ public final class TerminalRenderer {
     }
 
     public int getFontLineSpacing() {
-        return mFontLineSpacing;
+    return mFontLineSpacing;
+    }
+
+// 🔥 ADD HERE
+    private Typeface loadFontOrFallback(File file, Typeface base, int style) {
+        return file.exists()
+            ? Typeface.createFromFile(file)
+            : Typeface.create(base, style);
     }
 }
