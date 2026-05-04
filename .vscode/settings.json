@@ -1,3 +1,0 @@
-{
-    "java.configuration.updateBuildConfiguration": "interactive"
-}
