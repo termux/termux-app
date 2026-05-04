@@ -252,7 +252,6 @@ public final class TerminalRenderer {
                 foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
             }
 
-            // 🔥 THIS is your new logic
             if (bold && italic) {
                 mTextPaint.setTypeface(boldItalicTypeface);
             } else if (bold) {
@@ -263,7 +262,6 @@ public final class TerminalRenderer {
                 mTextPaint.setTypeface(regularTypeface);
             }
 
-            // ✅ Keep these
             mTextPaint.setUnderlineText(underline);
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
