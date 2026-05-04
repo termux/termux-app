@@ -56,24 +56,23 @@ public final class TerminalRenderer {
             asciiMeasures[i] = mTextPaint.measureText(sb, 0, 1);
         }
 
-        // 🔥 ADD THIS BLOCK (your feature starts here)
 
         regularTypeface = typeface;
 
         boldTypeface = loadFontOrFallback(
-            com.termux.shared.termux.TermuxConstants.TERMUX_FONT_BOLD_FILE,
+            new File("/data/data/com.termux/files/home/.termux/font-bold.ttf"),
             regularTypeface,
             Typeface.BOLD
         );
 
         italicTypeface = loadFontOrFallback(
-            com.termux.shared.termux.TermuxConstants.TERMUX_FONT_ITALIC_FILE,
+            new File("/data/data/com.termux/files/home/.termux/font-italic.ttf"),
             regularTypeface,
             Typeface.ITALIC
         );
 
         boldItalicTypeface = loadFontOrFallback(
-            com.termux.shared.termux.TermuxConstants.TERMUX_FONT_BOLD_ITALIC_FILE,
+            new File("/data/data/com.termux/files/home/.termux/font-bold-italic.ttf"),
             regularTypeface,
             Typeface.BOLD_ITALIC
         );
