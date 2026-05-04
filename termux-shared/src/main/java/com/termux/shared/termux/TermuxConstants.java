@@ -768,29 +768,9 @@ public final class TermuxConstants {
     public static final File TERMUX_COLOR_PROPERTIES_FILE = new File(TERMUX_COLOR_PROPERTIES_FILE_PATH);
 
     /** Termux app and Termux:Styling font.ttf file path */
-    public static final String TERMUX_FONT_FILE_PATH =
-        TERMUX_DATA_HOME_DIR_PATH + "/font.ttf";
+    public static final String TERMUX_FONT_FILE_PATH = TERMUX_DATA_HOME_DIR_PATH + "/font.ttf"; // Default: "/data/data/com.termux/files/home/.termux/font.ttf"
     /** Termux app and Termux:Styling font.ttf file */
-    public static final File TERMUX_FONT_FILE =
-        new File(TERMUX_FONT_FILE_PATH);
-
-    /** Bold font file path */
-    public static final String TERMUX_FONT_BOLD_FILE_PATH =
-        TERMUX_DATA_HOME_DIR_PATH + "/font-bold.ttf";
-    public static final File TERMUX_FONT_BOLD_FILE =
-        new File(TERMUX_FONT_BOLD_FILE_PATH);
-
-    /** Italic font file path */
-    public static final String TERMUX_FONT_ITALIC_FILE_PATH =
-        TERMUX_DATA_HOME_DIR_PATH + "/font-italic.ttf";
-    public static final File TERMUX_FONT_ITALIC_FILE =
-        new File(TERMUX_FONT_ITALIC_FILE_PATH);
-
-    /** Bold Italic font file path */
-    public static final String TERMUX_FONT_BOLD_ITALIC_FILE_PATH =
-        TERMUX_DATA_HOME_DIR_PATH + "/font-bold-italic.ttf";
-    public static final File TERMUX_FONT_BOLD_ITALIC_FILE =
-        new File(TERMUX_FONT_BOLD_ITALIC_FILE_PATH);
+    public static final File TERMUX_FONT_FILE = new File(TERMUX_FONT_FILE_PATH);
 
 
     /** Termux app and plugins crash log file path */
