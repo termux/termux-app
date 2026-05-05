@@ -1400,6 +1400,10 @@ public final class TerminalEmulator {
                 }
 
                 incArg = true;
+            } else if (ch == 'q') {
+                // If optional parameters `P1`, `P2` or `P3` are not all passed, or
+                // a parameter did not end with a `;`, but is followed by `q`.
+                return args;
             } else {
                 break;
             }
