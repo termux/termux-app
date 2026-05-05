@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Termux Chinese (Simplified) translation -->
+<resources>
+    <string name="msg_directory_absolute_path">%1$s 目录绝对路径："%2$s"</string>
+    <string name="error_app_not_installed_or_disabled_warning">%1$s（%2$s）应用未安装或已禁用。</string>
+    <string name="error_get_package_context_failed_title">获取包上下文失败</string>
+    <string name="error_get_package_context_failed_message">无法获取 "%1$s" 包的上下文。</string>
+    <string name="error_get_package_context_failed_help_url_message">详情请查看 %1$s。</string>
+    <string name="error_get_component_state_failed">无法获取 %1$s/%2$s 组件状态</string>
+    <string name="error_enable_component_failed">无法启用 %1$s/%2$s 组件</string>
+    <string name="error_disable_component_failed">无法禁用 %1$s/%2$s 组件</string>
+    <string name="message_sudo_please_grant_permissions">请授予所请求的权限</string>
+    <string name="error_failed_to_request_permissions">请求权限失败，请求码 %1$d：%2$s</string>
+    <string name="error_attempted_to_check_for_permissions_not_requested">尝试检查尚未请求的权限</string>
+    <string name="error_attempted_to_ask_for_permissions_not_requested">尝试询问尚未请求的权限</string>
+    <string name="error_has_not_requested_legacy_external_storage">"%1$s" 包的目标 SDK 版本为 %2$d，且未请求旧版外部存储权限</string>
+    <string name="msg_requires_dump_and_package_usage_stats_permissions">需要 `DUMP` 和 `PACKAGE_USAGE_STATS` 权限</string>
+    <string name="error_display_over_other_apps_permission_not_granted">%1$s 需要 "显示在其他应用上层" 权限才能启动活动</string>
+    <string name="msg_storage_permission_not_granted">未授予存储权限。</string>
+    <string name="action_yes">是</string>
+    <string name="action_no">否</string>
+    <string name="action_copy">复制</string>
+    <string name="action_share">分享</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_save_to_file">保存到文件</string>
+    <string name="log_level_title">日志级别</string>
+    <string name="log_level_off">关闭</string>
+    <string name="log_level_normal">正常</string>
+    <string name="log_level_debug">调试</string>
+    <string name="log_level_verbose">详细</string>
+    <string name="log_level_unknown">*未知*</string>
+    <string name="log_level_value">Logcat 日志级别已设置为 "%1$s"</string>
+</resources>
