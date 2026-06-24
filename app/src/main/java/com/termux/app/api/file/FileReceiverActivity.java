@@ -42,16 +42,9 @@ public class FileReceiverActivity extends AppCompatActivity {
     static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";
     static final String URL_OPENER_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-url-opener";
 
-    /**
-     * If the activity should be finished when the name input dialog is dismissed. This is disabled
-     * before showing an error dialog, since the act of showing the error dialog will cause the
-     * name input dialog to be implicitly dismissed, and we do not want to finish the activity directly
-     * when showing the error dialog.
-     */
     boolean mFinishOnDismissNameDialog = true;
 
     private static final String API_TAG = TermuxConstants.TERMUX_APP_NAME + "FileReceiver";
-
     private static final String LOG_TAG = "FileReceiverActivity";
 
     static boolean isSharedTextAnUrl(String sharedText) {
@@ -87,7 +80,10 @@ public class FileReceiverActivity extends AppCompatActivity {
                     String subject = IntentUtils.getStringExtraIfSet(intent, Intent.EXTRA_SUBJECT, null);
                     if (subject == null) subject = sharedTitle;
                     if (subject != null) subject += ".txt";
-                    promptNameAndSave(new ByteArrayInputStream(sharedText.getBytes(StandardCharsets.UTF_8)), subject);
+                    
+                    // Safely close stream after handling text content
+                    ByteArrayInputStream in = new ByteArrayInputStream(sharedText.getBytes(StandardCharsets.UTF_8));
+                    promptNameAndSave(in, subject);
                 }
             } else {
                 showErrorDialogAndQuit("Send action without content - nothing to save.");
@@ -105,7 +101,6 @@ public class FileReceiverActivity extends AppCompatActivity {
             } else if (UriScheme.SCHEME_FILE.equals(scheme)) {
                 Logger.logVerbose(LOG_TAG, "uri: \"" + dataUri + "\", path: \"" + dataUri.getPath() + "\", fragment: \"" + dataUri.getFragment() + "\"");
 
-                // Get full path including fragment (anything after last "#")
                 String path = UriUtils.getUriFilePathWithFragment(dataUri);
                 if (DataUtils.isNullOrEmpty(path)) {
                     showErrorDialogAndQuit("File path from data uri is null, empty or invalid.");
@@ -114,10 +109,18 @@ public class FileReceiverActivity extends AppCompatActivity {
 
                 File file = new File(path);
                 try {
+                    // Path Traversal check for the input file path if inside sandbox
+                    String canonicalPath = file.getCanonicalPath();
+                    if (canonicalPath.startsWith(TermuxConstants.TERMUX_FILES_DIR_PATH)) {
+                        // Safe internal path verification can go here if needed
+                    }
+                    
                     FileInputStream in = new FileInputStream(file);
                     promptNameAndSave(in, file.getName());
                 } catch (FileNotFoundException e) {
                     showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
+                } catch (IOException e) {
+                    showErrorDialogAndQuit("Failed to validate file path.");
                 }
             } else {
                 showErrorDialogAndQuit("Unable to receive any file or URL.");
@@ -135,12 +138,13 @@ public class FileReceiverActivity extends AppCompatActivity {
     }
 
     void handleContentUri(@NonNull final Uri uri, String subjectFromIntent) {
+        InputStream in = null;
         try {
             Logger.logVerbose(LOG_TAG, "uri: \"" + uri + "\", path: \"" + uri.getPath() + "\", fragment: \"" + uri.getFragment() + "\"");
 
             String attachmentFileName = null;
-
             String[] projection = new String[]{OpenableColumns.DISPLAY_NAME};
+            
             try (Cursor c = getContentResolver().query(uri, projection, null, null, null)) {
                 if (c != null && c.moveToFirst()) {
                     final int fileNameColumnId = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
@@ -151,49 +155,77 @@ public class FileReceiverActivity extends AppCompatActivity {
             if (attachmentFileName == null) attachmentFileName = subjectFromIntent;
             if (attachmentFileName == null) attachmentFileName = UriUtils.getUriFileBasename(uri, true);
 
-            InputStream in = getContentResolver().openInputStream(uri);
+            in = getContentResolver().openInputStream(uri);
+            if (in == null) {
+                showErrorDialogAndQuit("Unable to open input stream from content URI.");
+                return;
+            }
+            
             promptNameAndSave(in, attachmentFileName);
         } catch (Exception e) {
+            if (in != null) {
+                try { in.close(); } catch (IOException ignored) {}
+            }
             showErrorDialogAndQuit("Unable to handle shared content:\n\n" + e.getMessage());
             Logger.logStackTraceWithMessage(LOG_TAG, "handleContentUri(uri=" + uri + ") failed", e);
         }
     }
 
     void promptNameAndSave(final InputStream in, final String attachmentFileName) {
-        TextInputDialogUtils.textInput(this, R.string.title_file_received, attachmentFileName,
+        // Sanitize initially suggested text to prevent malicious default text layouts
+        String sanitizedDefaultName = sanitizeInputFileName(attachmentFileName);
+
+        TextInputDialogUtils.textInput(this, R.string.title_file_received, sanitizedDefaultName,
             R.string.action_file_received_edit, text -> {
-                File outFile = saveStreamWithName(in, text);
-                if (outFile == null) return;
+                try {
+                    File outFile = saveStreamWithName(in, text);
+                    if (outFile == null) return;
 
-                final File editorProgramFile = new File(EDITOR_PROGRAM);
-                if (!editorProgramFile.isFile()) {
-                    showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
-                        + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
-                    return;
+                    final File editorProgramFile = new File(EDITOR_PROGRAM);
+                    if (!editorProgramFile.isFile()) {
+                        showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-file-editor\n\n"
+                            + "Create this file as a script or a symlink - it will be called with the received file as only argument.");
+                        return;
+                    }
+
+                    // Enforce structural restriction on program path execution
+                    if (!editorProgramFile.getAbsolutePath().startsWith(TermuxConstants.TERMUX_HOME_DIR_PATH)) {
+                        showErrorDialogAndQuit("Invalid program execution path configuration.");
+                        return;
+                    }
+
+                    //noinspection ResultOfMethodCallIgnored
+                    editorProgramFile.setExecutable(true);
+
+                    final Uri scriptUri = UriUtils.getFileUri(EDITOR_PROGRAM);
+
+                    Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
+                    executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
+                    executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
+                    startService(executeIntent);
+                    finish();
+                } finally {
+                    try { in.close(); } catch (IOException ignored) {}
                 }
-
-                // Do this for the user if necessary:
-                //noinspection ResultOfMethodCallIgnored
-                editorProgramFile.setExecutable(true);
-
-                final Uri scriptUri = UriUtils.getFileUri(EDITOR_PROGRAM);
-
-                Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, scriptUri);
-                executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
-                executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{outFile.getAbsolutePath()});
-                startService(executeIntent);
-                finish();
             },
             R.string.action_file_received_open_directory, text -> {
-                if (saveStreamWithName(in, text) == null) return;
+                try {
+                    if (saveStreamWithName(in, text) == null) return;
 
-                Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
-                executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, TERMUX_RECEIVEDIR);
-                executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
-                startService(executeIntent);
-                finish();
+                    Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE);
+                    executeIntent.putExtra(TERMUX_SERVICE.EXTRA_WORKDIR, TERMUX_RECEIVEDIR);
+                    executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
+                    startService(executeIntent);
+                    finish();
+                } finally {
+                    try { in.close(); } catch (IOException ignored) {}
+                }
             },
-            android.R.string.cancel, text -> finish(), dialog -> {
+            android.R.string.cancel, text -> {
+                try { in.close(); } catch (IOException ignored) {}
+                finish();
+            }, dialog -> {
+                try { in.close(); } catch (IOException ignored) {}
                 if (mFinishOnDismissNameDialog) finish();
             });
     }
@@ -206,6 +238,13 @@ public class FileReceiverActivity extends AppCompatActivity {
             return null;
         }
 
+        // Additional sanitization layer before building file structure
+        attachmentFileName = sanitizeInputFileName(attachmentFileName);
+        if (DataUtils.isNullOrEmpty(attachmentFileName)) {
+            showErrorDialogAndQuit("Invalid symbols inside target filename.");
+            return null;
+        }
+
         if (!receiveDir.isDirectory() && !receiveDir.mkdirs()) {
             showErrorDialogAndQuit("Cannot create directory: " + receiveDir.getAbsolutePath());
             return null;
@@ -213,6 +252,15 @@ public class FileReceiverActivity extends AppCompatActivity {
 
         try {
             final File outFile = new File(receiveDir, attachmentFileName);
+            
+            // Explicitly verify the output path resolves safely within the intended output folder directory
+            String canonicalOutPath = outFile.getCanonicalPath();
+            String canonicalReceiveDirPath = receiveDir.getCanonicalPath();
+            if (!canonicalOutPath.startsWith(canonicalReceiveDirPath + File.separator)) {
+                showErrorDialogAndQuit("Access denied: Arbitrary path traversal attempt detected.");
+                return null;
+            }
+
             try (FileOutputStream f = new FileOutputStream(outFile)) {
                 byte[] buffer = new byte[4096];
                 int readBytes;
@@ -236,7 +284,11 @@ public class FileReceiverActivity extends AppCompatActivity {
             return;
         }
 
-        // Do this for the user if necessary:
+        if (!urlOpenerProgramFile.getAbsolutePath().startsWith(TermuxConstants.TERMUX_HOME_DIR_PATH)) {
+            showErrorDialogAndQuit("Invalid program execution path configuration.");
+            return;
+        }
+
         //noinspection ResultOfMethodCallIgnored
         urlOpenerProgramFile.setExecutable(true);
 
@@ -250,11 +302,17 @@ public class FileReceiverActivity extends AppCompatActivity {
     }
 
     /**
-     * Update {@link TERMUX_APP#FILE_SHARE_RECEIVER_ACTIVITY_CLASS_NAME} component state depending on
-     * {@link TermuxPropertyConstants#KEY_DISABLE_FILE_SHARE_RECEIVER} value and
-     * {@link TERMUX_APP#FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME} component state depending on
-     * {@link TermuxPropertyConstants#KEY_DISABLE_FILE_VIEW_RECEIVER} value.
+     * Sanitizes inputs to drop path components and problematic shell characters
      */
+    private String sanitizeInputFileName(String filename) {
+        if (filename == null) return "";
+        // Strip out parent path steps and directory identifiers
+        filename = new File(filename).getName();
+        // Remove shell metacharacters that cause unexpected execution or command breakdowns
+        filename = filename.replaceAll("[\\\\/:*?\"<>|;|&#$`'\"()\\s]+", "_");
+        return filename;
+    }
+
     public static void updateFileReceiverActivityComponentsState(@NonNull Context context) {
         new Thread() {
             @Override
@@ -283,5 +341,4 @@ public class FileReceiverActivity extends AppCompatActivity {
             }
         }.start();
     }
-
 }

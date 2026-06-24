@@ -37,7 +37,6 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     private static final File BASE_DIR = TermuxConstants.TERMUX_HOME_DIR;
 
-
     // The default columns to return information about a root if no specific
     // columns are requested in a query.
     private static final String[] DEFAULT_ROOT_PROJECTION = new String[]{
@@ -90,8 +89,11 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
     public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder) throws FileNotFoundException {
         final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
         final File parent = getFileForDocId(parentDocumentId);
-        for (File file : parent.listFiles()) {
-            includeFile(result, null, file);
+        File[] children = parent.listFiles();
+        if (children != null) {
+            for (File file : children) {
+                includeFile(result, null, file);
+            }
         }
         return result;
     }
@@ -117,11 +119,20 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     @Override
     public String createDocument(String parentDocumentId, String mimeType, String displayName) throws FileNotFoundException {
+        // Prevent directory traversal attacks inside the display name
+        if (displayName != null && (displayName.contains("/") || displayName.contains("\\"))) {
+            throw new FileNotFoundException("Invalid display name");
+        }
+
         File newFile = new File(parentDocumentId, displayName);
         int noConflictId = 2;
         while (newFile.exists()) {
             newFile = new File(parentDocumentId, displayName + " (" + noConflictId++ + ")");
         }
+
+        // Final sanity check to ensure the new file resolves inside the sandbox
+        getFileForDocId(newFile.getAbsolutePath());
+
         try {
             boolean succeeded;
             if (Document.MIME_TYPE_DIR.equals(mimeType)) {
@@ -168,16 +179,22 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         while (!pending.isEmpty() && result.getCount() < MAX_SEARCH_RESULTS) {
             final File file = pending.removeFirst();
             // Avoid directories outside the $HOME directory linked with symlinks (to avoid e.g. search
-            // through the whole SD card).
+            // through the whole SD card). Ensure boundary checks are strict.
             boolean isInsideHome;
             try {
-                isInsideHome = file.getCanonicalPath().startsWith(TermuxConstants.TERMUX_HOME_DIR_PATH);
+                String canonicalPath = file.getCanonicalPath();
+                String homePath = new File(TermuxConstants.TERMUX_HOME_DIR_PATH).getCanonicalPath();
+                isInsideHome = canonicalPath.startsWith(homePath + File.separator) || canonicalPath.equals(homePath);
             } catch (IOException e) {
-                isInsideHome = true;
+                // Fail-closed mechanism; if path resolution fails, deny access
+                isInsideHome = false;
             }
             if (isInsideHome) {
                 if (file.isDirectory()) {
-                    Collections.addAll(pending, file.listFiles());
+                    File[] children = file.listFiles();
+                    if (children != null) {
+                        Collections.addAll(pending, children);
+                    }
                 } else {
                     if (file.getName().toLowerCase().contains(query)) {
                         includeFile(result, null, file);
@@ -191,7 +208,11 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     @Override
     public boolean isChildDocument(String parentDocumentId, String documentId) {
-        return documentId.startsWith(parentDocumentId);
+        if (documentId == null || parentDocumentId == null) return false;
+        if (documentId.equals(parentDocumentId)) return true;
+        
+        String separator = parentDocumentId.endsWith(File.separator) ? "" : File.separator;
+        return documentId.startsWith(parentDocumentId + separator);
     }
 
     /**
@@ -206,10 +227,24 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
 
     /**
      * Get the file given a document id (the reverse of {@link #getDocIdForFile(File)}).
+     * Enforces sandbox boundaries to prevent symlink traversal and directory confusion attacks.
      */
     private static File getFileForDocId(String docId) throws FileNotFoundException {
         final File f = new File(docId);
         if (!f.exists()) throw new FileNotFoundException(f.getAbsolutePath() + " not found");
+
+        try {
+            String canonicalPath = f.getCanonicalPath();
+            String homePath = new File(TermuxConstants.TERMUX_HOME_DIR_PATH).getCanonicalPath();
+            
+            // Validate that the file strictly resolves inside the Termux home directory
+            if (!canonicalPath.startsWith(homePath + File.separator) && !canonicalPath.equals(homePath)) {
+                throw new FileNotFoundException("Access denied: Target resolves outside Termux sandbox.");
+            }
+        } catch (IOException e) {
+            throw new FileNotFoundException("Failed to resolve canonical path for sandbox validation.");
+        }
+
         return f;
     }
 
@@ -249,7 +284,9 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         } else if (file.canWrite()) {
             flags |= Document.FLAG_SUPPORTS_WRITE;
         }
-        if (file.getParentFile().canWrite()) flags |= Document.FLAG_SUPPORTS_DELETE;
+        if (file.getParentFile() != null && file.getParentFile().canWrite()) {
+            flags |= Document.FLAG_SUPPORTS_DELETE;
+        }
 
         final String displayName = file.getName();
         final String mimeType = getMimeType(file);
@@ -264,5 +301,4 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         row.add(Document.COLUMN_FLAGS, flags);
         row.add(Document.COLUMN_ICON, R.mipmap.ic_launcher);
     }
-
 }
