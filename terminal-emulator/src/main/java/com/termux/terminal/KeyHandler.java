@@ -248,6 +248,7 @@ public final class KeyHandler {
                 // This is back-tab when shifted:
                 return (keyMode & KEYMOD_SHIFT) == 0 ? "\011" : "\033[Z";
             case KEYCODE_ENTER:
+                if ((keyMode & (KEYMOD_SHIFT | KEYMOD_CTRL)) != 0) return "\n";
                 return ((keyMode & KEYMOD_ALT) == 0) ? "\r" : "\033\r";
 
             case KEYCODE_NUMPAD_ENTER:
