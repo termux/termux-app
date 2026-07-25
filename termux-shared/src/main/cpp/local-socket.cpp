@@ -82,7 +82,7 @@ string get_process_cmdline(const pid_t pid) {
     char buf[BUFSIZ];
     size_t len;
     char procfile[BUFSIZ];
-    sprintf(procfile, "/proc/%d/cmdline", pid);
+    snprintf(procfile, sizeof(procfile), "/proc/%d/cmdline", pid);
     FILE *fp = fopen(procfile, "rb");
     if (fp) {
         while ((len = fread(buf, 1, sizeof(buf), fp)) > 0) {
