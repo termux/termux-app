@@ -99,16 +99,15 @@ static int create_subprocess(JNIEnv* env,
         if (envp) for (; *envp; ++envp) putenv(*envp);
 
         if (chdir(cwd) != 0) {
-            char* error_message;
-            // No need to free asprintf()-allocated memory since doing execvp() or exit() below.
-            if (asprintf(&error_message, "chdir(\"%s\")", cwd) == -1) error_message = "chdir()";
+            char error_message[256];
+            snprintf(error_message, sizeof(error_message), "chdir(\"%s\")", cwd);
             perror(error_message);
             fflush(stderr);
         }
         execvp(cmd, argv);
         // Show terminal output about failing exec() call:
-        char* error_message;
-        if (asprintf(&error_message, "exec(\"%s\")", cmd) == -1) error_message = "exec()";
+        char error_message[256];
+        snprintf(error_message, sizeof(error_message), "exec(\"%s\")", cmd);
         perror(error_message);
         _exit(1);
     }
@@ -130,7 +129,7 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
     jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
     char** argv = NULL;
     if (size > 0) {
-        argv = (char**) malloc((size + 1) * sizeof(char*));
+        argv = (char**) calloc((size + 1), sizeof(char*));
         if (!argv) return throw_runtime_exception(env, "Couldn't allocate argv array");
         for (int i = 0; i < size; ++i) {
             jstring arg_java_string = (jstring) (*env)->GetObjectArrayElement(env, args, i);
@@ -145,7 +144,7 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
     size = envVars ? (*env)->GetArrayLength(env, envVars) : 0;
     char** envp = NULL;
     if (size > 0) {
-        envp = (char**) malloc((size + 1) * sizeof(char *));
+        envp = (char**) calloc((size + 1), sizeof(char*));
         if (!envp) return throw_runtime_exception(env, "malloc() for envp array failed");
         for (int i = 0; i < size; ++i) {
             jstring env_java_string = (jstring) (*env)->GetObjectArrayElement(env, envVars, i);
