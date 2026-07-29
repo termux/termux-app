@@ -6,3 +6,12 @@ private void disableDangerousSequences() {
     // Also disable Device Control String (DCS) entirely:
     mEscapeState = ESC_NONE; // This is simplistic – better to add a flag.
 }
+public static final int DEFAULT_TERMINAL_TRANSCRIPT_ROWS = 500;
+
+
+private void setDecsetinternalBit(int bit, boolean set) {
+    if (bit == DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE || bit == DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT) {
+        return; // never allow
+    }
+    // else normal handling
+}
