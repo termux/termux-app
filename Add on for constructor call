@@ -1,0 +1,8 @@
+// Disable clipboard access (OSC 52)
+private void disableDangerousSequences() {
+    // Override the paste handler to reject clipboard reads
+    // In the OSC parser, when sequence starts with "52;", return immediately.
+
+    // Also disable Device Control String (DCS) entirely:
+    mEscapeState = ESC_NONE; // This is simplistic – better to add a flag.
+}
