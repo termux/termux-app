@@ -1,0 +1,1 @@
+bash, coreutils, dash, grep, sed, gzip, tar, xz-utils, openssh-client, git, vim, python, android-tools (adb, fastboot), curl, wget (opt-in)
