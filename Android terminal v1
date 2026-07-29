@@ -1,0 +1,65 @@
+plugins {
+    id "com.android.application"
+}
+
+ext {
+    packageVariant = "apt-android-7"
+}
+
+android {
+    namespace "com.termux"
+
+    compileSdk 35
+    ndkVersion = "27.0.12077973" // Use latest NDK
+
+    defaultConfig {
+        applicationId "com.termux.hardened"
+        minSdk 35
+        targetSdk 35
+        versionCode 1
+        versionName "0.1.0-hardened"
+
+        // Only arm64 – reduces APK size and attack surface
+        ndk { abiFilters "arm64-v8a" }
+
+        buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"${packageVariant}\""
+    }
+
+    // No split APKs – simpler
+    splits {
+        abi { enable false }
+    }
+
+    dependencies {
+        // Keep only what's essential
+        implementation "androidx.core:core:1.13.1"
+        implementation "androidx.preference:preference:1.2.1"
+        implementation "androidx.annotation:annotation:1.9.0"
+        // Remove: guava, markwon, material, drawerlayout, viewpager, listenablefuture
+        implementation project(":terminal-view")
+        implementation project(":termux-shared")
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false // Easier debugging
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/cpp/Android.mk"
+        }
+    }
+
+    // Disable features you don't need
+    buildFeatures { buildConfig true }
+}
+
+// Remove downloadBootstraps logic – use pre-downloaded bootstrap archives inside APK
