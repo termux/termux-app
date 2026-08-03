@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    ]>
+
+<resources>
+
+    <string name="application_name">&TERMUX_APP_NAME;</string>
+    <string name="shared_user_label">&TERMUX_APP_NAME; 使用者</string>
+
+    <string name="action_new_session">新增工作階段</string>
+    <string name="action_new_session_failsafe">安全模式</string>
+    <string name="title_max_terminals_reached">已達終端機數量上限</string>
+    <string name="msg_max_terminals_reached">請先關閉現有工作階段再建立新的。</string>
+
+    <string name="title_rename_session">設定工作階段名稱</string>
+    <string name="action_rename_session_confirm">設定</string>
+    <string name="title_create_named_session">新增命名工作階段</string>
+    <string name="action_create_named_session_confirm">建立</string>
+
+    <string name="action_toggle_soft_keyboard">鍵盤</string>
+
+    <string name="msg_enabling_terminal_toolbar">正在啟用終端機工具列</string>
+    <string name="msg_disabling_terminal_toolbar">正在停用終端機工具列</string>
+
+    <string name="action_select_url">選擇 URL</string>
+    <string name="title_select_url_dialog">點擊 URL 複製，長按開啟</string>
+    <string name="title_select_url_none_found">終端機中找不到 URL。</string>
+    <string name="msg_select_url_copied_to_clipboard">URL 已複製到剪貼簿</string>
+
+    <string name="action_share_transcript">分享工作階段記錄</string>
+    <string name="title_share_transcript">終端機工作階段記錄</string>
+    <string name="title_share_transcript_with">將工作階段記錄傳送到：</string>
+
+    <string name="action_share_selected_text">分享選取文字</string>
+    <string name="title_share_selected_text">終端機文字</string>
+    <string name="title_share_selected_text_with">將選取文字傳送到：</string>
+
+    <string name="action_autofill_username">自動填入使用者名稱</string>
+    <string name="action_autofill_password">自動填入密碼</string>
+
+    <string name="action_reset_terminal">重置</string>
+    <string name="msg_terminal_reset">終端機已重置</string>
+
+    <string name="action_kill_process">結束處理程序 (%d)</string>
+    <string name="title_confirm_kill_process">確定要結束此工作階段嗎？</string>
+
+    <string name="action_style_terminal">字體樣式</string>
+    <string name="action_toggle_keep_screen_on">保持螢幕開啟</string>
+    <string name="action_open_help">說明</string>
+    <string name="action_open_settings">設定</string>
+
+    <string name="action_report_issue">回報問題</string>
+    <string name="msg_generating_report">正在產生回報報告</string>
+    <string name="msg_add_termux_debug_info">在回報報告中附加 Termux 除錯資訊？</string>
+
+    <string name="permission_run_command_label">在 &TERMUX_APP_NAME; 環境中執行命令</string>
+    <string name="permission_run_command_description">在 &TERMUX_APP_NAME; 環境中執行任意命令並存取檔案</string>
+
+    <string name="bootstrap_installer_body">正在安裝引導程式套件…</string>
+    <string name="bootstrap_error_title">無法安裝引導程式</string>
+    <string name="bootstrap_error_body">&TERMUX_APP_NAME; 無法安裝引導程式套件。</string>
+    <string name="bootstrap_error_abort">放棄</string>
+    <string name="bootstrap_error_try_again">重試</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; 只能以主要使用者身分執行。\n&TERMUX_APP_NAME; 引導程式二進位檔使用硬編碼的 $PREFIX 路徑，只能安裝在以下路徑：\n%1$s。</string>
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; 無法安裝在裝置的可攜式/外部/可移除 SD 卡上。\n引導程式二進位檔使用硬編碼的 $PREFIX 路徑，只能安裝在以下路徑：\n%1$s。</string>
+
+    <string name="error_styling_not_installed">未安裝 &TERMUX_STYLING_APP_NAME; 外掛。</string>
+    <string name="action_styling_install">安裝</string>
+
+    <string name="notification_action_exit">結束</string>
+    <string name="notification_action_wake_lock">取得喚醒鎖</string>
+    <string name="notification_action_wake_unlock">釋放喚醒鎖</string>
+
+    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME; 需要「懸浮窗」權限才能從背景啟動終端機工作階段（Android >= 10）。請到 設定 -> 應用程式 -> &TERMUX_APP_NAME; -> 進階 中授權。</string>
+
+    <string name="error_termux_service_invalid_execution_command_runner">TermuxService 執行命令執行器無效：`%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_runner">TermuxService 執行命令執行器不支援：`%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_shell_create_mode">TermuxService shell 建立模式不支援：`%1$s`</string>
+    <string name="error_termux_service_execution_command_shell_name_unset">shell 名稱未設定，但傳入了 `%1$s` shell 建立模式</string>
+
+    <string name="error_run_command_service_invalid_intent_action">RunCommandService 的 intent action 無效：`%1$s`</string>
+    <string name="error_run_command_service_invalid_execution_command_runner">RunCommandService 執行命令執行器無效：`%1$s`</string>
+    <string name="error_run_command_service_mandatory_extra_missing">RunCommandService 缺少必需的 extra："%1$s"</string>
+    <string name="error_run_command_service_api_help">請造訪 %1$s 了解更多 RUN_COMMAND intent 用法。</string>
+
+    <string name="title_file_received">儲存檔案到 ~/downloads/</string>
+    <string name="action_file_received_edit">編輯</string>
+    <string name="action_file_received_open_directory">開啟目錄</string>
+
+    <string name="error_termux_service_start_failed_general">無法啟動 TermuxService。請查看 logcat 取得例外資訊。</string>
+    <string name="error_termux_service_start_failed_bg">因 Android 背景限制，應用程式處於背景時無法啟動 TermuxService。</string>
+
+    <string name="title_activity_termux_settings">&TERMUX_APP_NAME; 設定</string>
+
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_summary">&TERMUX_APP_NAME; 應用程式偏好設定</string>
+
+    <string name="termux_debugging_preferences_title">除錯</string>
+    <string name="termux_debugging_preferences_summary">除錯相關設定</string>
+
+    <string name="termux_logging_header">記錄</string>
+    <string name="termux_log_level_title">記錄等級</string>
+
+    <string name="termux_terminal_view_key_logging_enabled_title">終端機按鍵記錄</string>
+    <string name="termux_terminal_view_key_logging_enabled_off">記錄中不會包含終端機按鍵項目。（預設）</string>
+    <string name="termux_terminal_view_key_logging_enabled_on">logcat 記錄中會包含終端機按鍵項目。這些記錄非常詳細，正常情況下應停用以免影響效能。</string>
+
+    <string name="termux_plugin_error_notifications_enabled_title">外掛錯誤通知</string>
+    <string name="termux_plugin_error_notifications_enabled_off">停用外掛錯誤閃爍與通知。</string>
+    <string name="termux_plugin_error_notifications_enabled_on">顯示外掛錯誤閃爍與通知。（預設）</string>
+
+    <string name="termux_crash_report_notifications_enabled_title">當機報告通知</string>
+    <string name="termux_crash_report_notifications_enabled_off">停用當機報告通知。</string>
+    <string name="termux_crash_report_notifications_enabled_on">顯示當機報告通知。（預設）</string>
+
+    <string name="termux_terminal_io_preferences_title">終端機 I/O</string>
+    <string name="termux_terminal_io_preferences_summary">終端機輸入輸出設定</string>
+
+    <string name="termux_keyboard_header">鍵盤</string>
+    <string name="termux_soft_keyboard_enabled_title">啟用軟體鍵盤</string>
+    <string name="termux_soft_keyboard_enabled_off">軟體鍵盤將被停用。</string>
+    <string name="termux_soft_keyboard_enabled_on">軟體鍵盤將被啟用。（預設）</string>
+
+    <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">僅在無硬體鍵盤時啟用軟體鍵盤</string>
+    <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">即使已連接硬體鍵盤，軟體鍵盤也會啟用。（預設）</string>
+    <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">僅在未連接硬體鍵盤時啟用軟體鍵盤。</string>
+
+    <string name="termux_terminal_view_preferences_title">終端機檢視</string>
+    <string name="termux_terminal_view_preferences_summary">終端機檢視相關設定</string>
+
+    <string name="termux_terminal_view_view_header">檢視</string>
+    <string name="termux_terminal_view_terminal_margin_adjustment_title">終端機邊界調整</string>
+    <string name="termux_terminal_view_terminal_margin_adjustment_off">停用終端機邊界調整。</string>
+    <string name="termux_terminal_view_terminal_margin_adjustment_on">啟用終端機邊界調整。可尝试修復軟體鍵盤遮擋部分終端機檢視的問題。如果導致螢幕閃爍，請停用此功能。（預設）</string>
+
+    <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
+    <string name="termux_api_preferences_summary">&TERMUX_API_APP_NAME; 應用程式偏好設定</string>
+
+    <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_float_preferences_summary">&TERMUX_FLOAT_APP_NAME; 應用程式偏好設定</string>
+
+    <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_tasker_preferences_summary">&TERMUX_TASKER_APP_NAME; 應用程式偏好設定</string>
+
+    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
+    <string name="termux_widget_preferences_summary">&TERMUX_WIDGET_APP_NAME; 應用程式偏好設定</string>
+
+    <string name="about_preference_title">關於</string>
+    <string name="donate_preference_title">贊助</string>
+
+</resources>

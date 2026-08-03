@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.termux/files/usr">
+    ]>
+
+<resources>
+
+    <string name="msg_directory_absolute_path">%1$s 目錄絕對路徑："%2$s"</string>
+
+    <string name="error_app_not_installed_or_disabled_warning">%1$s (%2$s) 應用程式未安裝或已被停用。</string>
+    <string name="error_get_package_context_failed_title">無法取得應用程式上下文</string>
+    <string name="error_get_package_context_failed_message">無法取得 "%1$s" 套件的應用程式上下文。可能是因為該應用程式套件未安裝，或 APK 簽章與目前應用程式不同。</string>
+    <string name="error_get_package_context_failed_help_url_message">詳情請查看 %1$s。</string>
+    <string name="error_get_component_state_failed">無法取得 %1$s/%2$s 元件狀態</string>
+    <string name="error_enable_component_failed">無法啟用 %1$s/%2$s 元件</string>
+    <string name="error_disable_component_failed">無法停用 %1$s/%2$s 元件</string>
+
+    <string name="message_sudo_please_grant_permissions">請授予請求的權限</string>
+    <string name="error_failed_to_request_permissions">請求權限失敗（請求碼 %1$d）：%2$s</string>
+    <string name="error_attempted_to_check_for_permissions_not_requested">嘗試檢查未在清單中請求的權限：%1$s</string>
+    <string name="error_attempted_to_ask_for_permissions_not_requested">嘗試要求未在清單中請求的權限：%1$s</string>
+    <string name="error_has_not_requested_legacy_external_storage">"%1$s" 套件的目標 SDK 版本為 %2$d，運行在 SDK %3$d 的裝置上，但未在清單中設定 requestLegacyExternalStorage 為 true</string>
+    <string name="msg_requires_dump_and_package_usage_stats_permissions">需要 DUMP 和 PACKAGE_USAGE_STATS 權限</string>
+    <string name="error_display_over_other_apps_permission_not_granted">%1$s 需要「懸浮窗」權限才能從背景啟動活動和服務（Android >= 10）。請在 Android 設定 -> 應用程式 -> %1$s -> 進階 -> 懸浮窗 中授權。該權限在不同裝置上名稱可能不同，例如小米裝置稱為「在背景執行時顯示彈窗」。如有裝置相關問題請查看 https://dontkillmyapp.com 。</string>
+
+    <string name="error_allow_external_apps_ungranted">%1$s 要求 %2$s 檔案中的 allow-external-apps 屬性設為 true。</string>
+
+    <string name="title_report_text">報告文字</string>
+    <string name="msg_report_truncated">**報告已截斷**\n\n報告內容過長無法在此顯示。請使用選項選單（右上角三個點）中的「儲存到檔案」選項，在外部文字編輯器中查看。\n\n##\n\n</string>
+
+    <string name="title_share_with">分享到</string>
+    <string name="title_open_url_with">開啟 URL 使用</string>
+    <string name="msg_storage_permission_not_granted">儲存空間權限未授予。</string>
+    <string name="msg_file_saved_successfully">%1$s 檔案已成功儲存至 "%2$s"</string>
+
+    <string name="error_sending_sigkill_to_process">正在應請求或 Android 結束執行服務時向處理程序發送 SIGKILL</string>
+    <string name="error_executable_unset">Shell 命令的可執行檔未設定："%1$s"</string>
+    <string name="error_execution_cancelled">執行服務已被終止，執行已取消</string>
+    <string name="error_failed_to_execute_termux_session_command">無法執行 "%1$s" termux 工作階段命令</string>
+    <string name="error_failed_to_execute_app_shell_command">無法執行 "%1$s" 應用程式 shell 命令</string>
+    <string name="error_exception_received_while_executing_termux_session_command">執行 "%1$s" termux 工作階段命令時收到例外。\n例外：%2$s</string>
+    <string name="error_exception_received_while_executing_app_shell_command">執行 "%1$s" 應用程式 shell 命令時收到例外。\n例外：%2$s</string>
+
+    <string name="msg_report_issue">
+        如果您要回報此問題，請從選項選單（右上角三個點）複製文字，然後在以下任一連結提交問題。\n\n
+        如果您回報的是 Termux 應用程式當機，請提供導致當機的相關操作詳情以及如何重現（如果可以的話）。\n\n
+        如果您在 GitHub 上提交，請提交到對應報告所屬的存放庫。僅包含螢幕截圖而非複製文字或檔案的問題
+        **很可能會被自動關閉/刪除**。您可以選擇刪除您認為私密或不想分享的裝置特定資訊或與問題無關的內容。\n\n
+        我們不為任何駭客相關的工具/指令碼提供支援。透過郵件、GitHub 或其他官方 Termux 社群論壇提出關於這些問題
+        **很可能會被自動關閉/刪除**，甚至可能導致**暫時或永久封禁**。詳情請查看 %1$s/wiki/Hacking。</string>
+
+    <string name="msg_termux_app_required_by_app">%1$s 應用程式需要 &TERMUX_APP_NAME; 來執行 termux 命令。</string>
+    <string name="error_termux_app_package_context_not_accessible">無法存取 &TERMUX_APP_NAME; 應用程式（套件上下文）。</string>
+    <string name="error_termux_prefix_dir_path_not_accessible">無法存取 &TERMUX_APP_NAME; 應用程式的 $PREFIX 目錄。
+        可能是因為尚未安裝或設定 &TERMUX_APP_NAME; 應用程式，或者 &TERMUX_APP_NAME; 應用程式和 %1$s 應用程式因從不同來源安裝而具有不同的 APK 簽章。
+        也可能是因為 &TERMUX_APP_NAME; $PREFIX 目錄 "&TERMUX_PREFIX_DIR_PATH;" 不存在，或沒有讀寫執行權限。</string>
+
+    <string name="action_yes">是</string>
+    <string name="action_no">否</string>
+    <string name="action_copy">複製</string>
+    <string name="action_share">分享</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_save_to_file">儲存到檔案</string>
+
+    <string name="msg_storage_permission_granted_on_request">儲存空間權限已被使用者授予</string>
+    <string name="msg_storage_permission_not_granted_on_request">儲存空間權限已被使用者拒絕</string>
+
+    <string name="action_enable_launcher_icon">啟用桌面圖示</string>
+    <string name="action_disable_launcher_icon">停用桌面圖示</string>
+    <string name="msg_enabling_launcher_icon">正在啟用 %1$s 應用程式桌面圖示</string>
+    <string name="msg_disabling_launcher_icon">正在停用 %1$s 應用程式桌面圖示</string>
+    <string name="setting_launcher_icon_title">啟用桌面圖示</string>
+    <string name="setting_launcher_icon_enabled_off">桌面圖示將被停用。</string>
+    <string name="setting_launcher_icon_enabled_on">桌面圖示將被啟用。（預設）</string>
+
+    <string name="log_level_title">記錄等級</string>
+    <string name="log_level_off">關閉</string>
+    <string name="log_level_normal">普通</string>
+    <string name="log_level_debug">除錯</string>
+    <string name="log_level_verbose">詳細</string>
+    <string name="log_level_unknown">*未知*</string>
+    <string name="log_level_value">logcat 記錄等級已設定為 "%1$s"</string>
+
+</resources>
