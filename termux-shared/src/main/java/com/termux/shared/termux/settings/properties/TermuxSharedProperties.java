@@ -598,6 +598,10 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENFORCE_CHAR_BASED_INPUT, true);
     }
 
+    public boolean isEnablingImeComposing() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENABLE_IME_COMPOSING, true);
+    }
+
     public boolean shouldExtraKeysTextBeAllCaps() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_EXTRA_KEYS_TEXT_ALL_CAPS, true);
     }
