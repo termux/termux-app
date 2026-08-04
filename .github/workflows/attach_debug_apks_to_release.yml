@@ -1,84 +1,182 @@
-name: Attach Debug APKs To Release
+name: Attach Signed APK To Release
 
 on:
   release:
     types:
       - published
 
+permissions:
+  contents: write
+
 jobs:
-  attach-apks:
+  build-and-attach:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        package_variant: [ apt-android-7, apt-android-5 ]
+    timeout-minutes: 45
+
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TERMUX_PACKAGE_VARIANT: apt-android-7
+      TERMUX_SPLIT_APKS_FOR_RELEASE_BUILDS: "0"
 
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v6
+      - name: Check out release tag
+        uses: actions/checkout@v4
         with:
-          ref: ${{ env.GITHUB_REF }}
+          ref: ${{ github.event.release.tag_name }}
 
-      - name: Build and attach APKs to release
-        shell: bash {0}
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Validate signing secrets
+        shell: bash
         env:
-          PACKAGE_VARIANT: ${{ matrix.package_variant }}
+          KEYSTORE_BASE64: ${{ secrets.TERMUX_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.TERMUX_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TERMUX_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.TERMUX_RELEASE_KEY_PASSWORD }}
         run: |
-          exit_on_error() {
-              echo "$1"
-              echo "Deleting '$RELEASE_VERSION_NAME' release and '$GITHUB_REF' tag"
-              hub release delete "$RELEASE_VERSION_NAME"
-              git push --delete origin "$GITHUB_REF"
-              exit 1
+          set -euo pipefail
+
+          test -n "$KEYSTORE_BASE64" || {
+            echo "::error::TERMUX_RELEASE_KEYSTORE_BASE64 is not configured."
+            exit 1
           }
 
-          echo "Setting vars"
-          RELEASE_VERSION_NAME="${GITHUB_REF/refs\/tags\//}"
-          if ! printf "%s" "${RELEASE_VERSION_NAME/v/}" | grep -qP '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'; then
-           exit_on_error "The versionName '${RELEASE_VERSION_NAME/v/}' is not a valid version as per semantic version '2.0.0' spec in the format 'major.minor.patch(-prerelease)(+buildmetadata)'. https://semver.org/spec/v2.0.0.html."
+          test -n "$STORE_PASSWORD" || {
+            echo "::error::TERMUX_RELEASE_STORE_PASSWORD is not configured."
+            exit 1
+          }
+
+          test -n "$KEY_ALIAS" || {
+            echo "::error::TERMUX_RELEASE_KEY_ALIAS is not configured."
+            exit 1
+          }
+
+          test -n "$KEY_PASSWORD" || {
+            echo "::error::TERMUX_RELEASE_KEY_PASSWORD is not configured."
+            exit 1
+          }
+
+      - name: Restore signing keystore
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TERMUX_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.TERMUX_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TERMUX_RELEASE_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+
+          KEYSTORE_PATH="$RUNNER_TEMP/termux-defsix-release.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          chmod 600 "$KEYSTORE_PATH"
+
+          keytool -list \
+            -keystore "$KEYSTORE_PATH" \
+            -storepass "$STORE_PASSWORD" \
+            -alias "$KEY_ALIAS" > /dev/null
+
+          echo "TERMUX_RELEASE_KEYSTORE=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+
+      - name: Set release version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          VERSION_NAME="${RELEASE_TAG#v}"
+
+          echo "TERMUX_APP_VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "TERMUX_APK_VERSION_TAG=$RELEASE_TAG-release" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        env:
+          TERMUX_RELEASE_STORE_PASSWORD: ${{ secrets.TERMUX_RELEASE_STORE_PASSWORD }}
+          TERMUX_RELEASE_KEY_ALIAS: ${{ secrets.TERMUX_RELEASE_KEY_ALIAS }}
+          TERMUX_RELEASE_KEY_PASSWORD: ${{ secrets.TERMUX_RELEASE_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Locate and rename APK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APK_DIR="app/build/outputs/apk/release"
+          SOURCE_APK="$(find "$APK_DIR" -maxdepth 1 -type f -name '*_universal.apk' -print -quit)"
+
+          if [ -z "$SOURCE_APK" ]; then
+            echo "::error::No universal release APK was found in $APK_DIR."
+            find "$APK_DIR" -maxdepth 1 -type f -print || true
+            exit 1
           fi
 
-          APK_DIR_PATH="./app/build/outputs/apk/debug"
-          APK_VERSION_TAG="$RELEASE_VERSION_NAME+${{ env.PACKAGE_VARIANT }}-github-debug"
-          APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
+          RELEASE_APK="$RUNNER_TEMP/termux-${RELEASE_TAG}.apk"
+          cp "$SOURCE_APK" "$RELEASE_APK"
 
-          echo "Building APKs for 'APK_VERSION_TAG' release"
-          export TERMUX_APK_VERSION_TAG="$APK_VERSION_TAG" # Used by app/build.gradle
-          export TERMUX_PACKAGE_VARIANT="${{ env.PACKAGE_VARIANT }}" # Used by app/build.gradle
-          if ! ./gradlew assembleDebug; then
-            exit_on_error "Build failed for '$APK_VERSION_TAG' release."
+          echo "RELEASE_APK=$RELEASE_APK" >> "$GITHUB_ENV"
+          echo "RELEASE_APK_NAME=termux-${RELEASE_TAG}.apk" >> "$GITHUB_ENV"
+
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" \
+            -type f \
+            -name apksigner \
+            -print | sort -V | tail -n 1)"
+
+          if [ -z "$APKSIGNER" ]; then
+            echo "::error::apksigner could not be found."
+            exit 1
           fi
 
-          echo "Validating APKs"
-          for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
-            if ! test -f "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk"; then
-              files_found="$(ls "$APK_DIR_PATH")"
-              exit_on_error "Failed to find built APK at '$APK_DIR_PATH/${APK_BASENAME_PREFIX}_$abi.apk'. Files found: "$'\n'"$files_found"
-            fi
-          done
+          "$APKSIGNER" verify \
+            --verbose \
+            --print-certs \
+            "$RELEASE_APK"
 
-          echo "Generating sha25sums file"
-          if ! (cd "$APK_DIR_PATH"; sha256sum \
-            "${APK_BASENAME_PREFIX}_universal.apk" \
-            "${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
-            "${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
-            "${APK_BASENAME_PREFIX}_x86_64.apk" \
-            "${APK_BASENAME_PREFIX}_x86.apk" \
-            > "${APK_BASENAME_PREFIX}_sha256sums"); then
-            exit_on_error "Generate sha25sums failed for '$APK_VERSION_TAG' release."
+      - name: Generate SHA-256 checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd "$(dirname "$RELEASE_APK")"
+          sha256sum "$RELEASE_APK_NAME" > "$RELEASE_APK_NAME.sha256"
+
+          echo "RELEASE_CHECKSUM=$RELEASE_APK.sha256" >> "$GITHUB_ENV"
+
+      - name: Set release channel
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$RELEASE_TAG" == *"-rc"* ]]; then
+            gh release edit "$RELEASE_TAG" \
+              --prerelease \
+              --latest=false
+          else
+            gh release edit "$RELEASE_TAG" \
+              --prerelease=false \
+              --latest
           fi
 
-          echo "Attaching APKs to github release"
-          if ! hub release edit \
-          -m "" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_universal.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
-          -a "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
-          "$RELEASE_VERSION_NAME"; then
-            exit_on_error "Attach APKs to release failed for '$APK_VERSION_TAG' release."
-          fi
+      - name: Upload signed APK and checksum
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          gh release upload "$RELEASE_TAG" \
+            "$RELEASE_APK" \
+            "$RELEASE_CHECKSUM" \
+            --clobber
