@@ -1,6 +1,8 @@
 package com.termux.app.activities;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -8,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreferenceCompat;
 
 import com.termux.R;
 import com.termux.shared.activities.ReportActivity;
@@ -53,12 +56,16 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class RootPreferencesFragment extends PreferenceFragmentCompat {
+        private static final String FILE_VIEW_RECEIVER_PREFERENCE_KEY = "file_view_receiver_enabled";
+        private static final String FILE_VIEW_RECEIVER_ACTIVITY = ".app.api.file.FileViewReceiverActivity";
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             Context context = getContext();
             if (context == null) return;
 
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+            configureFileViewReceiverPreference(context);
 
             new Thread() {
                 @Override
@@ -73,11 +80,34 @@ public class SettingsActivity extends AppCompatActivity {
             }.start();
         }
 
+        private void configureFileViewReceiverPreference(@NonNull Context context) {
+            SwitchPreferenceCompat preference = findPreference(FILE_VIEW_RECEIVER_PREFERENCE_KEY);
+            if (preference == null) return;
+
+            PackageManager packageManager = context.getPackageManager();
+            ComponentName componentName = new ComponentName(
+                context.getPackageName(), context.getPackageName() + FILE_VIEW_RECEIVER_ACTIVITY);
+
+            int componentState = packageManager.getComponentEnabledSetting(componentName);
+            boolean enabled = componentState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+            preference.setChecked(enabled);
+
+            preference.setOnPreferenceChangeListener((changedPreference, newValue) -> {
+                boolean shouldEnable = Boolean.TRUE.equals(newValue);
+                packageManager.setComponentEnabledSetting(
+                    componentName,
+                    shouldEnable
+                        ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                        : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+                return true;
+            });
+        }
+
         private void configureTermuxAPIPreference(@NonNull Context context) {
             Preference termuxAPIPreference = findPreference("termux_api");
             if (termuxAPIPreference != null) {
                 TermuxAPIAppSharedPreferences preferences = TermuxAPIAppSharedPreferences.build(context, false);
-                // If failed to get app preferences, then likely app is not installed, so do not show its preference
                 termuxAPIPreference.setVisible(preferences != null);
             }
         }
@@ -86,7 +116,6 @@ public class SettingsActivity extends AppCompatActivity {
             Preference termuxFloatPreference = findPreference("termux_float");
             if (termuxFloatPreference != null) {
                 TermuxFloatAppSharedPreferences preferences = TermuxFloatAppSharedPreferences.build(context, false);
-                // If failed to get app preferences, then likely app is not installed, so do not show its preference
                 termuxFloatPreference.setVisible(preferences != null);
             }
         }
@@ -95,7 +124,6 @@ public class SettingsActivity extends AppCompatActivity {
             Preference termuxTaskerPreference = findPreference("termux_tasker");
             if (termuxTaskerPreference != null) {
                 TermuxTaskerAppSharedPreferences preferences = TermuxTaskerAppSharedPreferences.build(context, false);
-                // If failed to get app preferences, then likely app is not installed, so do not show its preference
                 termuxTaskerPreference.setVisible(preferences != null);
             }
         }
@@ -104,7 +132,6 @@ public class SettingsActivity extends AppCompatActivity {
             Preference termuxWidgetPreference = findPreference("termux_widget");
             if (termuxWidgetPreference != null) {
                 TermuxWidgetAppSharedPreferences preferences = TermuxWidgetAppSharedPreferences.build(context, false);
-                // If failed to get app preferences, then likely app is not installed, so do not show its preference
                 termuxWidgetPreference.setVisible(preferences != null);
             }
         }
@@ -146,9 +173,6 @@ public class SettingsActivity extends AppCompatActivity {
             if (donatePreference != null) {
                 String signingCertificateSHA256Digest = PackageUtils.getSigningCertificateSHA256DigestForPackage(context);
                 if (signingCertificateSHA256Digest != null) {
-                    // If APK is a Google Playstore release, then do not show the donation link
-                    // since Termux isn't exempted from the playstore policy donation links restriction
-                    // Check Fund solicitations: https://pay.google.com/intl/en_in/about/policy/
                     String apkRelease = TermuxUtils.getAPKRelease(signingCertificateSHA256Digest);
                     if (apkRelease == null || apkRelease.equals(TermuxConstants.APK_RELEASE_GOOGLE_PLAYSTORE_SIGNING_CERTIFICATE_SHA256_DIGEST)) {
                         donatePreference.setVisible(false);

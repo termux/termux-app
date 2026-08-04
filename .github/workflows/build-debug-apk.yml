@@ -1,0 +1,44 @@
+name: Build debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - patch/remove-view-intent
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: termux-debug-apks
+          path: |
+            app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14

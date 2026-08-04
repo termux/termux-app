@@ -6,6 +6,12 @@
         app:summary="@string/termux_preferences_summary"
         app:fragment="com.termux.app.fragments.settings.TermuxPreferencesFragment"/>
 
+    <SwitchPreferenceCompat
+        app:key="file_view_receiver_enabled"
+        app:title="Show Termux in &quot;Open with&quot; menus"
+        app:summary="Show Termux as an option when opening supported files from other apps."
+        app:defaultValue="false"/>
+
     <Preference
         app:key="termux_api"
         app:title="@string/termux_api_preferences_title"
