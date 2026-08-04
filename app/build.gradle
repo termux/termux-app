@@ -77,26 +77,50 @@ android {
         }
     }
 
-    signingConfigs {
-        debug {
-            storeFile file('testkey_untrusted.jks')
-            keyAlias 'alias'
-            storePassword 'xrj45yWGLbsO7W0v'
-            keyPassword 'xrj45yWGLbsO7W0v'
-        }
+def releaseKeystorePath = System.getenv("TERMUX_RELEASE_KEYSTORE")
+def releaseStorePassword = System.getenv("TERMUX_RELEASE_STORE_PASSWORD")
+def releaseKeyAlias = System.getenv("TERMUX_RELEASE_KEY_ALIAS")
+def releaseKeyPassword = System.getenv("TERMUX_RELEASE_KEY_PASSWORD")
+def releaseSigningConfigured =
+    releaseKeystorePath &&
+    releaseStorePassword &&
+    releaseKeyAlias &&
+    releaseKeyPassword
+
+signingConfigs {
+    debug {
+        storeFile file('testkey_untrusted.jks')
+        keyAlias 'alias'
+        storePassword 'xrj45yWGLbsO7W0v'
+        keyPassword 'xrj45yWGLbsO7W0v'
     }
 
-    buildTypes {
+    if (releaseSigningConfigured) {
         release {
-            minifyEnabled true
-            shrinkResources false // Reproducible builds
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        debug {
-            signingConfig signingConfigs.debug
+            storeFile file(releaseKeystorePath)
+            storePassword releaseStorePassword
+            keyAlias releaseKeyAlias
+            keyPassword releaseKeyPassword
         }
     }
+}
+
+buildTypes {
+    release {
+        minifyEnabled true
+        shrinkResources false
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        if (releaseSigningConfigured) {
+            signingConfig signingConfigs.release
+        } else {
+            logger.lifecycle("Release signing not configured - release APK will not be signed.")
+        } 
+
+    debug {
+        signingConfig signingConfigs.debug
+    }
+}
 
     compileOptions {
         // Flag to enable support for the new language APIs
