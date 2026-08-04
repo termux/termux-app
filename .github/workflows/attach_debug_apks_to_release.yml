@@ -100,7 +100,7 @@ jobs:
           TERMUX_RELEASE_STORE_PASSWORD: ${{ secrets.TERMUX_RELEASE_STORE_PASSWORD }}
           TERMUX_RELEASE_KEY_ALIAS: ${{ secrets.TERMUX_RELEASE_KEY_ALIAS }}
           TERMUX_RELEASE_KEY_PASSWORD: ${{ secrets.TERMUX_RELEASE_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --stacktrace
+        run: ./gradlew downloadBootstraps assembleRelease --stacktrace
 
       - name: Locate and rename APK
         shell: bash
