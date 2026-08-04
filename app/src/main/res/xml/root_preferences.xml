@@ -8,8 +8,8 @@
 
     <SwitchPreferenceCompat
         app:key="file_view_receiver_enabled"
-        app:title="Offer Termux in Open with menus"
-        app:summary="Allow file managers and other apps to open files directly in Termux"
+        app:title="Show Termux in &quot;Open with&quot; menus"
+        app:summary="Show Termux as an option when opening supported files from other apps."
         app:defaultValue="false"/>
 
     <Preference
