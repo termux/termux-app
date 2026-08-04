@@ -138,21 +138,13 @@
             </intent-filter>
         </activity-alias>
 
-        <!--
-        Disabled in this fork.
-
-        The upstream FileViewReceiverActivity registers Termux as a generic
-        ACTION_VIEW handler for application/*, text/*, image/*, audio/* and
-        video/*. This causes Termux to appear in Android "Open with" dialogs.
-
-        FileShareReceiverActivity above remains enabled so ACTION_SEND sharing
-        into Termux continues to work.
-
         <activity-alias
             android:name=".app.api.file.FileViewReceiverActivity"
+            android:enabled="false"
             android:exported="true"
             android:targetActivity=".app.api.file.FileReceiverActivity">
 
+            <!-- Accept multiple file types to let Termux be usable as generic file viewer. -->
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -165,7 +157,6 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity-alias>
-        -->
 
         <provider
             android:name=".filepicker.TermuxDocumentsProvider"
