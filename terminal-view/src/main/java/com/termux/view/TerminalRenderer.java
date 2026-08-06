@@ -240,7 +240,7 @@ public final class TerminalRenderer {
     }
 
     /**
-     * Draw the in-progress IME composing text (e.g. partially composed CJKV) as a preview at the
+     * Draw the in-progress IME composing text (e.g. partially composed CJK) as a preview at the
      * terminal cursor, on top of the already rendered terminal. It uses the same {@link #mTextPaint}
      * and {@link #drawTextRun} code path as normal rendering so the font family, fallback, width
      * scaling and text style (bold/italic/colors/dim) match the on-screen text exactly.

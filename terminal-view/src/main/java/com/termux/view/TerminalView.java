@@ -89,7 +89,7 @@ public final class TerminalView extends View {
     int mCombiningAccent;
 
     /**
-     * The current IME composing text (e.g. partially composed CJKV) shown as a preview at the
+     * The current IME composing text (e.g. partially composed CJK) shown as a preview at the
      * terminal cursor while the user is composing with an InputMethodEditor (IME). Null/empty when
      * nothing is being composed. The terminal only renders text that is committed and echoed back
      * by the program running in the pty, so without this preview the in-progress composition (e.g.
@@ -333,9 +333,9 @@ public final class TerminalView extends View {
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
             if (mClient.shouldEnableImeComposing()) {
-                // General text input so the IME composes (setComposingText), e.g. CJKV,
+                // General text input so the IME composes (setComposingText), e.g. CJK,
                 // with NO_SUGGESTIONS to suppress autocomplete where the IME respects it.
-                // VISIBLE_PASSWORD would suppress suggestions but disables composing (fatal for CJKV).
+                // VISIBLE_PASSWORD would suppress suggestions but disables composing (fatal for CJK).
                 outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
             } else if (mClient.shouldEnforceCharBasedInput()) {
                 // Some keyboards seems do not reset the internal state on TYPE_NULL.
@@ -373,7 +373,7 @@ public final class TerminalView extends View {
                     mClient.logInfo(LOG_TAG, "IME: setComposingText(\"" + text + "\", " + newCursorPosition + ")");
                 }
                 super.setComposingText(text, newCursorPosition);
-                // Show the in-progress composition (e.g. a CJKV syllable being built) as a preview
+                // Show the in-progress composition (e.g. a CJK syllable being built) as a preview
                 // at the terminal cursor. The terminal only renders committed-and-echoed text, so
                 // without this the composing characters would never be visible until commit.
                 setComposingTextPreview(text);
@@ -840,7 +840,7 @@ public final class TerminalView extends View {
         // finalize any in-progress composing now: it commits at the current cursor instead of the
         // preview following the cursor around after it moves. (No-op when nothing is composing.)
         // Modifier keys (shift/ctrl/alt/meta/sym/fn) produce no input and must NOT finalize:
-        // otherwise pressing shift to build a CJKV double consonant (e.g. Korean ㅆ = shift+ㅅ
+        // otherwise pressing shift to build a CJK double consonant (e.g. Korean ㅆ = shift+ㅅ
         // for 했) aborts the in-progress composition (해) — finalize commits it and the posted
         // restartInput clears the IME's composing buffer, so the following ㅅ enters detached.
         if (!KeyEvent.isModifierKey(keyCode)) {
@@ -1100,7 +1100,7 @@ public final class TerminalView extends View {
             // render the text selection handles
             renderTextSelection();
 
-            // render the in-progress IME composing text (e.g. CJKV) preview at the cursor
+            // render the in-progress IME composing text (e.g. CJK) preview at the cursor
             drawComposingText(canvas);
         }
     }
@@ -1147,7 +1147,7 @@ public final class TerminalView extends View {
     }
 
     /**
-     * Draw the current IME composing text (e.g. partially composed CJKV) as a preview at the
+     * Draw the current IME composing text (e.g. partially composed CJK) as a preview at the
      * terminal cursor, on top of the rendered terminal. Delegates to
      * {@link TerminalRenderer#renderComposingText} so the preview uses the exact same paint, font
      * family/fallback, width scaling and text style (bold/italic/colors/dim) as the on-screen text.

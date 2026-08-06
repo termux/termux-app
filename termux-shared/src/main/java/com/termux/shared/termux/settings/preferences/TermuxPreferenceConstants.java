@@ -122,7 +122,7 @@ public final class TermuxPreferenceConstants {
         public static final boolean DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = false;
 
         /**
-         * Defines the key for whether IME composing text (CJKV, etc.) inline preview at the
+         * Defines the key for whether IME composing text (CJK, etc.) inline preview at the
          * cursor is enabled. Default is false (InputType.TYPE_NULL behavior unchanged = no regression).
          * Toggled from Settings -> Terminal I/O, not from termux.properties.
          */
