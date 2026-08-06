@@ -188,6 +188,10 @@
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
                     no hardware keyboard is connected.</string>
 
+                <!-- IME Composing -->
+                <string name="termux_ime_composing_enabled_title">IME Composing Preview</string>
+                <string name="termux_ime_composing_enabled_off">In-progress IME composing text (CJKV, etc.) is not shown until commit. (Default)</string>
+                <string name="termux_ime_composing_enabled_on">Show in-progress IME composing text as an inline preview at the cursor. Works with standard-compliant keyboards; non-standard ones may produce duplicate characters.</string>
 
         <!-- Terminal View Preferences -->
         <string name="termux_terminal_view_preferences_title">Terminal View</string>

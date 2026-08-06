@@ -218,7 +218,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public boolean shouldEnableImeComposing() {
-        return mActivity.getProperties().isEnablingImeComposing();
+        return mActivity.getPreferences().isImeComposingEnabled();
     }
 
     @Override
