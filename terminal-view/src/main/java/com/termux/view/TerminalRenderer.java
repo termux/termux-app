@@ -240,7 +240,7 @@ public final class TerminalRenderer {
     }
 
     /**
-     * Draw the in-progress IME composing text (e.g. partially composed Hangul) as a preview at the
+     * Draw the in-progress IME composing text (e.g. partially composed CJKV) as a preview at the
      * terminal cursor, on top of the already rendered terminal. It uses the same {@link #mTextPaint}
      * and {@link #drawTextRun} code path as normal rendering so the font family, fallback, width
      * scaling and text style (bold/italic/colors/dim) match the on-screen text exactly.
@@ -248,9 +248,11 @@ public final class TerminalRenderer {
      * @param text  char array holding the composing text
      * @param start start index into {@code text}
      * @param len   number of chars to draw
+     * @param cursorOffsetInChars  char offset within {@code text} of the IME pre-edit cursor,
+     *                              or -1 if none / not inside the composition
      */
     public void renderComposingText(TerminalEmulator mEmulator, Canvas canvas, int topRow,
-                                    char[] text, int start, int len) {
+                                    char[] text, int start, int len, int cursorOffsetInChars) {
         if (mEmulator == null || len <= 0) return;
         final int cursorRow = mEmulator.getCursorRow();
         final int cursorCol = mEmulator.getCursorCol();
@@ -311,6 +313,27 @@ public final class TerminalRenderer {
         // without the cursor block (cursor == 0).
         drawTextRun(canvas, text, palette, heightOffset, cursorCol, runWidthColumns, start, len, mes,
             0, 0, style, reverseVideo);
+
+        // Draw the IME pre-edit cursor as a thin vertical bar at the composing offset, so
+        // in-composition cursor movement (the IME's Selection within the composing span) is
+        // visible, like GNOME-terminal.
+        if (cursorOffsetInChars >= 0 && cursorOffsetInChars <= len) {
+            int colsBefore = 0;
+            for (int i = 0; i < cursorOffsetInChars; ) {
+                char c = text[start + i];
+                int chars = (Character.isHighSurrogate(c) && i + 1 < cursorOffsetInChars) ? 2 : 1;
+                int cp = (chars == 2) ? Character.toCodePoint(c, text[start + i + 1]) : c;
+                int w = WcWidth.width(cp);
+                if (w < 0) w = 0;
+                colsBefore += w;
+                i += chars;
+            }
+            float cursorX = left + colsBefore * mFontWidth;
+            float barW = Math.max(2.0f, mFontWidth * 0.12f);
+            mTextPaint.setColor(foreColor);
+            mTextPaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(cursorX, heightOffset - mFontLineSpacing, cursorX + barW, heightOffset, mTextPaint);
+        }
     }
 
     public float getFontWidth() {
