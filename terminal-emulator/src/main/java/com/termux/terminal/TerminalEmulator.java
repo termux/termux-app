@@ -743,10 +743,14 @@ public final class TerminalEmulator {
                                 // Reverse attributes in rectangular area (DECRARA - http://www.vt100.net/docs/vt510-rm/DECRARA).
                                 boolean reverse = b == 't';
                                 // FIXME: "coordinates of the rectangular area are affected by the setting of origin mode (DECOM)".
-                                int top = Math.min(getArg(0, 1, true) - 1, effectiveBottomMargin) + effectiveTopMargin;
-                                int left = Math.min(getArg(1, 1, true) - 1, effectiveRightMargin) + effectiveLeftMargin;
-                                int bottom = Math.min(getArg(2, mRows, true) + 1, effectiveBottomMargin - 1) + effectiveTopMargin;
-                                int right = Math.min(getArg(3, mColumns, true) + 1, effectiveRightMargin - 1) + effectiveLeftMargin;
+                                // The parameters Pt, Pl, Pb and Pr are 1-based, with top and left being 0-based inclusive
+                                // bounds and bottom and right being 0-based exclusive bounds, so that the last row and
+                                // column are included. Clamp them to the effective margins so that they never exceed
+                                // the screen dimensions.
+                                int top = Math.min(getArg(0, 1, true) - 1 + effectiveTopMargin, effectiveBottomMargin - 1);
+                                int left = Math.min(getArg(1, 1, true) - 1 + effectiveLeftMargin, effectiveRightMargin - 1);
+                                int bottom = Math.min(getArg(2, mRows, true) + effectiveTopMargin, effectiveBottomMargin);
+                                int right = Math.min(getArg(3, mColumns, true) + effectiveLeftMargin, effectiveRightMargin);
                                 if (mArgIndex >= 4) {
                                     if (mArgIndex >= mArgs.length) mArgIndex = mArgs.length - 1;
                                     for (int i = 4; i <= mArgIndex; i++) {
@@ -1453,7 +1457,7 @@ public final class TerminalEmulator {
                 doLinefeed();
                 break;
             case 'F': // Cursor to lower-left corner of screen
-                setCursorRowCol(0, mBottomMargin - 1);
+                setCursorRowCol(mBottomMargin - 1, isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE) ? mLeftMargin : 0);
                 break;
             case 'H': // Tab set
                 mTabStop[mCursorCol] = true;
@@ -2126,16 +2130,22 @@ public final class TerminalEmulator {
                     for (int charIndex = 0; ; charIndex++) {
                         boolean endOfInput = charIndex == textParameter.length();
                         if (endOfInput || textParameter.charAt(charIndex) == ';') {
+                            String colorSpec = textParameter.substring(lastIndex, charIndex);
                             try {
-                                int colorToReset = Integer.parseInt(textParameter.substring(lastIndex, charIndex));
-                                mColors.reset(colorToReset);
-                                mSession.onColorsChanged();
-                                if (endOfInput) break;
-                                charIndex++;
-                                lastIndex = charIndex;
+                                int colorToReset = Integer.parseInt(colorSpec);
+                                // Valid color indices are the ANSI colors 0-7, their bright versions
+                                // 8-15 and the rest of the 256-color table. Guard against values
+                                // outside the indexed colors array to prevent an
+                                // ArrayIndexOutOfBoundsException on malformed input.
+                                if (colorToReset >= 0 && colorToReset < TextStyle.NUM_INDEXED_COLORS) {
+                                    mColors.reset(colorToReset);
+                                    mSession.onColorsChanged();
+                                }
                             } catch (NumberFormatException e) {
                                 // Ignore.
                             }
+                            if (endOfInput) break;
+                            lastIndex = charIndex + 1;
                         }
                     }
                 }

@@ -290,9 +290,12 @@ public final class TerminalBuffer {
                     lastNonSpaceIndex = oldLine.getSpaceUsed();
                     if (cursorAtThisRow) justToCursor = true;
                 } else {
+                    // Scan the java chars (not columns) of the old line to find the last char that is not
+                    // a space. The style is intentionally not checked here since {@link TerminalRow#mStyle}
+                    // is indexed by columns and not by char indices, so it must not be indexed with the
+                    // char index {@code i}. The styles of the copied non-space chars are handled below.
                     for (int i = 0; i < oldLine.getSpaceUsed(); i++)
-                        // NEWLY INTRODUCED BUG! Should not index oldLine.mStyle with char indices
-                        if (oldLine.mText[i] != ' '/* || oldLine.mStyle[i] != currentStyle */)
+                        if (oldLine.mText[i] != ' ')
                             lastNonSpaceIndex = i + 1;
                 }
 
@@ -301,7 +304,18 @@ public final class TerminalBuffer {
                 for (int i = 0; i < lastNonSpaceIndex; i++) {
                     // Note that looping over java character, not cells.
                     char c = oldLine.mText[i];
-                    int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
+                    // A high surrogate should always be followed by its low surrogate within
+                    // {@link TerminalRow#mSpaceUsed}, but guard against a malformed row ending with an
+                    // unpaired high surrogate so that {@link #oldLine.mText} is not read out of bounds.
+                    int codePoint;
+                    if (Character.isHighSurrogate(c)) {
+                        if (i + 1 < lastNonSpaceIndex)
+                            codePoint = Character.toCodePoint(c, oldLine.mText[++i]);
+                        else
+                            codePoint = TerminalEmulator.UNICODE_REPLACEMENT_CHAR;
+                    } else {
+                        codePoint = c;
+                    }
                     int displayWidth = WcWidth.width(codePoint);
                     // Use the last style if this is a zero-width character:
                     if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
