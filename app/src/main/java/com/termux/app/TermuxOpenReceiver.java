@@ -24,6 +24,7 @@ import com.termux.shared.termux.TermuxConstants;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 
@@ -97,7 +98,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             String fileExtension = fileName.substring(lastDotIndex + 1);
             MimeTypeMap mimeTypes = MimeTypeMap.getSingleton();
             // Lower casing makes it work with e.g. "JPG":
-            contentTypeToUse = mimeTypes.getMimeTypeFromExtension(fileExtension.toLowerCase());
+            contentTypeToUse = mimeTypes.getMimeTypeFromExtension(fileExtension.toLowerCase(Locale.ROOT));
             if (contentTypeToUse == null) contentTypeToUse = "application/octet-stream";
         } else {
             contentTypeToUse = contentTypeExtra;
@@ -176,7 +177,7 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
             int extIndex = path.lastIndexOf('.') + 1;
             if (extIndex > 0) {
                 MimeTypeMap mimeMap = MimeTypeMap.getSingleton();
-                String ext = path.substring(extIndex).toLowerCase();
+                String ext = path.substring(extIndex).toLowerCase(Locale.ROOT);
                 return mimeMap.getMimeTypeFromExtension(ext);
             }
             return null;

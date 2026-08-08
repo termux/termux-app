@@ -38,6 +38,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class FileUtils {
@@ -131,7 +132,7 @@ public class FileUtils {
             fileName = fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
 
         if (toLower)
-            return fileName.toLowerCase();
+            return fileName.toLowerCase(Locale.ROOT);
         else
             return fileName;
     }
@@ -1101,7 +1102,7 @@ public class FileUtils {
 
                 // If overwriteOnlyIfDestSameFileTypeAsSrc is enabled but destination file does not match source file type
                 if (overwriteOnlyIfDestSameFileTypeAsSrc && destFileType != srcFileType)
-                    return FileUtilsErrno.ERRNO_CANNOT_OVERWRITE_A_DIFFERENT_FILE_TYPE.getError(label + "source file", mode.toLowerCase(), srcFilePath, destFilePath, destFileType.getName(), srcFileType.getName());
+                    return FileUtilsErrno.ERRNO_CANNOT_OVERWRITE_A_DIFFERENT_FILE_TYPE.getError(label + "source file", mode.toLowerCase(Locale.ROOT), srcFilePath, destFilePath, destFileType.getName(), srcFileType.getName());
 
                 // Delete the destination file
                 error = deleteFile(label + "destination", destFilePath, true);

@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -639,7 +640,7 @@ public class SharedProperties {
      * @return Returns the lowercased value.
      */
     public static String toLowerCase(String value) {
-        if (value == null) return null; else return value.toLowerCase();
+        if (value == null) return null; else return value.toLowerCase(Locale.ROOT);
     }
 
 }

@@ -18,6 +18,7 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Environment for {@link TermuxConstants#TERMUX_PACKAGE_NAME} app.
@@ -157,7 +158,7 @@ public class TermuxAppShellEnvironment {
             TermuxConstants.TERMUX_PACKAGE_NAME);
         if (signingCertificateSHA256Digest != null) {
             ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_TERMUX_APP__APK_RELEASE,
-                TermuxUtils.getAPKRelease(signingCertificateSHA256Digest).replaceAll("[^a-zA-Z]", "_").toUpperCase());
+                TermuxUtils.getAPKRelease(signingCertificateSHA256Digest).replaceAll("[^a-zA-Z]", "_").toUpperCase(Locale.ROOT));
         }
     }
 
