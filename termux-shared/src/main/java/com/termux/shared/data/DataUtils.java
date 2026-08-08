@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 public class DataUtils {
@@ -26,14 +27,15 @@ public class DataUtils {
         String prefix = "(truncated) ";
 
         if (addPrefix)
-            maxLength = maxLength - prefix.length();
+            maxLength = maxLength - prefix.getBytes(StandardCharsets.UTF_8).length;
 
-        if (maxLength < 0 || text.length() < maxLength) return text;
+        if (maxLength < 0 || text.getBytes(StandardCharsets.UTF_8).length < maxLength) return text;
 
         if (fromEnd) {
-            text = text.substring(0, maxLength);
+            text = getStringFromStartByByteLength(text, maxLength);
         } else {
-            int cutOffIndex = text.length() - maxLength;
+            int cutOffByteIndex = text.getBytes(StandardCharsets.UTF_8).length - maxLength;
+            int cutOffIndex = getCharIndexAtByteOffset(text, cutOffByteIndex);
 
             if (onNewline) {
                 int nextNewlineIndex = text.indexOf('\n', cutOffIndex);
@@ -48,6 +50,48 @@ public class DataUtils {
             text = prefix + text;
 
         return text;
+    }
+
+    /**
+     * Returns the sub string of {@code text} containing the first characters that fit in the given
+     * {@code maxByteLength} bytes, without splitting a multi-byte character.
+     */
+    private static String getStringFromStartByByteLength(String text, int maxByteLength) {
+        int byteCount = 0;
+        int i = 0;
+        while (i < text.length()) {
+            int codePoint = text.codePointAt(i);
+            int charCount = Character.charCount(codePoint);
+            int charByteLength = getUTF8ByteLength(codePoint);
+            if (byteCount + charByteLength > maxByteLength) break;
+            byteCount += charByteLength;
+            i += charCount;
+        }
+        return text.substring(0, i);
+    }
+
+    /**
+     * Returns the char index of the first character of {@code text} that starts at or after the
+     * given UTF-8 {@code byteOffset}. If the byte offset lands in the middle of a multi-byte
+     * character, then that character is skipped since it cannot be partially included.
+     */
+    private static int getCharIndexAtByteOffset(String text, int byteOffset) {
+        int byteCount = 0;
+        int i = 0;
+        while (i < text.length()) {
+            if (byteCount >= byteOffset) return i;
+            byteCount += getUTF8ByteLength(text.codePointAt(i));
+            i += Character.charCount(text.codePointAt(i));
+        }
+        return i;
+    }
+
+    /** Returns the number of UTF-8 bytes required to encode the code point. */
+    private static int getUTF8ByteLength(int codePoint) {
+        if (codePoint <= 0x7F) return 1;
+        if (codePoint <= 0x7FF) return 2;
+        if (codePoint <= 0xFFFF) return 3;
+        return 4;
     }
 
     /**
