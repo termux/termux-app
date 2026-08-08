@@ -274,7 +274,7 @@ public class LocalClientSocket implements Closeable {
             return null;
         }
 
-        JniResult result = LocalSocketManager.available(mLocalSocketRunConfig.getLogTitle() + " (client)", mLocalSocketRunConfig.getFD());
+        JniResult result = LocalSocketManager.available(mLocalSocketRunConfig.getLogTitle() + " (client)", mFD);
         if (result == null || result.retval != 0) {
             return LocalSocketErrno.ERRNO_CHECK_AVAILABLE_DATA_ON_CLIENT_SOCKET_FAILED.getError(
                 mLocalSocketRunConfig.getTitle(), JniResult.getErrorString(result));
