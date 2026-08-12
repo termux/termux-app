@@ -96,7 +96,7 @@ public class ViewUtils {
 
         // viewRect - holds position of the view in window
         // (methods as getGlobalVisibleRect, getHitRect, getDrawingRect can return different result,
-        // when partialy visible)
+        // when partially visible)
         Rect viewRect;
         final int[] viewsLocationInWindow = new int[2];
         view.getLocationInWindow(viewsLocationInWindow);
