@@ -50,6 +50,14 @@ public final class TerminalRenderer {
      */
     private final float[] asciiMeasures = new float[127];
 
+    /**
+     * Translucent highlight used to mark selected cells inside RTL runs. RTL text cannot be
+     * rendered with the inverse-video trick used for LTR runs because splitting a shaped run to
+     * invert part of it breaks cursive letter joining, so selection is drawn as a background
+     * overlay instead.
+     */
+    private static final int RTL_SELECTION_HIGHLIGHT_COLOR = 0x6680B0FF;
+
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
         mTypeface = typeface;
@@ -138,12 +146,20 @@ public final class TerminalRenderer {
                 final boolean fontWidthMismatch = !isRtl && codePointWcWidth > 0
                         && Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
 
-                if (style != lastRunStyle
-                        || insideCursor != lastRunInsideCursor
-                        || insideSelection != lastRunInsideSelection
+                // Split runs on style, directionality or font width changes. RTL runs are never
+                // split at the cursor or selection boundaries: splitting a shaped RTL word (e.g.
+                // Persian) breaks cursive letter joining, so for RTL runs the cursor and selection
+                // are drawn as overlays on top of the finished run instead.
+                final boolean rtlRun = isRtl && lastRunIsRtl;
+                final boolean styleOrDirectionChanged = style != lastRunStyle
                         || isRtl != lastRunIsRtl
                         || fontWidthMismatch
-                        || lastRunFontWidthMismatch) {
+                        || lastRunFontWidthMismatch;
+                final boolean cellStateChanged = !rtlRun
+                        && (insideCursor != lastRunInsideCursor
+                        || insideSelection != lastRunInsideSelection);
+
+                if (styleOrDirectionChanged || cellStateChanged) {
                     if (vCol != 0) {
                         flushRun(canvas, mEmulator, visualCells, palette, heightOffset,
                                 lastRunStartColumn, vCol, lastRunStyle,
@@ -196,10 +212,29 @@ public final class TerminalRenderer {
                           int cursorShape, boolean reverseVideo) {
 
         final int runColumns = endCol - startCol;
-        final int cursorColor = insideCursor
-                ? emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
-        final boolean invertCursorTextColor =
-                insideCursor && cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK;
+
+        // For RTL runs the cursor cell is located on the visual row (it can be anywhere inside the
+        // run since RTL runs are not split at the cursor), so it is resolved here and drawn as an
+        // overlay on top of the finished run in drawRtlCursorAndSelectionOverlays().
+        final int cursorColor;
+        final boolean invertCursorTextColor;
+        if (isRtl) {
+            int cursorVisualCol = -1;
+            for (int c = startCol; c < endCol; c++) {
+                if (visualCells[c].insideCursor) {
+                    cursorVisualCol = c;
+                    break;
+                }
+            }
+            cursorColor = cursorVisualCol >= 0
+                    ? emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
+            invertCursorTextColor = false;
+        } else {
+            cursorColor = insideCursor
+                    ? emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
+            invertCursorTextColor =
+                    insideCursor && cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK;
+        }
 
         // Collect non-empty cells.
         int count = 0;
@@ -286,10 +321,14 @@ public final class TerminalRenderer {
 
         drawTextRun(canvas, runBuffer, palette, heightOffset,
                 startCol, runColumns, 0, used, measuredWidth,
-                cursorColor, cursorShape, style,
-                reverseVideo || invertCursorTextColor || insideSelection, isRtl);
+                isRtl ? 0 : cursorColor, cursorShape, style,
+                reverseVideo || (isRtl ? false : invertCursorTextColor || insideSelection), isRtl);
 
-        if (isRtl) mTextPaint.setTypeface(originalTypeface);
+        if (isRtl) {
+            mTextPaint.setTypeface(originalTypeface);
+            drawRtlCursorAndSelectionOverlays(canvas, visualCells, startCol, endCol, palette,
+                    heightOffset, cursorShape, cursorColor, reverseVideo);
+        }
     }
 
     private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y,
@@ -373,6 +412,89 @@ public final class TerminalRenderer {
         }
 
         if (savedMatrix) canvas.restore();
+    }
+
+    /**
+     * Draws the selection highlight and caret as overlays for an RTL run. The run itself was
+     * already drawn as a single shaped unit (preserving cursive joining); the overlays are drawn
+     * on top in unscaled, absolute screen coordinates so they always line up with the run's cell
+     * grid.
+     */
+    private void drawRtlCursorAndSelectionOverlays(Canvas canvas,
+                                                   BidiLayout.LogicalCell[] visualCells,
+                                                   int startCol, int endCol,
+                                                   int[] palette, float heightOffset,
+                                                   int cursorShape, int cursorColor,
+                                                   boolean reverseVideo) {
+
+        // Selection: a translucent highlight rect over the selected cells.
+        int selStart = -1;
+        for (int v = startCol; v <= endCol; v++) {
+            boolean selected = v < endCol && visualCells[v].insideSelection;
+            if (selected && selStart < 0) {
+                selStart = v;
+            } else if (!selected && selStart >= 0) {
+                drawCellRect(canvas, selStart, v, heightOffset, RTL_SELECTION_HIGHLIGHT_COLOR);
+                selStart = -1;
+            }
+        }
+
+        // Caret: drawn at the exact cell that holds the cursor.
+        for (int v = startCol; v < endCol; v++) {
+            BidiLayout.LogicalCell rc = visualCells[v];
+            if (!rc.insideCursor) continue;
+
+            float left = v * mFontWidth;
+            int widthCells = rc.displayWidth > 0 ? rc.displayWidth : 1;
+            float right = left + widthCells * mFontWidth;
+
+            float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+            if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) cursorHeight /= 4.;
+            else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) right -= ((right - left) * 3) / 4.;
+
+            mTextPaint.setColor(cursorColor);
+            canvas.drawRect(left, heightOffset - cursorHeight, right, heightOffset, mTextPaint);
+
+            if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK && rc.codePoint != 0) {
+                // Redraw the caret cell's character in the cell background colour so the block
+                // caret looks like an inverted character, as with LTR text.
+                int backColor = TextStyle.decodeBackColor(rc.style);
+                if ((backColor & 0xff000000) != 0xff000000) backColor = palette[backColor];
+                if (reverseVideo) backColor = cursorColor;
+
+                char[] buf = buildCharBuffer(rc);
+                final Typeface originalTypeface = mTextPaint.getTypeface();
+                mTextPaint.setTypeface(Typeface.DEFAULT);
+                mTextPaint.setFakeBoldText(false);
+                mTextPaint.setUnderlineText(false);
+                mTextPaint.setTextSkewX(0.f);
+                mTextPaint.setStrikeThruText(false);
+                mTextPaint.setColor(backColor);
+                canvas.drawText(buf, 0, buf.length, left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
+                mTextPaint.setTypeface(originalTypeface);
+            }
+            break;
+        }
+    }
+
+    private void drawCellRect(Canvas canvas, int startCol, int endCol, float rowBottom, int color) {
+        float left = startCol * mFontWidth;
+        float right = endCol * mFontWidth;
+        float top = rowBottom - mFontLineSpacingAndAscent + mFontAscent;
+        mTextPaint.setColor(color);
+        canvas.drawRect(left, top, right, rowBottom, mTextPaint);
+    }
+
+    private static char[] buildCharBuffer(BidiLayout.LogicalCell rc) {
+        int capacity = Character.charCount(rc.codePoint);
+        if (rc.combiningChars != null) capacity += rc.combiningCount * 2;
+        char[] buf = new char[capacity];
+        int len = Character.toChars(rc.codePoint, buf, 0);
+        if (rc.combiningChars != null) {
+            for (int k = 0; k < rc.combiningCount; k++)
+                len += Character.toChars(rc.combiningChars[k], buf, len);
+        }
+        return buf;
     }
 
     public float getFontWidth() {

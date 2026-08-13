@@ -76,10 +76,10 @@ public final class BidiLayout {
                         }
                     }
 
+                    int caretCol = cursorVisible ? caretVisualColumn(cached.visualToLogical, cached.visualCells, cursorCol) : -1;
                     for (int i = 0; i < columns; i++) {
                         LogicalCell cell = cached.visualCells[i];
-                        int lCol = cached.visualToLogical[i];
-                        cell.insideCursor = (lCol == cursorCol && cursorVisible);
+                        cell.insideCursor = (i == caretCol);
                         cell.insideSelection = hasSel && (i >= vSelStart && i <= vSelEnd);
                     }
                 }
@@ -242,10 +242,10 @@ public final class BidiLayout {
             }
         }
 
+        int caretCol = cursorVisible ? caretVisualColumn(visualToLogical, visualCells, cursorCol) : -1;
         for (int i = 0; i < columns; i++) {
             LogicalCell cell = visualCells[i];
-            int lCol = visualToLogical[i];
-            cell.insideCursor = (lCol == cursorCol && cursorVisible);
+            cell.insideCursor = (i == caretCol);
             cell.insideSelection = hasSel && (i >= vSelStart && i <= vSelEnd);
         }
 
@@ -254,5 +254,38 @@ public final class BidiLayout {
         rowObject.mVisualToLogical = visualToLogical;
         rowObject.mCachedBidiLayout = newLayout;
         return newLayout;
+    }
+
+    /**
+     * Computes the visual column where the caret should be drawn for a logical cursor position.
+     *
+     * <p>The caret sits at the visual boundary after (LTR) or before (RTL) the character that
+     * precedes the logical cursor column. This keeps the caret on the correct side of
+     * right-to-left text: after typing a Persian word the caret appears at the left edge of the
+     * word instead of trailing off to the right, and it stays adjacent to the characters being
+     * typed.
+     */
+    private static int caretVisualColumn(int[] visualToLogical, LogicalCell[] visualCells, int cursorCol) {
+        if (cursorCol <= 0) return 0;
+        int prevLogical = cursorCol - 1;
+        for (int i = 0; i < visualToLogical.length; i++) {
+            if (visualToLogical[i] == prevLogical) {
+                LogicalCell prev = visualCells[i];
+                int caret;
+                if (prev.isRtl) {
+                    caret = i;
+                } else {
+                    // Caret after an LTR character. A double-width character occupies two cells;
+                    // a cursor on its second half stays on that half cell instead of jumping past
+                    // the character.
+                    caret = i + Math.max(1, prev.displayWidth);
+                    if (prev.displayWidth == 2 && cursorCol == prevLogical + 1) caret = i + 1;
+                }
+                return Math.max(0, Math.min(visualToLogical.length - 1, caret));
+            }
+        }
+        // The cell preceding the cursor is outside the active text (e.g. a blank line), so the
+        // caret keeps its identity mapping.
+        return Math.max(0, Math.min(visualToLogical.length - 1, cursorCol));
     }
 }
