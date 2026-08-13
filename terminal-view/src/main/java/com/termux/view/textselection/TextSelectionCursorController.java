@@ -192,8 +192,10 @@ public class TextSelectionCursorController implements CursorController {
 
             @Override
             public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                int x1 = Math.round(mSelX1 * terminalView.mRenderer.getFontWidth());
-                int x2 = Math.round(mSelX2 * terminalView.mRenderer.getFontWidth());
+                int visualCol1 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX1, mSelY1);
+                int visualCol2 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX2, mSelY2);
+                int x1 = Math.round(visualCol1 * terminalView.mRenderer.getFontWidth());
+                int x2 = Math.round(visualCol2 * terminalView.mRenderer.getFontWidth());
                 int y1 = Math.round((mSelY1 - 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
                 int y2 = Math.round((mSelY2 + 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
 
@@ -219,25 +221,28 @@ public class TextSelectionCursorController implements CursorController {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
         if (handle == mStartHandle) {
-            mSelX1 = terminalView.getCursorX(x);
             mSelY1 = terminalView.getCursorY(y);
-            if (mSelX1 < 0) {
-                mSelX1 = 0;
-            }
-
             if (mSelY1 < -scrollRows) {
                 mSelY1 = -scrollRows;
-
             } else if (mSelY1 > terminalView.mEmulator.mRows - 1) {
                 mSelY1 = terminalView.mEmulator.mRows - 1;
+            }
 
+            mSelX1 = terminalView.getCursorX(x, mSelY1);
+            if (mSelX1 < 0) {
+                mSelX1 = 0;
             }
 
             if (mSelY1 > mSelY2) {
                 mSelY1 = mSelY2;
             }
-            if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
-                mSelX1 = mSelX2;
+            if (mSelY1 == mSelY2) {
+                int vSelX1 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX1, mSelY1);
+                int vSelX2 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX2, mSelY2);
+                if (vSelX1 > vSelX2) {
+                    vSelX1 = vSelX2;
+                    mSelX1 = terminalView.mRenderer.translateVisualToLogicalColumn(terminalView.mEmulator, vSelX1, mSelY1);
+                }
             }
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
@@ -261,23 +266,28 @@ public class TextSelectionCursorController implements CursorController {
             mSelX1 = getValidCurX(screen, mSelY1, mSelX1);
 
         } else {
-            mSelX2 = terminalView.getCursorX(x);
             mSelY2 = terminalView.getCursorY(y);
-            if (mSelX2 < 0) {
-                mSelX2 = 0;
-            }
-
             if (mSelY2 < -scrollRows) {
                 mSelY2 = -scrollRows;
             } else if (mSelY2 > terminalView.mEmulator.mRows - 1) {
                 mSelY2 = terminalView.mEmulator.mRows - 1;
             }
 
+            mSelX2 = terminalView.getCursorX(x, mSelY2);
+            if (mSelX2 < 0) {
+                mSelX2 = 0;
+            }
+
             if (mSelY1 > mSelY2) {
                 mSelY2 = mSelY1;
             }
-            if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
-                mSelX2 = mSelX1;
+            if (mSelY1 == mSelY2) {
+                int vSelX1 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX1, mSelY1);
+                int vSelX2 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX2, mSelY2);
+                if (vSelX1 > vSelX2) {
+                    vSelX2 = vSelX1;
+                    mSelX2 = terminalView.mRenderer.translateVisualToLogicalColumn(terminalView.mEmulator, vSelX2, mSelY2);
+                }
             }
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {

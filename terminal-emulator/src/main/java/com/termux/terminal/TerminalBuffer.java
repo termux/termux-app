@@ -65,42 +65,63 @@ public final class TerminalBuffer {
         if (selY2 >= mScreenRows) selY2 = mScreenRows - 1;
 
         for (int row = selY1; row <= selY2; row++) {
-            int x1 = (row == selY1) ? selX1 : 0;
-            int x2;
-            if (row == selY2) {
-                x2 = selX2 + 1;
-                if (x2 > columns) x2 = columns;
-            } else {
-                x2 = columns;
-            }
             TerminalRow lineObject = mLines[externalToInternalRow(row)];
-            int x1Index = lineObject.findStartOfColumn(x1);
-            int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
-            if (x2Index == x1Index) {
-                // Selected the start of a wide character.
-                x2Index = lineObject.findStartOfColumn(x2 + 1);
-            }
-            char[] line = lineObject.mText;
-            int lastPrintingCharIndex = -1;
-            int i;
-            boolean rowLineWrap = getLineWrap(row);
-            if (rowLineWrap && x2 == columns) {
-                // If the line was wrapped, we shouldn't lose trailing space:
-                lastPrintingCharIndex = x2Index - 1;
+            if (lineObject == null) continue;
+
+            int[] l2v = lineObject.mLogicalToVisual;
+
+            int vStart, vEnd;
+            if (row == selY1 && row == selY2) {
+                int v1 = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX1))] : selX1;
+                int v2 = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX2))] : selX2;
+                vStart = Math.min(v1, v2);
+                vEnd = Math.max(v1, v2);
+            } else if (row == selY1) {
+                vStart = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX1))] : selX1;
+                vEnd = columns - 1;
+            } else if (row == selY2) {
+                vStart = 0;
+                vEnd = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX2))] : selX2;
             } else {
-                for (i = x1Index; i < x2Index; ++i) {
-                    char c = line[i];
-                    if (c != ' ') lastPrintingCharIndex = i;
-                }
+                vStart = 0;
+                vEnd = columns - 1;
             }
 
-            int len = lastPrintingCharIndex - x1Index + 1;
-            if (lastPrintingCharIndex != -1 && len > 0)
-                builder.append(line, x1Index, len);
+            char[] line = lineObject.mText;
+            int lineObjectSpaceUsed = lineObject.getSpaceUsed();
 
-            boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
+            StringBuilder rowBuilder = new StringBuilder();
+            for (int col = 0; col < columns; ) {
+                int vCol = (l2v != null) ? l2v[col] : col;
+                int x1Index = lineObject.findStartOfColumn(col);
+                int nextCol = col + 1;
+                int x2Index = (nextCol < columns) ? lineObject.findStartOfColumn(nextCol) : lineObjectSpaceUsed;
+
+                if (vCol >= vStart && vCol <= vEnd) {
+                    if (x2Index > x1Index) {
+                        rowBuilder.append(line, x1Index, x2Index - x1Index);
+                    }
+                }
+                col = nextCol;
+            }
+
+            boolean rowLineWrap = getLineWrap(row);
+            String rowText = rowBuilder.toString();
+            if (!rowLineWrap) {
+                int len = rowText.length();
+                while (len > 0 && rowText.charAt(len - 1) == ' ') {
+                    len--;
+                }
+                rowText = rowText.substring(0, len);
+            }
+
+            builder.append(rowText);
+
+            boolean lineFillsWidth = rowBuilder.length() > 0 && rowBuilder.charAt(rowBuilder.length() - 1) != ' ';
             if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
-                && row < selY2 && row < mScreenRows - 1) builder.append('\n');
+                && row < selY2 && row < mScreenRows - 1) {
+                builder.append('\n');
+            }
         }
         return builder.toString();
     }

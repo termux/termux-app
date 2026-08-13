@@ -546,10 +546,12 @@ public final class TerminalView extends View {
     public int[] getColumnAndRow(MotionEvent event, boolean relativeToScroll) {
         int column = (int) (event.getX() / mRenderer.mFontWidth);
         int row = (int) ((event.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+        int logicalRow = row;
         if (relativeToScroll) {
-            row += mTopRow;
+            logicalRow += mTopRow;
         }
-        return new int[] { column, row };
+        column = mRenderer.translateVisualToLogicalColumn(mEmulator, column, logicalRow);
+        return new int[] { column, logicalRow };
     }
 
     /** Send a single mouse event code to the terminal. */
@@ -1032,7 +1034,12 @@ public final class TerminalView extends View {
     }
 
     public int getCursorX(float x) {
-        return (int) (x / mRenderer.mFontWidth);
+        return getCursorX(x, mEmulator.getCursorRow());
+    }
+
+    public int getCursorX(float x, int row) {
+        int visualCol = (int) (x / mRenderer.mFontWidth);
+        return mRenderer.translateVisualToLogicalColumn(mEmulator, visualCol, row);
     }
 
     public int getCursorY(float y) {
@@ -1040,10 +1047,15 @@ public final class TerminalView extends View {
     }
 
     public int getPointX(int cx) {
+        return getPointX(cx, mEmulator.getCursorRow());
+    }
+
+    public int getPointX(int cx, int cy) {
         if (cx > mEmulator.mColumns) {
             cx = mEmulator.mColumns;
         }
-        return Math.round(cx * mRenderer.mFontWidth);
+        int visualCol = mRenderer.translateLogicalToVisualColumn(mEmulator, cx, cy);
+        return Math.round(visualCol * mRenderer.mFontWidth);
     }
 
     public int getPointY(int cy) {
