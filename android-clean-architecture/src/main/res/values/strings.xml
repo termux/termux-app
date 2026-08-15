@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Clean Architecture</string>
+    <string name="title_main">Clean Architecture Example</string>
+    <string name="hint_consulta">Enter your query</string>
+    <string name="button_send">Send Query</string>
+    <string name="label_contador">Queries: %d</string>
+    <string name="label_respuesta">Response: %s</string>
+    <string name="label_error">Error: %s</string>
+    <string name="error_empty_consulta">Query cannot be empty</string>
+    <string name="error_network">Network error. Please try again.</string>
+</resources>

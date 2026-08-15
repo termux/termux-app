@@ -1,39 +1,61 @@
-# From https://gist.github.com/iainconnor/8605514
-# with the addition of the /captures below.
-/captures
-
-# Built application files
-build/
-release/
-*.apk
+__pycache__/
+*.py[cod]
+*$py.class
 *.so
-.externalNativeBuild
-.cxx
-*.zip
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Local configuration file (sdk path, etc)
-local.properties
+# Virtual environments
+venv/
+ENV/
+env/
 
-# Gradle generated files
-.gradle/
-
-# Signing files
-.signing/
-
-# Intellij
+# IDE
+.vscode/
 .idea/
-*.iml
-
-# Vim
-*.swo
 *.swp
-
-# OS-specific files
+*.swo
+*~
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-.swp
-ehthumbs.db
-Thumbs.db
+
+# Downloads folder
+Downloads/
+
+# Temporary files
+*.tmp
+*.temp
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Project specific
+config.local.py
+downloads/*
+!downloads/.gitkeep

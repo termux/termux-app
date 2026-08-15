@@ -1,0 +1,11 @@
+{
+  "appId": "com.navajamexx.app",
+  "appName": "Navaja Mexx",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

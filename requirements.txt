@@ -1,0 +1,6 @@
+aiohttp==3.9.1
+PyQt6==6.6.1
+PyQt6-sip==13.6.0
+aiofiles==23.2.1
+pydantic==2.5.0
+python-dotenv==1.0.0

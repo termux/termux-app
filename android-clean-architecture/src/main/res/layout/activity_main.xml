@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clean Architecture Example"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/editTextConsulta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your query"
+        android:inputType="text"
+        android:maxLines="3"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/buttonEnviar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Query"
+        android:layout_marginBottom="16dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textViewContador"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Queries: 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textViewRespuesta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        android:textColor="@android:color/holo_green_dark" />
+
+    <TextView
+        android:id="@+id/textViewError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="14sp"
+        android:visibility="gone"
+        android:textColor="@android:color/holo_red_dark"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

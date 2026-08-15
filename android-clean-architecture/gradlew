@@ -1,0 +1,194 @@
+#!/bin/sh
+
+#
+# Copyright 2015 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+##############################################################################
+#
+#   Gradle Start Up Script for POSIX created by Gradle.
+#
+#   Important for running:
+#
+#   (1) You need a POSIX-compliant shell to run this script. If your /bin/sh is
+#       noncompliant, but you have some other compliant shell such as bash,
+#       you can use the bash version by running "bash gradlew" instead of
+#       just "gradlew".
+#
+#   (2) Busybox and similar reduced shells will NOT work, because this script
+#       requires all of these POSIX shell features:
+#         * functions;
+#         * expansions "$var", "${var.word}", "${var,}", "${var^^}", "$@";
+#         * compound commands having a testable exit status, especially "case";
+#         * various quoting mechanisms, especially single quoting "$'...'" and
+#           double quoting with escape sequences.
+#
+#   Important for patching:
+#
+#   (0) Look for tuning variables just below the top of the script. These are
+#       used to configure aspects of the build gradle execution, such as the
+#       size of the heap you are allowing for the build process.
+#
+#   (1) You'll want to enable this feature to utilize the immense speed of
+#       Gradle by utilizing an intelligent build cache as well as build
+#       daemon. For more details and other options, visit
+#       https://gradle.org/configure-gradle-for-performance/
+#
+#   (2) Investigate or contact Gradle support or the community before making
+#       changes to this script as it takes care of all aspects of the build
+#       environment for Gradle.
+#
+##############################################################################
+
+# Attempt to set APP_HOME
+# Resolve links: $0 may be a link
+PRG="$0"
+# Need this for daisy-chained symlinks.
+while [ -h "$PRG" ] ; do
+    ls -ld "$PRG"
+    PRG=`readlink "$PRG"`
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD="maximum"
+
+warn () {
+    echo "$*"
+} >&2
+
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+} >&2
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false
+msys=false
+pw=false
+darwin=false
+nonstop=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;;
+  Darwin* )
+    darwin=true
+    ;;
+  MSYS* | MINGW* )
+    msys=true
+    ;;
+  NONSTOP* )
+    nonstop=true
+    ;;
+esac
+
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM's JDK on AIX uses strange locations for the executables
+        JAVACMD="$JAVA_HOME/jre/sh/java"
+    else
+        JAVACMD="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVACMD="java"
+    if ! command -v java >/dev/null 2>&1
+    then
+        die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+fi
+
+# Increase the maximum file descriptors if we can.
+if ! "$cygwin" && ! "$darwin" && ! "$nonstop" ; then
+    case $MAX_FD in #(
+      /*)
+        MAX_FD_LIMIT=`expr $MAX_FD : '.*'` ;;
+      *)
+        MAX_FD_LIMIT=$MAX_FD ;;
+    esac
+    if [ $MAX_FD_LIMIT -gt 0 ] && [ "$nonstop" = false ] && [ "$cygwin" = false ] && [ "$msys" = false ] ; then
+        eval `ulimit -n $MAX_FD_LIMIT`
+    fi
+fi
+
+if $cygwin ; then
+    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
+    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+
+    JAVACMD=`cygpath --unix "$JAVACMD"`
+
+    # We build the pattern for arguments to be converted via cygpath
+    ROOTDIRSRAW=`find -L / -maxdepth 3 -type d -name java >/dev/null 2>&1 && echo "just found java"`
+    if [ -n "$ROOTDIRSRAW" ] ; then
+        ROOTDIRS=`echo "$ROOTDIRSRAW" | awk 'BEGIN { FS=" " } { for (i=1; i<=NF; i++) { print $1 } }'`
+        for dir in $ROOTDIRS; do
+            ROOTDIRS="$ROOTDIRS `find \"$dir\" -type d -name java`"
+        done
+    fi
+fi
+
+# For Mingw, ensure paths are in UNIX format before anything is touched.
+if $msys ; then
+    APP_HOME=`cmd /c (for %A in ("$APP_HOME") do @echo %~sA)`
+    CLASSPATH=`cmd /c (for %A in ("$CLASSPATH") do @echo %~sA)`
+
+    JAVACMD=`cmd /c (for %A in ("$JAVACMD") do @echo %~sA)`
+fi
+
+# Provide a "standardized" way to retrieve the CLI args that will
+# work with both Windows and non-Windows executions.
+if [ -n "$JAVA_OPTS" ] ; then
+    JVM_OPTS_ESCAPED=`printf %s "$JAVA_OPTS" | sed 's/ /\\ /g'`
+    eval set -- $DEFAULT_JVM_OPTS $JVM_OPTS_ESCAPED "$@"
+else
+    set -- $DEFAULT_JVM_OPTS "$@"
+fi
+
+# Add default module options if needed. This allows using the module
+# to be in the modulepath rather than the classpath.
+if [ -n "$MODULE_NAME" ] ; then
+    JVM_OPTS="$JVM_OPTS --add-modules $MODULE_NAME"
+fi
+
+# Add default memory options.
+if [ -z "$GRADLE_OPTS" ] ; then
+    GRADLE_OPTS="-Xmx1024m -Xms1024m"
+fi
+
+exec "$JAVACMD" "${JVM_OPTS[@]}" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
