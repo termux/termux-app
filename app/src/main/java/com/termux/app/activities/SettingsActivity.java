@@ -8,8 +8,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreferenceCompat;
 
 import com.termux.R;
+import com.termux.app.settings.FileViewReceiverSettings;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.models.ReportInfo;
@@ -59,6 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (context == null) return;
 
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+            configureFileViewReceiverPreference(context);
 
             new Thread() {
                 @Override
@@ -71,6 +74,20 @@ public class SettingsActivity extends AppCompatActivity {
                     configureDonatePreference(context);
                 }
             }.start();
+        }
+
+        private void configureFileViewReceiverPreference(@NonNull Context context) {
+            SwitchPreferenceCompat preference = findPreference(FileViewReceiverSettings.PREFERENCE_KEY);
+            if (preference == null) return;
+
+            boolean enabled = FileViewReceiverSettings.isEnabled(context);
+            preference.setChecked(enabled);
+            FileViewReceiverSettings.applySavedState(context);
+
+            preference.setOnPreferenceChangeListener((changedPreference, newValue) -> {
+                FileViewReceiverSettings.setEnabled(context, Boolean.TRUE.equals(newValue));
+                return true;
+            });
         }
 
         private void configureTermuxAPIPreference(@NonNull Context context) {

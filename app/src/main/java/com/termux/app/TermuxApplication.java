@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.termux.BuildConfig;
+import com.termux.app.settings.FileViewReceiverSettings;
 import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxBootstrap;
@@ -25,6 +26,9 @@ public class TermuxApplication extends Application {
         super.onCreate();
 
         Context context = getApplicationContext();
+
+        // Restore the user's persisted file viewer preference whenever the app starts.
+        FileViewReceiverSettings.applySavedState(context);
 
         // Set crash handler for the app
         TermuxCrashUtils.setDefaultCrashHandler(this);
