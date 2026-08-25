@@ -119,6 +119,8 @@ public final class TerminalEmulator {
     private static final int DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE = 1 << 6;
     /** DECSET 1002 - like 1000, but report moving mouse while pressed. */
     private static final int DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT = 1 << 7;
+    /** DECSET 1003 - like 1002, but report all motion events. Touch has no hover, so this behaves as 1002. */
+    private static final int DECSET_BIT_MOUSE_TRACKING_ANY_EVENT = 1 << 13;
     /** DECSET 1004 - NOT implemented. */
     private static final int DECSET_BIT_SEND_FOCUS_EVENTS = 1 << 8;
     /** DECSET 1006 - SGR-like mouse protocol (the modern sane choice). */
@@ -280,10 +282,10 @@ public final class TerminalEmulator {
     private void setDecsetinternalBit(int internalBit, boolean set) {
         if (set) {
             // The mouse modes are mutually exclusive.
-            if (internalBit == DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE) {
-                setDecsetinternalBit(DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT, false);
-            } else if (internalBit == DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT) {
-                setDecsetinternalBit(DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE, false);
+            int mouseModes = DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE | DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT
+                | DECSET_BIT_MOUSE_TRACKING_ANY_EVENT;
+            if ((internalBit & mouseModes) != 0) {
+                mCurrentDecSetFlags &= ~(mouseModes & ~internalBit);
             }
         }
         if (set) {
@@ -313,6 +315,8 @@ public final class TerminalEmulator {
                 return DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE;
             case 1002:
                 return DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT;
+            case 1003:
+                return DECSET_BIT_MOUSE_TRACKING_ANY_EVENT;
             case 1004:
                 return DECSET_BIT_SEND_FOCUS_EVENTS;
             case 1006:
@@ -368,7 +372,8 @@ public final class TerminalEmulator {
         if (row < 1) row = 1;
         if (row > mRows) row = mRows;
 
-        if (mouseButton == MOUSE_LEFT_BUTTON_MOVED && !isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT)) {
+        if (mouseButton == MOUSE_LEFT_BUTTON_MOVED && !isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT)
+            && !isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_ANY_EVENT)) {
             // Do not send tracking.
         } else if (isDecsetInternalBitSet(DECSET_BIT_MOUSE_PROTOCOL_SGR)) {
             mSession.write(String.format("\033[<%d;%d;%d" + (pressed ? 'M' : 'm'), mouseButton, column, row));
@@ -483,7 +488,8 @@ public final class TerminalEmulator {
 
     /** If mouse events are being sent as escape codes to the terminal. */
     public boolean isMouseTrackingActive() {
-        return isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE) || isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT);
+        return isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_PRESS_RELEASE) || isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_BUTTON_EVENT)
+            || isDecsetInternalBitSet(DECSET_BIT_MOUSE_TRACKING_ANY_EVENT);
     }
 
     private void setDefaultTabStops() {
