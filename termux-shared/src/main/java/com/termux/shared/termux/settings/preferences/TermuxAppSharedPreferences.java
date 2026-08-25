@@ -258,4 +258,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, value, false);
     }
 
+    // Method to READ the setting
+    public boolean isMouseCursorMovementEnabled() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, "mouse_cursor_movement_enabled", false);
+    }
+
+    // Method to SAVE the setting
+    public void setMouseCursorMovementEnabled(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, "mouse_cursor_movement_enabled", value, false);
+    }
+
 }

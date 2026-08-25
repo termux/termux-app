@@ -14,5 +14,4 @@
         app:title="@string/termux_terminal_view_preferences_title"
         app:summary="@string/termux_terminal_view_preferences_summary"
         app:fragment="com.termux.app.fragments.settings.termux.TerminalViewPreferencesFragment"/>
-
 </PreferenceScreen>

@@ -53,6 +53,8 @@ public final class TerminalView extends View {
     /** Our terminal emulator whose session is {@link #mTermSession}. */
     public TerminalEmulator mEmulator;
 
+    private boolean mIsMouseCursorMovementEnabled = false;
+
     public TerminalRenderer mRenderer;
 
     public TerminalViewClient mClient;
@@ -294,6 +296,9 @@ public final class TerminalView extends View {
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
+
+        android.content.SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+        mIsMouseCursorMovementEnabled = prefs.getBoolean("mouse_cursor_movement_enabled", false);
 
         updateSize();
 
@@ -611,11 +616,11 @@ public final class TerminalView extends View {
             updateFloatingToolbarVisibility(event);
             mGestureRecognizer.onTouchEvent(event);
             return true;
-        } else if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
-            if (event.isButtonPressed(MotionEvent.BUTTON_SECONDARY)) {
+        } else if (event.isFromSource(InputDevice.SOURCE_MOUSE) || event.isFromSource(InputDevice.SOURCE_TOUCHSCREEN)) {
+            if (event.isFromSource(InputDevice.SOURCE_MOUSE) && event.isButtonPressed(MotionEvent.BUTTON_SECONDARY)) {
                 if (action == MotionEvent.ACTION_DOWN) showContextMenu();
                 return true;
-            } else if (event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
+            } else if (event.isFromSource(InputDevice.SOURCE_MOUSE) && event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
                 ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clipData = clipboardManager.getPrimaryClip();
                 if (clipData != null) {
@@ -634,6 +639,47 @@ public final class TerminalView extends View {
                     case MotionEvent.ACTION_MOVE:
                         sendMouseEventCode(event, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
                         break;
+                }
+            }
+            else { // Mouse tracking is OFF, handle for the shell
+                if (mIsMouseCursorMovementEnabled && event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // Get target row and column from the click
+                    int[] targetCoords = getColumnAndRow(event, false);
+                    int targetColumn = targetCoords[0];
+                    int targetRow = targetCoords[1];
+                    // Boundary Check
+                    try {
+                        String clickedChar = mEmulator.getScreen().getSelectedText(targetColumn, targetRow, targetColumn + 1, targetRow).toString();
+                        if (clickedChar == null || clickedChar.trim().isEmpty()) {
+                            return true;
+                        }
+                    } catch (Exception e) {
+                        return true;
+                    }
+
+                    // Get cursor's current visual position
+                    int currentRow = mEmulator.getCursorRow();
+                    int currentColumn = mEmulator.getCursorCol();
+
+                    // Get the width of the terminal in characters
+                    int terminalWidth = mEmulator.mColumns;
+
+                    // Calculate the 1D index for both the click position and the cursor position.
+                    int targetIndex = (targetRow * terminalWidth) + targetColumn;
+                    int currentIndex = (currentRow * terminalWidth) + currentColumn;
+
+                    int diff = targetIndex - currentIndex;
+
+                    // Send Left or Right commands
+                    if (diff > 0) { // Need to move right
+                        for (int i = 0; i < diff; i++) {
+                            handleKeyCode(android.view.KeyEvent.KEYCODE_DPAD_RIGHT, 0);
+                        }
+                    } else if (diff < 0) { // Need to move left
+                        for (int i = 0; i < -diff; i++) {
+                            handleKeyCode(android.view.KeyEvent.KEYCODE_DPAD_LEFT, 0);
+                        }
+                    }
                 }
             }
         }
@@ -1495,6 +1541,11 @@ public final class TerminalView extends View {
                     showFloatingToolbar();
             }
         }
+    }
+
+    public void reloadPreferences() {
+        android.content.SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+        mIsMouseCursorMovementEnabled = prefs.getBoolean("mouse_cursor_movement_enabled", false);
     }
 
 }
