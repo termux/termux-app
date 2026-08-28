@@ -933,6 +933,9 @@ public final class TermuxConstants {
         /** Termux app FileViewReceiverActivity class name */
         public static final String FILE_VIEW_RECEIVER_ACTIVITY_CLASS_NAME = TERMUX_PACKAGE_NAME + ".app.api.file.FileViewReceiverActivity"; // Default: "com.termux.app.api.file.FileViewReceiverActivity"
 
+        /** Termux app HomeLauncherActivity alias class name */
+        public static final String HOME_LAUNCHER_ACTIVITY_CLASS_NAME = TERMUX_PACKAGE_NAME + ".app.HomeLauncherActivity"; // Default: "com.termux.app.HomeLauncherActivity"
+
 
         /** Termux app core activity name. */
         public static final String TERMUX_ACTIVITY_NAME = TERMUX_PACKAGE_NAME + ".app.TermuxActivity"; // Default: "com.termux.app.TermuxActivity"
