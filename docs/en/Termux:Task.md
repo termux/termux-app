@@ -1,0 +1,1 @@
+1.  REDIRECT [Termux:Tasker](Termux:Tasker)
