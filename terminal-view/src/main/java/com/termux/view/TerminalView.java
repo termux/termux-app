@@ -82,6 +82,7 @@ public final class TerminalView extends View {
 
     /** What was left in from scrolling movement. */
     float mScrollRemainder;
+    float mScrollXRemainder;
 
     /** If non-zero, this is the last unicode code point received if that was a combining character. */
     int mCombiningAccent;
@@ -142,6 +143,7 @@ public final class TerminalView extends View {
             @Override
             public boolean onUp(MotionEvent event) {
                 mScrollRemainder = 0.0f;
+                mScrollXRemainder = 0.0f;
                 if (mEmulator != null && mEmulator.isMouseTrackingActive() && !event.isFromSource(InputDevice.SOURCE_MOUSE) && !isSelectingText() && !scrolledWithFinger) {
                     // Quick event processing when mouse tracking is active - do not wait for check of double tapping
                     // for zooming.
@@ -181,6 +183,12 @@ public final class TerminalView extends View {
                     int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
                     mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
                     doScroll(e, deltaRows);
+                    
+                    distanceX += mScrollXRemainder;
+                    int deltaCols = (int) (distanceX / mRenderer.mFontWidth);
+                    mScrollXRemainder = distanceX - deltaCols * mRenderer.mFontWidth;
+//mClient.logError("scrolll", distanceY, distanceX);
+                    doScrollX(e, deltaCols);
                 }
                 return true;
             }
@@ -204,6 +212,7 @@ public final class TerminalView extends View {
                 if (mouseTrackingAtStartOfFling) {
                     mScroller.fling(0, 0, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.mRows / 2, mEmulator.mRows / 2);
                 } else {
+                	//this doesn't fling in less
                     mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), 0);
                 }
 
@@ -557,7 +566,7 @@ public final class TerminalView extends View {
         int[] columnAndRow = getColumnAndRow(e, false);
         int x = columnAndRow[0] + 1;
         int y = columnAndRow[1] + 1;
-        if (pressed && (button == TerminalEmulator.MOUSE_WHEELDOWN_BUTTON || button == TerminalEmulator.MOUSE_WHEELUP_BUTTON)) {
+        if (pressed && (button >= TerminalEmulator.MOUSE_WHEELDOWN_BUTTON && button <= TerminalEmulator.MOUSE_WHEEL_RIGHT)) {
             if (mMouseStartDownTime == e.getDownTime()) {
                 x = mMouseScrollStartX;
                 y = mMouseScrollStartY;
@@ -584,6 +593,26 @@ public final class TerminalView extends View {
             } else {
                 mTopRow = Math.min(0, Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1)));
                 if (!awakenScrollBars()) invalidate();
+            }
+        }
+    }
+    
+    void doScrollX(MotionEvent event, int cols) {
+        boolean left = cols < 0;
+        int amount = Math.abs(cols);
+        for (int i = 0; i < amount; i++) {
+            if (mEmulator.isMouseTrackingActive()) {
+                sendMouseEventCode(event, left ? TerminalEmulator.MOUSE_WHEEL_LEFT : TerminalEmulator.MOUSE_WHEEL_RIGHT, true);
+            } else if (mEmulator.isAlternateBufferActive()) {
+            	/* less is broken let me know if it works elsewhere @john-peterson
+                handleKeyCode(left ? KeyEvent.KEYCODE_DPAD_LEFT : KeyEvent.KEYCODE_DPAD_RIGHT, 0);
+                */
+            } else {
+            	/*
+                mTopRow = Math.min(0, Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1)));
+                if (!awakenScrollBars())
+                    invalidate();
+                    */
             }
         }
     }
