@@ -8,6 +8,15 @@
 
 
 [Termux](https://termux.dev) is an Android terminal application and Linux environment.
+### Bidirectional (RTL) & Cursive Shaping Support
+Termux natively supports Right-to-Left (RTL) bidirectional text flow and cursive font shaping for Arabic, Persian, Urdu, Hebrew, and other RTL languages:
+- **Native RTL/LTR Bidirectional Flow**: Correctly reorders visual text runs using Java's standard `Bidi` algorithm while keeping trailing space alignment intact next to the command prompt.
+- **Flawless Cursive Joining**: Leverages Android's native font engine (`Typeface.DEFAULT`) and `drawTextRun` to shape Arabic, Persian, and Urdu letters into continuous cursive words.
+- **Monospace Grid Alignment**: Automatically scale-fits proportional Arabic text runs to fit precisely within monospace terminal grid columns.
+- **Zero-Allocation Layout Caching**: Caches and updates cursor/selection flags in-place on frame refreshes for smooth 60/120 FPS rendering.
+
+**Note on RTL limitations:**
+Native cursive shaping may disconnect across text styles (like syntax highlighting) or the cursor. RTL runs are scaled to preserve the terminal grid alignment, which can slightly alter glyph aspect ratios. Text selection handles follow logical ordering, making mixed-Bidi selection visually unintuitive. Wide CJK and supplementary-plane characters may exhibit minor layout quirks in mixed-Bidi contexts.
 
 Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages).
 
