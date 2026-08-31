@@ -18,13 +18,13 @@
 
 
 
-    <!-- Termux RUN_COMMAND 权限 -->
+    <!-- Termux RUN_COMMAND permission -->
     <string name="permission_run_command_label">在 &TERMUX_APP_NAME; 环境中运行命令</string>
     <string name="permission_run_command_description">在 &TERMUX_APP_NAME; 环境中执行任意命令并访问文件</string>
 
 
 
-    <!-- Termux 引导包安装 -->
+    <!-- Termux Bootstrap Packages Installation -->
     <string name="bootstrap_installer_body">正在安装引导包…</string>
     <string name="bootstrap_error_title">无法安装引导包</string>
     <string name="bootstrap_error_body">&TERMUX_APP_NAME; 无法安装引导包。</string>
@@ -38,7 +38,7 @@
 
 
 
-    <!-- 终端侧边栏和快捷方式 -->
+    <!-- Terminal Sidebar and Shortcuts -->
     <string name="action_new_session">新建会话</string>
     <string name="action_new_session_failsafe">安全模式</string>
     <string name="title_max_terminals_reached">已达最大终端数</string>
@@ -56,7 +56,7 @@
 
 
 
-    <!-- 终端弹出菜单 -->
+    <!-- Terminal Popup -->
     <string name="action_select_url">选择 URL</string>
     <string name="title_select_url_dialog">点击 URL 以复制，长按以打开</string>
     <string name="title_select_url_none_found">终端中未找到 URL。</string>
@@ -93,7 +93,7 @@
 
 
 
-    <!-- Termux 通知 -->
+    <!-- Termux Notifications -->
     <string name="notification_action_exit">退出</string>
     <string name="notification_action_wake_lock">获取唤醒锁</string>
     <string name="notification_action_wake_unlock">释放唤醒锁</string>
@@ -119,79 +119,79 @@
 
 
 
-    <!-- Termux 文件接收器 -->
+    <!-- Termux File Receiver -->
     <string name="title_file_received">保存到 ~/downloads/</string>
     <string name="action_file_received_edit">编辑</string>
     <string name="action_file_received_open_directory">打开目录</string>
 
 
 
-    <!-- 杂项 -->
+    <!-- Miscellaneous -->
     <string name="error_termux_service_start_failed_general">启动 TermuxService 失败。请检查 logcat 中的异常信息。</string>
     <string name="error_termux_service_start_failed_bg">由于 Android 后台限制，应用处于后台时启动 TermuxService 失败。</string>
 
 
 
-    <!-- Termux 设置 -->
+    <!-- Termux Settings -->
     <string name="title_activity_termux_settings">&TERMUX_APP_NAME; 设置</string>
 
-    <!-- Termux 应用偏好设置 -->
+    <!-- Termux App Preferences -->
     <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
     <string name="termux_preferences_summary">&TERMUX_APP_NAME; 应用偏好设置</string>
 
-        <!-- 调试偏好设置 -->
+        <!-- Debugging Preferences -->
         <string name="termux_debugging_preferences_title">调试</string>
         <string name="termux_debugging_preferences_summary">调试偏好设置</string>
 
-            <!-- 日志分类 -->
+            <!-- Logging Category -->
             <string name="termux_logging_header">日志</string>
 
-                <!-- 日志级别 -->
+                <!-- Log Level -->
                 <string name="termux_log_level_title">日志级别</string>
 
-                <!-- 终端视图按键日志 -->
+                <!-- Terminal View Key Logging -->
                 <string name="termux_terminal_view_key_logging_enabled_title">终端视图按键日志</string>
                 <string name="termux_terminal_view_key_logging_enabled_off">日志中不会包含终端视图按键记录。（默认）</string>
                 <string name="termux_terminal_view_key_logging_enabled_on">Logcat 日志将包含终端视图按键记录。
                     这些日志非常冗长，正常情况下应禁用，否则会导致性能问题。</string>
 
-                <!-- 插件错误通知 -->
+                <!-- Plugin Error Notifications -->
                 <string name="termux_plugin_error_notifications_enabled_title">插件错误通知</string>
                 <string name="termux_plugin_error_notifications_enabled_off">禁用插件错误的闪烁提示和通知。</string>
                 <string name="termux_plugin_error_notifications_enabled_on">显示插件错误的闪烁提示和通知。（默认）</string>
 
-                <!-- 崩溃报告通知 -->
+                <!-- Crash Report Notifications -->
                 <string name="termux_crash_report_notifications_enabled_title">崩溃报告通知</string>
                 <string name="termux_crash_report_notifications_enabled_off">禁用崩溃报告通知。</string>
                 <string name="termux_crash_report_notifications_enabled_on">显示崩溃报告通知。（默认）</string>
 
 
-        <!-- 终端 I/O 偏好设置 -->
+        <!-- Terminal IO Preferences -->
         <string name="termux_terminal_io_preferences_title">终端 I/O</string>
         <string name="termux_terminal_io_preferences_summary">终端 I/O 偏好设置</string>
 
-            <!-- 键盘分类 -->
+            <!-- Keyboard Category -->
             <string name="termux_keyboard_header">键盘</string>
 
-                <!-- 软键盘 -->
+                <!-- Soft Keyboard -->
                 <string name="termux_soft_keyboard_enabled_title">启用软键盘</string>
                 <string name="termux_soft_keyboard_enabled_off">软键盘将被禁用。</string>
                 <string name="termux_soft_keyboard_enabled_on">软键盘将被启用。（默认）</string>
 
-                <!-- 仅无硬件时启用软键盘 -->
+                <!-- Soft Keyboard Only If No Hardware-->
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">仅无硬件键盘时启用软键盘</string>
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">即使连接了硬件键盘，软键盘也会被启用。（默认）</string>
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">仅当未连接硬件键盘时，软键盘才会被启用。</string>
 
 
-        <!-- 终端视图偏好设置 -->
+        <!-- Terminal View Preferences -->
         <string name="termux_terminal_view_preferences_title">终端视图</string>
         <string name="termux_terminal_view_preferences_summary">终端视图偏好设置</string>
 
-            <!-- 视图分类 -->
+            <!-- View Category -->
             <string name="termux_terminal_view_view_header">视图</string>
 
-                <!-- 终端视图边距调整 -->
+                <!-- Terminal View Margin Adjustment -->
                 <string name="termux_terminal_view_terminal_margin_adjustment_title">终端边距调整</string>
                 <string name="termux_terminal_view_terminal_margin_adjustment_off">终端边距调整将被禁用。</string>
                 <string name="termux_terminal_view_terminal_margin_adjustment_on">终端边距调整将被启用。
@@ -200,34 +200,34 @@
 
 
 
-    <!-- Termux:API 应用偏好设置 -->
+    <!-- Termux:API App Preferences -->
     <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
     <string name="termux_api_preferences_summary">&TERMUX_API_APP_NAME; 应用偏好设置</string>
 
 
 
-    <!-- Termux:Float 应用偏好设置 -->
+    <!-- Termux:Float App Preferences -->
     <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
     <string name="termux_float_preferences_summary">&TERMUX_FLOAT_APP_NAME; 应用偏好设置</string>
 
 
 
-    <!-- Termux:Tasker 应用偏好设置 -->
+    <!-- Termux:Tasker App Preferences -->
     <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
     <string name="termux_tasker_preferences_summary">&TERMUX_TASKER_APP_NAME; 应用偏好设置</string>
 
 
 
-    <!-- Termux:Widget 应用偏好设置 -->
+    <!-- Termux:Widget App Preferences -->
     <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
     <string name="termux_widget_preferences_summary">&TERMUX_WIDGET_APP_NAME; 应用偏好设置</string>
 
 
 
-    <!-- 关于偏好设置 -->
+    <!-- About Preference -->
     <string name="about_preference_title">关于</string>
 
-    <!-- 捐赠偏好设置 -->
+    <!-- Donate Preference -->
     <string name="donate_preference_title">捐赠</string>
 
 </resources>
