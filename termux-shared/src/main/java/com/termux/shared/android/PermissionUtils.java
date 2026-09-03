@@ -209,31 +209,44 @@ public class PermissionUtils {
 
     /** If path is under primary external storage directory and storage permission is missing,
      * then legacy or manage external storage permission will be requested from the user via a call
-     * to {@link #checkAndRequestLegacyOrManageExternalStoragePermission(Context, int, boolean)}.
+     * to {@link #checkAndRequestLegacyOrManageExternalStoragePermission(Context, int, boolean, boolean)}.
      *
      * @param context The context for operations.
      * @param filePath The path to check.
      * @param requestCode The request code to use while asking for permission.
+     * @param prioritizeManageExternalStoragePermission If {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE}
+     *                                                  permission should be requested if on
+     *                                                  Android `>= 11` instead of getting legacy
+     *                                                  storage permission.
      * @param showErrorMessage If an error message toast should be shown if permission is not granted.
      * @return Returns {@code true} if permission is granted, otherwise {@code false}.
      */
     @SuppressLint("SdCardPath")
     public static boolean checkAndRequestLegacyOrManageExternalStoragePermissionIfPathOnPrimaryExternalStorage(
-        @NonNull Context context, String filePath, int requestCode, boolean showErrorMessage) {
+        @NonNull Context context, String filePath, int requestCode,
+        boolean prioritizeManageExternalStoragePermission, boolean showErrorMessage) {
         // If path is under primary external storage directory, then check for missing permissions.
         if (!FileUtils.isPathInDirPaths(filePath,
             Arrays.asList(Environment.getExternalStorageDirectory().getAbsolutePath(), "/sdcard"), true))
             return true;
 
-        return checkAndRequestLegacyOrManageExternalStoragePermission(context, requestCode, showErrorMessage);
+        return checkAndRequestLegacyOrManageExternalStoragePermission(context, requestCode, prioritizeManageExternalStoragePermission, showErrorMessage);
     }
 
     /**
-     * Check if legacy or manage external storage permissions has been granted. If
-     * {@link #isLegacyExternalStoragePossible(Context)} returns {@code true}, them it will be
-     * checked if app has has been granted {@link Manifest.permission#READ_EXTERNAL_STORAGE} and
-     * {@link Manifest.permission#WRITE_EXTERNAL_STORAGE} permissions, otherwise it will be checked
-     * if app has been granted the {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE} permission.
+     * Check if legacy or manage external storage permissions has been granted.
+     *
+     * - If `prioritizeManageExternalStoragePermission` is `true and running on Android `>= 11`, then
+     *   it will be checked if app has been granted the
+     *   {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE}.
+     * - If `prioritizeManageExternalStoragePermission` is `false` and running on Android `>= 11`, then
+     *   if {@link #isLegacyExternalStoragePossible(Context)} returns `true`, them it will be
+     *   checked if app has has been granted {@link Manifest.permission#READ_EXTERNAL_STORAGE} and
+     *   {@link Manifest.permission#WRITE_EXTERNAL_STORAGE} permissions, otherwise it will be checked
+     *   if app has been granted the {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE} permission.
+     * - If running on Android `< 11`, then it will only be checked if app has been granted
+     * {@link Manifest.permission#READ_EXTERNAL_STORAGE} and
+     * {@link Manifest.permission#WRITE_EXTERNAL_STORAGE} permissions.
      *
      * If storage permission is missing, it will be requested from the user if {@code context} is an
      * instance of {@link Activity} or {@link AppCompatActivity} and {@code requestCode}
@@ -256,15 +269,33 @@ public class PermissionUtils {
      *}
      * @param context The context for operations.
      * @param requestCode The request code to use while asking for permission.
+     * @param prioritizeManageExternalStoragePermission If {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE}
+     *                                                  permission should be requested if on
+     *                                                  Android `>= 11` instead of getting legacy
+     *                                                  storage permission.
      * @param showErrorMessage If an error message toast should be shown if permission is not granted.
      * @return Returns {@code true} if permission is granted, otherwise {@code false}.
      */
     public static boolean checkAndRequestLegacyOrManageExternalStoragePermission(@NonNull Context context,
                                                                                  int requestCode,
+                                                                                 boolean prioritizeManageExternalStoragePermission,
                                                                                  boolean showErrorMessage) {
+        Logger.logVerbose(LOG_TAG, "Checking storage permission");
+
         String errmsg;
-        boolean requestLegacyStoragePermission = isLegacyExternalStoragePossible(context);
+        Boolean requestLegacyStoragePermission = null;
+
+        if (prioritizeManageExternalStoragePermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            requestLegacyStoragePermission = false;
+
+        if (requestLegacyStoragePermission == null)
+            requestLegacyStoragePermission = isLegacyExternalStoragePossible(context);
+
         boolean checkIfHasRequestedLegacyExternalStorage = checkIfHasRequestedLegacyExternalStorage(context);
+
+        Logger.logVerbose(LOG_TAG, "prioritizeManageExternalStoragePermission=" + prioritizeManageExternalStoragePermission +
+                ", requestLegacyStoragePermission=" + requestLegacyStoragePermission +
+                ", checkIfHasRequestedLegacyExternalStorage=" + checkIfHasRequestedLegacyExternalStorage);
 
         if (requestLegacyStoragePermission && checkIfHasRequestedLegacyExternalStorage) {
             // Check if requestLegacyExternalStorage is set to true in app manifest

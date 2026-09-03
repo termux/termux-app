@@ -8,8 +8,6 @@ on:
 jobs:
   attach-apks:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -19,7 +17,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.GITHUB_REF }}
 
@@ -31,7 +29,7 @@ jobs:
           exit_on_error() {
               echo "$1"
               echo "Deleting '$RELEASE_VERSION_NAME' release and '$GITHUB_REF' tag"
-              gh release delete "$RELEASE_VERSION_NAME" -y
+              hub release delete "$RELEASE_VERSION_NAME"
               git push --delete origin "$GITHUB_REF"
               exit 1
           }
@@ -74,12 +72,12 @@ jobs:
 
           echo "Attaching APKs to github release"
           if ! gh release upload "$RELEASE_VERSION_NAME" \
-          "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_universal.apk" \
-          "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
-          "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
-          "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
-          "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
-          "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
-          --clobber; then
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_universal.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
+            "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
+          ; then
             exit_on_error "Attach APKs to release failed for '$APK_VERSION_TAG' release."
           fi
