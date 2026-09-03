@@ -22,6 +22,13 @@ static int throw_runtime_exception(JNIEnv* env, char const* message)
     return -1;
 }
 
+static void free_string_array(char** array)
+{
+    if (!array) return;
+    for (char** item = array; *item; ++item) free(*item);
+    free(array);
+}
+
 static int create_subprocess(JNIEnv* env,
         char const* cmd,
         char const* cwd,
@@ -127,54 +134,89 @@ JNIEXPORT jint JNICALL Java_com_termux_terminal_JNI_createSubprocess(
         jint cell_width,
         jint cell_height)
 {
-    jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
+    char const* error_message = NULL;
+    char const* cmd_cwd = NULL;
+    char const* cmd_utf8 = NULL;
     char** argv = NULL;
+    char** envp = NULL;
+    int procId = 0;
+    int ptm = -1;
+
+    jsize size = args ? (*env)->GetArrayLength(env, args) : 0;
     if (size > 0) {
-        argv = (char**) malloc((size + 1) * sizeof(char*));
+        argv = (char**) calloc(size + 1, sizeof(char*));
         if (!argv) return throw_runtime_exception(env, "Couldn't allocate argv array");
         for (int i = 0; i < size; ++i) {
             jstring arg_java_string = (jstring) (*env)->GetObjectArrayElement(env, args, i);
+            if (!arg_java_string) {
+                if (!(*env)->ExceptionCheck(env)) error_message = "Null string in argv";
+                goto cleanup;
+            }
             char const* arg_utf8 = (*env)->GetStringUTFChars(env, arg_java_string, NULL);
-            if (!arg_utf8) return throw_runtime_exception(env, "GetStringUTFChars() failed for argv");
+            if (!arg_utf8) {
+                (*env)->DeleteLocalRef(env, arg_java_string);
+                goto cleanup;
+            }
             argv[i] = strdup(arg_utf8);
             (*env)->ReleaseStringUTFChars(env, arg_java_string, arg_utf8);
+            (*env)->DeleteLocalRef(env, arg_java_string);
+            if (!argv[i]) {
+                error_message = "strdup() failed for argv";
+                goto cleanup;
+            }
         }
-        argv[size] = NULL;
     }
 
     size = envVars ? (*env)->GetArrayLength(env, envVars) : 0;
-    char** envp = NULL;
     if (size > 0) {
-        envp = (char**) malloc((size + 1) * sizeof(char *));
-        if (!envp) return throw_runtime_exception(env, "malloc() for envp array failed");
+        envp = (char**) calloc(size + 1, sizeof(char*));
+        if (!envp) {
+            error_message = "calloc() for envp array failed";
+            goto cleanup;
+        }
         for (int i = 0; i < size; ++i) {
             jstring env_java_string = (jstring) (*env)->GetObjectArrayElement(env, envVars, i);
+            if (!env_java_string) {
+                if (!(*env)->ExceptionCheck(env)) error_message = "Null string in envp";
+                goto cleanup;
+            }
             char const* env_utf8 = (*env)->GetStringUTFChars(env, env_java_string, 0);
-            if (!env_utf8) return throw_runtime_exception(env, "GetStringUTFChars() failed for env");
+            if (!env_utf8) {
+                (*env)->DeleteLocalRef(env, env_java_string);
+                goto cleanup;
+            }
             envp[i] = strdup(env_utf8);
             (*env)->ReleaseStringUTFChars(env, env_java_string, env_utf8);
+            (*env)->DeleteLocalRef(env, env_java_string);
+            if (!envp[i]) {
+                error_message = "strdup() failed for envp";
+                goto cleanup;
+            }
         }
-        envp[size] = NULL;
     }
 
-    int procId = 0;
-    char const* cmd_cwd = (*env)->GetStringUTFChars(env, cwd, NULL);
-    char const* cmd_utf8 = (*env)->GetStringUTFChars(env, cmd, NULL);
-    int ptm = create_subprocess(env, cmd_utf8, cmd_cwd, argv, envp, &procId, rows, columns, cell_width, cell_height);
-    (*env)->ReleaseStringUTFChars(env, cmd, cmd_utf8);
-    (*env)->ReleaseStringUTFChars(env, cmd, cmd_cwd);
+    cmd_cwd = (*env)->GetStringUTFChars(env, cwd, NULL);
+    if (!cmd_cwd) goto cleanup;
 
-    if (argv) {
-        for (char** tmp = argv; *tmp; ++tmp) free(*tmp);
-        free(argv);
-    }
-    if (envp) {
-        for (char** tmp = envp; *tmp; ++tmp) free(*tmp);
-        free(envp);
-    }
+    cmd_utf8 = (*env)->GetStringUTFChars(env, cmd, NULL);
+    if (!cmd_utf8) goto cleanup;
+
+    ptm = create_subprocess(env, cmd_utf8, cmd_cwd, argv, envp, &procId, rows, columns, cell_width, cell_height);
+
+cleanup:
+    if (cmd_utf8) (*env)->ReleaseStringUTFChars(env, cmd, cmd_utf8);
+    if (cmd_cwd) (*env)->ReleaseStringUTFChars(env, cwd, cmd_cwd);
+    free_string_array(argv);
+    free_string_array(envp);
+
+    if (error_message && !(*env)->ExceptionCheck(env)) return throw_runtime_exception(env, error_message);
+    if (ptm < 0 || (*env)->ExceptionCheck(env)) return ptm;
 
     int* pProcId = (int*) (*env)->GetPrimitiveArrayCritical(env, processIdArray, NULL);
-    if (!pProcId) return throw_runtime_exception(env, "JNI call GetPrimitiveArrayCritical(processIdArray, &isCopy) failed");
+    if (!pProcId) {
+        if (!(*env)->ExceptionCheck(env)) return throw_runtime_exception(env, "JNI call GetPrimitiveArrayCritical(processIdArray, &isCopy) failed");
+        return -1;
+    }
 
     *pProcId = procId;
     (*env)->ReleasePrimitiveArrayCritical(env, processIdArray, pProcId, 0);
