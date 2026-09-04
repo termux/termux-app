@@ -1,6 +1,7 @@
 package com.termux.shared.shell.command.environment;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -19,6 +20,20 @@ import java.util.HashMap;
  * https://cs.android.com/android/platform/superproject/+/android-12.0.0_r32:packages/modules/SdkExtensions/derive_classpath/derive_classpath.cpp;l=96
  */
 public class AndroidShellEnvironment extends UnixShellEnvironment {
+
+    /** Environment variable scope for Android. */
+    public static final String ANDROID_ENV_SCOPE = "ANDROID__"; // Default: "ANDROID__"
+
+    /**
+     * Environment variable for the Android build SDK version currently running on the device that
+     * is defined by {@link Build.VERSION#SDK_INT} and `ro.build.version.sdk` system property.
+     *
+     * - https://developer.android.com/reference/android/os/Build.VERSION#SDK_INT
+     * - https://developer.android.com/reference/android/os/Build.VERSION_CODES
+     *
+     * Default value: `ANDROID__BUILD_VERSION_SDK`
+     */
+    public static final String ENV_ANDROID__BUILD_VERSION_SDK = ANDROID_ENV_SCOPE + "BUILD_VERSION_SDK";
 
     protected ShellCommandShellEnvironment shellCommandShellEnvironment;
 
@@ -60,6 +75,8 @@ public class AndroidShellEnvironment extends UnixShellEnvironment {
         ShellEnvironmentUtils.putToEnvIfInSystemEnv(environment, "BOOTCLASSPATH");
         ShellEnvironmentUtils.putToEnvIfInSystemEnv(environment, "DEX2OATBOOTCLASSPATH");
         ShellEnvironmentUtils.putToEnvIfInSystemEnv(environment, "SYSTEMSERVERCLASSPATH");
+
+        ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_ANDROID__BUILD_VERSION_SDK, String.valueOf(Build.VERSION.SDK_INT));
 
         return environment;
     }
