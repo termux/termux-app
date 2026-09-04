@@ -80,7 +80,6 @@ jobs:
             "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86_64.apk" \
             "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_x86.apk" \
             "$APK_DIR_PATH/${APK_BASENAME_PREFIX}_sha256sums" \
-            --clobber
-          ; then
+            --clobber; then
             exit_on_error "Attach APKs to release failed for '$APK_VERSION_TAG' release."
           fi
