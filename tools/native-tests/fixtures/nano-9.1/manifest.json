@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "kind": "REAL",
+  "program": "nano",
+  "version": "GNU nano, version 9.1\n (C) 2026 the Free Software Foundation and various contributors\n Compiled options: --disable-libmagic --disable-nls --enable-utf8",
+  "argv": [
+    "nano",
+    "--ignorercfiles",
+    "--constantshow",
+    "--nowrap",
+    "nano-edit-fixture.txt"
+  ],
+  "dimensions": {
+    "rows": 24,
+    "cols": 80
+  },
+  "environment": {
+    "TERM": "xterm-256color",
+    "LC_ALL": "C.UTF-8",
+    "LANG": "C.UTF-8"
+  },
+  "captureMethod": "Python pty.openpty + TIOCSWINSZ + subprocess controlling terminal; bounded select read",
+  "captureNote": "ANSI bytes are unmodified merged stdout/stderr from the real executable. File/save expectations are logical UTF-8, not visual order.",
+  "exitCode": 0,
+  "streamFile": "stream.ansi",
+  "streamBytes": 2522,
+  "streamSha256": "20584cdf69809921cdff768fe92f5392964d035ce87081836486d8eb1ac8f017",
+  "actions": [
+    {
+      "index": 0,
+      "label": "initialScreen",
+      "inputBase64": "",
+      "inputHex": "",
+      "inputSentMonotonicSeconds": 0.001481,
+      "offsetStart": 0,
+      "offsetEndExclusive": 804,
+      "byteCount": 804,
+      "deltaFile": "00-initialScreen.ansi",
+      "replayPrefixFile": "00-initialScreen.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 1,
+        "codepointIndex0Based": 0,
+        "terminalRow0Based": 1,
+        "terminalCol0Based": 0,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 1,
+      "label": "right-two",
+      "inputBase64": "G1tDG1tD",
+      "inputHex": "1b5b431b5b43",
+      "inputSentMonotonicSeconds": 0.203227,
+      "offsetStart": 804,
+      "offsetEndExclusive": 906,
+      "byteCount": 102,
+      "deltaFile": "01-right-two.ansi",
+      "replayPrefixFile": "01-right-two.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 1,
+        "codepointIndex0Based": 2,
+        "terminalRow0Based": 1,
+        "terminalCol0Based": 2,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 2,
+      "label": "insert-arabic-teh",
+      "inputBase64": "2Ko=",
+      "inputHex": "d8aa",
+      "inputSentMonotonicSeconds": 0.404241,
+      "offsetStart": 906,
+      "offsetEndExclusive": 1039,
+      "byteCount": 133,
+      "deltaFile": "02-insert-arabic-teh.ansi",
+      "replayPrefixFile": "02-insert-arabic-teh.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 1,
+        "codepointIndex0Based": 3,
+        "terminalRow0Based": 1,
+        "terminalCol0Based": 3,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 3,
+      "label": "forward-delete-hah",
+      "inputBase64": "G1szfg==",
+      "inputHex": "1b5b337e",
+      "inputSentMonotonicSeconds": 0.605027,
+      "offsetStart": 1039,
+      "offsetEndExclusive": 1113,
+      "byteCount": 74,
+      "deltaFile": "03-forward-delete-hah.ansi",
+      "replayPrefixFile": "03-forward-delete-hah.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 1,
+        "codepointIndex0Based": 3,
+        "terminalRow0Based": 1,
+        "terminalCol0Based": 3,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 4,
+      "label": "backspace-teh",
+      "inputBase64": "fw==",
+      "inputHex": "7f",
+      "inputSentMonotonicSeconds": 0.806247,
+      "offsetStart": 1113,
+      "offsetEndExclusive": 1193,
+      "byteCount": 80,
+      "deltaFile": "04-backspace-teh.ansi",
+      "replayPrefixFile": "04-backspace-teh.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 1,
+        "codepointIndex0Based": 2,
+        "terminalRow0Based": 1,
+        "terminalCol0Based": 2,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 5,
+      "label": "combining-line-home",
+      "inputBase64": "G1tCG1tI",
+      "inputHex": "1b5b421b5b48",
+      "inputSentMonotonicSeconds": 1.006966,
+      "offsetStart": 1193,
+      "offsetEndExclusive": 1284,
+      "byteCount": 91,
+      "deltaFile": "05-combining-line-home.ansi",
+      "replayPrefixFile": "05-combining-line-home.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 2,
+        "codepointIndex0Based": 0,
+        "terminalRow0Based": 2,
+        "terminalCol0Based": 0,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 6,
+      "label": "mixed-line-home",
+      "inputBase64": "G1tCG1tI",
+      "inputHex": "1b5b421b5b48",
+      "inputSentMonotonicSeconds": 1.207667,
+      "offsetStart": 1284,
+      "offsetEndExclusive": 1373,
+      "byteCount": 89,
+      "deltaFile": "06-mixed-line-home.ansi",
+      "replayPrefixFile": "06-mixed-line-home.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 3,
+        "codepointIndex0Based": 0,
+        "terminalRow0Based": 3,
+        "terminalCol0Based": 0,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 7,
+      "label": "mixed-line-arabic-boundary",
+      "inputBase64": "G1tDG1tDG1tDG1tDG1tDG1tD",
+      "inputHex": "1b5b431b5b431b5b431b5b431b5b431b5b43",
+      "inputSentMonotonicSeconds": 1.408362,
+      "offsetStart": 1373,
+      "offsetEndExclusive": 1448,
+      "byteCount": 75,
+      "deltaFile": "07-mixed-line-arabic-boundary.ansi",
+      "replayPrefixFile": "07-mixed-line-arabic-boundary.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 3,
+        "codepointIndex0Based": 6,
+        "terminalRow0Based": 3,
+        "terminalCol0Based": 6,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 8,
+      "label": "indented-continuation-home",
+      "inputBase64": "G1tCG1tI",
+      "inputHex": "1b5b421b5b48",
+      "inputSentMonotonicSeconds": 1.609324,
+      "offsetStart": 1448,
+      "offsetEndExclusive": 1538,
+      "byteCount": 90,
+      "deltaFile": "08-indented-continuation-home.ansi",
+      "replayPrefixFile": "08-indented-continuation-home.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 4,
+        "codepointIndex0Based": 0,
+        "terminalRow0Based": 4,
+        "terminalCol0Based": 0,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 9,
+      "label": "indented-arabic-boundary",
+      "inputBase64": "G1tDG1tD",
+      "inputHex": "1b5b431b5b43",
+      "inputSentMonotonicSeconds": 1.81014,
+      "offsetStart": 1538,
+      "offsetEndExclusive": 1611,
+      "byteCount": 73,
+      "deltaFile": "09-indented-arabic-boundary.ansi",
+      "replayPrefixFile": "09-indented-arabic-boundary.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 4,
+        "codepointIndex0Based": 2,
+        "terminalRow0Based": 4,
+        "terminalCol0Based": 2,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 10,
+      "label": "write-out-prompt",
+      "inputBase64": "Dw==",
+      "inputHex": "0f",
+      "inputSentMonotonicSeconds": 2.010959,
+      "offsetStart": 1611,
+      "offsetEndExclusive": 1993,
+      "byteCount": 382,
+      "deltaFile": "10-write-out-prompt.ansi",
+      "replayPrefixFile": "10-write-out-prompt.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 11,
+      "label": "confirm-save",
+      "inputBase64": "DQ==",
+      "inputHex": "0d",
+      "inputSentMonotonicSeconds": 2.211672,
+      "offsetStart": 1993,
+      "offsetEndExclusive": 2450,
+      "byteCount": 457,
+      "deltaFile": "11-confirm-save.ansi",
+      "replayPrefixFile": "11-confirm-save.replay.ansi",
+      "expectedLogicalCursor": {
+        "fileLine1Based": 4,
+        "codepointIndex0Based": 2,
+        "terminalRow0Based": 4,
+        "terminalCol0Based": 2,
+        "basis": "predicted from nano key semantics; ANSI cursor independently replay-checked later"
+      }
+    },
+    {
+      "index": 12,
+      "label": "exit",
+      "inputBase64": "GA==",
+      "inputHex": "18",
+      "inputSentMonotonicSeconds": 2.413251,
+      "offsetStart": 2450,
+      "offsetEndExclusive": 2522,
+      "byteCount": 72,
+      "deltaFile": "12-exit.ansi",
+      "replayPrefixFile": "12-exit.replay.ansi",
+      "expectedLogicalCursor": null
+    }
+  ],
+  "containsEnterAlternateScreen": true,
+  "containsExitAlternateScreen": true,
+  "originalFile": "nano-input-original.txt",
+  "savedFile": "nano-edit-fixture.txt",
+  "expectedSavedFile": "nano-expected-saved.txt",
+  "saveVerification": {
+    "passed": true,
+    "expectedSha256": "07d960c84d0808d0c329e09e86e89e75ba8336269fa823843d1d905021cd205d",
+    "actualSha256": "07d960c84d0808d0c329e09e86e89e75ba8336269fa823843d1d905021cd205d",
+    "actualUtf8": "مربا بالعالم\nبِسْمِ الله\nhello مرحبا 123\n  هذا سطر متابعة عربي\n    استمرار عربي مع indentation\n"
+  },
+  "editExplanation": "Start at codepoint index 0 of line 1; move right twice, insert ت, Delete key ESC[3~ deletes ح, DEL backspaces inserted ت. Final line 1 is مربا بالعالم. All other original bytes must be preserved.",
+  "binarySha256": "84c41983b1653c9cc2d5e3d76941a45a63578883462923495f487615639ed7ce",
+  "metadataNote": "Executable path normalized to program name; recorded ANSI, action offsets, inputs, and expectations are unchanged."
+}

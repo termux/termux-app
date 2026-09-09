@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.SystemClock;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,8 @@ public class TextSelectionHandleView extends View {
     private int mHandleWidth;
 
     private final int mInitialOrientation;
+    private int mTextOrientation;
+    private boolean mFlowPosition;
     private int mOrientation;
 
     public static final int LEFT = 0;
@@ -58,6 +61,7 @@ public class TextSelectionHandleView extends View {
         this.terminalView = terminalView;
         mCursorController = cursorController;
         mInitialOrientation = initialOrientation;
+        mTextOrientation = initialOrientation;
 
         mHandleLeftDrawable = getContext().getDrawable(R.drawable.text_select_handle_left_material);
         mHandleRightDrawable = getContext().getDrawable(R.drawable.text_select_handle_right_material);
@@ -107,7 +111,7 @@ public class TextSelectionHandleView extends View {
         mHandleHeight = mHandleDrawable.getIntrinsicHeight();
 
         mHandleWidth = handleWidth;
-        mTouchOffsetY = -mHandleHeight * 0.3f;
+        updateTouchOffset();
         mHotspotY = 0;
         invalidate();
     }
@@ -130,8 +134,9 @@ public class TextSelectionHandleView extends View {
         coords[0] += mPointX;
         coords[1] += mPointY;
 
+        // These are physical window coordinates, independent of the surrounding RTL chrome.
         if (mHandle != null)
-            mHandle.showAtLocation(terminalView, 0, coords[0], coords[1]);
+            mHandle.showAtLocation(terminalView, Gravity.TOP | Gravity.LEFT, coords[0], coords[1]);
     }
 
     public void hide() {
@@ -153,16 +158,44 @@ public class TextSelectionHandleView extends View {
         }
     }
 
+    private void updateTouchOffset() {
+        mTouchOffsetY = mFlowPosition
+            ? -Math.min(mHandleHeight * 0.3f, terminalView.mRenderer.getFontLineSpacing() / 2f)
+            : -mHandleHeight * 0.3f;
+    }
+
     public void positionAtCursor(final int cx, final int cy, boolean forceOrientationCheck) {
-        int x = terminalView.getPointX(cx);
+        boolean wasFlow = mFlowPosition;
+        mFlowPosition = terminalView.isRtlRenderingEnabled();
+        updateTouchOffset();
+        if (!mFlowPosition) {
+            mTextOrientation = mInitialOrientation;
+            int x = terminalView.getPointX(cx);
+            int y = terminalView.getPointY(cy + 1);
+            moveTo(x, y, forceOrientationCheck || wasFlow);
+            return;
+        }
+        // Controller stores inclusive endpoints but passes end + 1 to this method. Convert back
+        // before requesting its trailing edge: next-cell leading is ambiguous at bidi boundaries.
+        boolean trailing = mInitialOrientation == RIGHT;
+        int column = trailing ? Math.max(0, cx - 1) : cx;
+        int leadingX = terminalView.getPointX(column, cy, false);
+        int trailingX = terminalView.getPointX(column, cy, true);
+        mTextOrientation = trailingX < leadingX ? (trailing ? LEFT : RIGHT) : mInitialOrientation;
+        int x = trailing ? trailingX : leadingX;
         int y = terminalView.getPointY(cy + 1);
-        moveTo(x, y, forceOrientationCheck);
+        moveTo(x, y, forceOrientationCheck || mTextOrientation != mOrientation);
     }
 
     private void moveTo(int x, int y, boolean forceOrientationCheck) {
         float oldHotspotX = mHotspotX;
         checkChangedOrientation(x, forceOrientationCheck);
-        mPointX = (int) (x - (isShowing() ? oldHotspotX : mHotspotX));
+        if (mFlowPosition) {
+            if (mIsDragging) mTouchToWindowOffsetX += mHotspotX - oldHotspotX;
+            mPointX = (int) (x - mHotspotX);
+        } else {
+            mPointX = (int) (x - (isShowing() ? oldHotspotX : mHotspotX));
+        }
         mPointY = y;
 
         if (isPositionVisible()) {
@@ -237,7 +270,7 @@ public class TextSelectionHandleView extends View {
         } else if (posX + mHandleWidth > clip.right) {
             changeOrientation(LEFT);
         } else {
-            changeOrientation(mInitialOrientation);
+            changeOrientation(mTextOrientation);
         }
     }
 

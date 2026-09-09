@@ -100,6 +100,9 @@
     <string name="notification_action_exit">Exit</string>
     <string name="notification_action_wake_lock">Acquire wakelock</string>
     <string name="notification_action_wake_unlock">Release wakelock</string>
+    <string name="notification_sessions">Sessions: %1$d</string>
+    <string name="notification_tasks">%1$s, tasks: %2$d</string>
+    <string name="notification_wake_lock_held">%1$s (wake lock held)</string>
 
 
 
@@ -235,4 +238,14 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
 
+    <!-- Language names remain recognizable in either interface language. -->
+    <string name="action_choose_language">English / العربية</string>
+    <string name="title_choose_language">App language</string>
+    <string-array name="app_language_names">
+        <item>English</item>
+        <item>العربية</item>
+    </string-array>
+    <string name="action_arabic_terminal_flow">Arabic terminal flow</string>
+    <string name="action_arabic_terminal_flow_from_properties">Arabic terminal flow (termux.properties)</string>
+    <string name="msg_terminal_flow_override">Terminal flow saved. Changing language from the drawer restores its default. Full-screen terminal apps may still use native layout.</string>
 </resources>

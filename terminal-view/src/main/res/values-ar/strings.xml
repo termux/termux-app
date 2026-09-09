@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="paste_text">لصق</string>
+    <string name="copy_text">نسخ</string>
+    <string name="text_selection_more">المزيد…</string>
+</resources>

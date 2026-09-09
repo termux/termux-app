@@ -68,6 +68,21 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
 
 
 
+    /** A missing override follows the app language, rather than persisting a default on startup. */
+    @Nullable
+    public Boolean getTerminalRtlTextShapingOverride() {
+        return mSharedPreferences.contains(TERMUX_APP.KEY_TERMINAL_RTL_TEXT_SHAPING) ?
+            SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_RTL_TEXT_SHAPING, false) : null;
+    }
+
+    public void setTerminalRtlTextShapingOverride(boolean enabled) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_RTL_TEXT_SHAPING, enabled, false);
+    }
+
+    public void clearTerminalRtlTextShapingOverride() {
+        mSharedPreferences.edit().remove(TERMUX_APP.KEY_TERMINAL_RTL_TEXT_SHAPING).apply();
+    }
+
     public boolean shouldShowTerminalToolbar() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, TERMUX_APP.DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR);
     }

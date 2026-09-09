@@ -8,7 +8,7 @@ import android.provider.OpenableColumns;
 import android.util.Patterns;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import com.termux.shared.termux.activities.TermuxLocaleActivity;
 
 import com.termux.R;
 import com.termux.shared.android.PackageUtils;
@@ -36,7 +36,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-public class FileReceiverActivity extends AppCompatActivity {
+public class FileReceiverActivity extends TermuxLocaleActivity {
 
     static final String TERMUX_RECEIVEDIR = TermuxConstants.TERMUX_FILES_DIR_PATH + "/home/downloads";
     static final String EDITOR_PROGRAM = TermuxConstants.TERMUX_HOME_DIR_PATH + "/bin/termux-file-editor";

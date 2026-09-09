@@ -66,6 +66,9 @@ public final class TerminalView extends View {
     public static final int TERMINAL_CURSOR_BLINK_RATE_MIN = 100;
     public static final int TERMINAL_CURSOR_BLINK_RATE_MAX = 2000;
 
+    /** Opt-in presentation only; independent of the application's UI language. */
+    private boolean mRtlTextShapingEnabled = false;
+
     /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
     int mTopRow;
     int[] mDefaultSelectors = new int[]{-1,-1,-1,-1};
@@ -512,14 +515,46 @@ public final class TerminalView extends View {
      * @param textSize the new font size, in density-independent pixels.
      */
     public void setTextSize(int textSize) {
-        mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface);
+        mRenderer = new TerminalRenderer(textSize, mRenderer == null ? Typeface.MONOSPACE : mRenderer.mTypeface, mRtlTextShapingEnabled);
         updateSize();
     }
 
     public void setTypeface(Typeface newTypeface) {
-        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface);
+        mRenderer = new TerminalRenderer(mRenderer.mTextSize, newTypeface, mRtlTextShapingEnabled);
         updateSize();
         invalidate();
+    }
+
+    /**
+     * Opts into right-to-left text flow (off by default, API 23+), so that Arabic letters
+     * are joined into their contextual forms and words are laid out from right to left. Cursor and
+     * selection are mapped to logical cells without changing terminal contents. Whole-row flow is
+     * disabled in grid/application modes; bounded RTL fields are shaped in their original cells.
+     * Unrecognized single-space-separated widgets remain a heuristic; disable manually if needed.
+     *
+     * @param enabled The boolean value that defines the state.
+     */
+    public void setRtlTextShapingEnabled(boolean enabled) {
+        mRtlTextShapingEnabled = enabled;
+        if (mRenderer != null) {
+            mRenderer.setRtlTextShapingEnabled(enabled);
+            invalidate();
+        }
+    }
+
+    /** The requested shaping/flow setting (individual grid rows may still use native layout). */
+    public boolean isRtlTextShapingEnabled() {
+        return mRtlTextShapingEnabled;
+    }
+
+    /** Effective whole-paragraph/navigation gate, not the TUI shaping gate. */
+    public boolean isRtlFlowEnabled() {
+        return mRenderer != null && mRenderer.isRtlFlowEnabled(mEmulator);
+    }
+
+    /** Effective API 23+ shaping gate, including bounded fields in grid/TUI modes. */
+    public boolean isRtlRenderingEnabled() {
+        return mRenderer != null && mRenderer.isRtlRenderingEnabled(mEmulator);
     }
 
     @Override
@@ -537,17 +572,22 @@ public final class TerminalView extends View {
      * position of the event.
      *
      * @param event The event with the position to get the column and row for.
-     * @param relativeToScroll If true the column number will take the scroll
-     * position into account. E.g. if scrolled 3 lines up and the event
-     * position is in the top left, column will be -3 if relativeToScroll is
-     * true and 0 if relativeToScroll is false.
+     * @param relativeToScroll If true, return a logical column and external buffer row,
+     * including scrollback. Otherwise return screen-relative logical coordinates for mouse reports;
+     * only shaped fields translate x, while native UI columns keep their original positions.
      * @return Array with the column and row.
      */
     public int[] getColumnAndRow(MotionEvent event, boolean relativeToScroll) {
         int column = (int) (event.getX() / mRenderer.mFontWidth);
         int row = (int) ((event.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
-        if (relativeToScroll) {
-            row += mTopRow;
+        if (relativeToScroll) row += mTopRow;
+        if (isRtlRenderingEnabled()) {
+            // Mouse reports remain screen-relative and address raw native cells, not selection
+            // owners (e.g. the second half of CJK). Only actual shaped fields translate x.
+            int externalRow = clampExternalRow(relativeToScroll ? row : row + mTopRow);
+            if (relativeToScroll) row = externalRow;
+            column = relativeToScroll ? getCursorX(event.getX(), externalRow)
+                : mRenderer.mouseColumnAt(mEmulator, externalRow, event.getX());
         }
         return new int[] { column, row };
     }
@@ -798,7 +838,7 @@ public final class TerminalView extends View {
         if (shiftDown) keyMod |= KeyHandler.KEYMOD_SHIFT;
         if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
         // https://github.com/termux/termux-app/issues/731
-        if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
+        if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod, event.hasNoModifiers())) {
             if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "handleKeyCode() took key event");
             return true;
         }
@@ -910,6 +950,10 @@ public final class TerminalView extends View {
 
     /** Input the specified keyCode if applicable and return if the input was consumed. */
     public boolean handleKeyCode(int keyCode, int keyMod) {
+        return handleKeyCode(keyCode, keyMod, true);
+    }
+
+    private boolean handleKeyCode(int keyCode, int keyMod, boolean plainKeyEvent) {
         // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
         if (mEmulator != null)
             mEmulator.setCursorBlinkState(true);
@@ -918,6 +962,17 @@ public final class TerminalView extends View {
             return true;
 
         TerminalEmulator term = mTermSession.getEmulator();
+        // Only plain horizontal arrows follow paragraph-logical RTL order. Home/End, deletion, shortcuts,
+        // Unicode/IME input and application-mode keys retain their native logical semantics.
+        if (plainKeyEvent && keyMod == 0 &&
+            (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) &&
+            mRenderer != null && mRenderer.isRtlCursor(term)) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                keyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                keyCode = KeyEvent.KEYCODE_DPAD_LEFT;
+            }
+        }
         String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
         if (code == null) return false;
         mTermSession.write(code);
@@ -1035,8 +1090,47 @@ public final class TerminalView extends View {
         return (int) (x / mRenderer.mFontWidth);
     }
 
+    /** Map a view-local x coordinate on a particular external (possibly scrollback) row. */
+    public int getCursorX(float x, int externalRow) {
+        if (!isRtlRenderingEnabled()) return getCursorX(x);
+        return Math.max(0, Math.min(mEmulator.mColumns - 1,
+            mRenderer.logicalColumnAt(mEmulator, clampExternalRow(externalRow), x)));
+    }
+
+    /**
+     * Hit-test a selection edge. At a bidi boundary two logical cells can share an x coordinate;
+     * retain the current edge if possible, otherwise probe just inside either adjacent cell.
+     */
+    public int getCursorX(float x, int externalRow, boolean trailing, int previousColumn) {
+        if (!isRtlRenderingEnabled()) return Math.max(0, getCursorX(x));
+        int row = clampExternalRow(externalRow);
+        float epsilon = Math.min(0.5f, mRenderer.mFontWidth / 4f);
+        if (previousColumn >= 0 && previousColumn < mEmulator.mColumns &&
+            Math.abs(mRenderer.logicalBoundaryX(mEmulator, row, previousColumn, trailing) - x) < epsilon) {
+            return previousColumn;
+        }
+        int column = getCursorX(x, row);
+        float distance = Math.abs(mRenderer.logicalBoundaryX(mEmulator, row, column, trailing) - x);
+        for (int direction = -1; direction <= 1; direction += 2) {
+            int adjacent = getCursorX(x + direction * epsilon, row);
+            float adjacentDistance = Math.abs(mRenderer.logicalBoundaryX(mEmulator, row, adjacent, trailing) - x);
+            if (adjacentDistance < distance) {
+                column = adjacent;
+                distance = adjacentDistance;
+            }
+        }
+        return column;
+    }
+
+    private int clampExternalRow(int row) {
+        return Math.max(-mEmulator.getScreen().getActiveTranscriptRows(),
+            Math.min(mEmulator.mRows - 1, row));
+    }
+
     public int getCursorY(float y) {
-        return (int) (((y - 40) / mRenderer.mFontLineSpacing) + mTopRow);
+        if (!isRtlRenderingEnabled())
+            return (int) (((y - 40) / mRenderer.mFontLineSpacing) + mTopRow);
+        return (int) Math.floor((y - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing) + mTopRow;
     }
 
     public int getPointX(int cx) {
@@ -1046,8 +1140,22 @@ public final class TerminalView extends View {
         return Math.round(cx * mRenderer.mFontWidth);
     }
 
+    /** Leading edge of a logical cell on an external buffer row. */
+    public int getPointX(int cx, int externalRow) {
+        return getPointX(cx, externalRow, false);
+    }
+
+    /** Leading/trailing edge of the specified cell, not the leading edge of the next cell. */
+    public int getPointX(int cx, int externalRow, boolean trailing) {
+        if (!isRtlRenderingEnabled()) return getPointX(cx + (trailing ? 1 : 0));
+        return Math.round(mRenderer.logicalBoundaryX(mEmulator, clampExternalRow(externalRow),
+            Math.max(0, Math.min(mEmulator.mColumns - 1, cx)), trailing));
+    }
+
     public int getPointY(int cy) {
-        return Math.round((cy - mTopRow) * mRenderer.mFontLineSpacing);
+        if (!isRtlRenderingEnabled())
+            return Math.round((cy - mTopRow) * mRenderer.mFontLineSpacing);
+        return Math.round(mRenderer.mFontLineSpacingAndAscent + (cy - mTopRow) * mRenderer.mFontLineSpacing);
     }
 
     public int getTopRow() {

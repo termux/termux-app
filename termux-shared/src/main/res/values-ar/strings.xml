@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "com.termux">
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "Termux:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    <!ENTITY TERMUX_PREFIX_DIR_PATH "/data/data/com.termux/files/usr">
+    ]>
+
+<resources>
+
+    <string name="msg_directory_absolute_path">المسار المطلق لمجلد %1$s: \"%2$s\"</string>
+
+
+
+    <!-- PackageUtils -->
+    <string name="error_app_not_installed_or_disabled_warning">التطبيق %1$s (%2$s) غير مثبت أو معطّل.</string>
+    <string name="error_get_package_context_failed_title">تعذّر الحصول على سياق الحزمة</string>
+    <string name="error_get_package_context_failed_message">تعذّر الحصول على سياق الحزمة \"%1$s\". قد يكون السبب أن حزمة التطبيق غير مثبتة أو أن توقيع APK الخاص بها يختلف عن توقيع التطبيق الحالي.</string>
+    <string name="error_get_package_context_failed_help_url_message">راجع %1$s لمزيد من التفاصيل.</string>
+    <string name="error_get_component_state_failed">تعذّر الحصول على حالة المكوّن %1$s/%2$s</string>
+    <string name="error_enable_component_failed">تعذّر تفعيل المكوّن %1$s/%2$s</string>
+    <string name="error_disable_component_failed">تعذّر تعطيل المكوّن %1$s/%2$s</string>
+
+
+
+    <!-- PermissionUtils -->
+    <string name="message_sudo_please_grant_permissions">يرجى منح الأذونات المطلوبة</string>
+    <string name="error_failed_to_request_permissions">تعذّر طلب الأذونات برمز الطلب %1$d: %2$s</string>
+    <string name="error_attempted_to_check_for_permissions_not_requested">جرت محاولة التحقق من أذونات لم تُطلب في ملف بيان التطبيق: %1$s</string>
+    <string name="error_attempted_to_ask_for_permissions_not_requested">جرت محاولة طلب أذونات غير مطلوبة في ملف بيان التطبيق: %1$s</string>
+    <string name="error_has_not_requested_legacy_external_storage">تستهدف الحزمة \"%1$s\" الإصدار targetSdkVersion %2$d وتعمل على Android SDK %3$d، لكنها لم تضبط requestLegacyExternalStorage على true في ملف بيان التطبيق</string>
+    <string name="msg_requires_dump_and_package_usage_stats_permissions">يتطلب إذني `DUMP` و`PACKAGE_USAGE_STATS`</string>
+    <string name="error_display_over_other_apps_permission_not_granted">يتطلب %1$s إذن \"الظهور فوق التطبيقات الأخرى\" لبدء الأنشطة والخدمات من الخلفية على Android >= 10. امنحه من إعدادات Android -> التطبيقات -> %1$s -> خيارات متقدمة -> الظهور فوق التطبيقات الأخرى. قد يختلف اسم الإذن بين الأجهزة؛ ففي أجهزة Xiaomi يسمى \"عرض النوافذ المنبثقة أثناء التشغيل في الخلفية\". راجع https://dontkillmyapp.com للمشكلات الخاصة بجهازك.</string>
+
+
+
+    <!-- TermuxPluginUtils -->
+    <string name="error_allow_external_apps_ungranted">يتطلب %1$s ضبط الخاصية `allow-external-apps` على `true` في الملف `%2$s`.</string>
+
+
+
+    <!-- ReportActivity -->
+    <string name="title_report_text">نص التقرير</string>
+    <string name="msg_report_truncated">**التقرير مقتطع**\n\nالتقرير كبير جدًا لعرضه هنا. استخدم خيار `حفظ في ملف` من قائمة الخيارات (النقاط الثلاث في الأعلى) واعرضه في تطبيق خارجي لتحرير النصوص.\n\n##\n\n</string>
+
+
+
+    <!-- ShareUtils -->
+    <string name="title_share_with">المشاركة عبر</string>
+    <string name="title_open_url_with">فتح الرابط باستخدام</string>
+    <string name="msg_storage_permission_not_granted">لم يُمنح إذن التخزين.</string>
+    <string name="msg_file_saved_successfully">حُفظ الملف %1$s بنجاح في \"%2$s\"</string>
+
+
+
+    <!-- Shell -->
+    <string name="error_sending_sigkill_to_process">جارٍ إرسال SIGKILL إلى العملية بناءً على طلب المستخدم أو لأن Android يُنهي خدمة التنفيذ</string>
+    <string name="error_executable_unset">لم يُعيّن الملف التنفيذي \"%1$s\" لأمر الصدفة</string>
+    <string name="error_execution_cancelled">أُلغي التنفيذ لأن خدمة التنفيذ قيد الإنهاء</string>
+    <string name="error_failed_to_execute_termux_session_command">تعذّر تنفيذ أمر جلسة Termux \"%1$s\"</string>
+    <string name="error_failed_to_execute_app_shell_command">تعذّر تنفيذ أمر صدفة التطبيق \"%1$s\"</string>
+    <string name="error_exception_received_while_executing_termux_session_command">حدث استثناء أثناء تنفيذ أمر جلسة Termux \"%1$s\".\nالاستثناء: %2$s</string>
+    <string name="error_exception_received_while_executing_app_shell_command">حدث استثناء أثناء تنفيذ أمر صدفة التطبيق \"%1$s\".\nالاستثناء: %2$s</string>
+
+
+
+    <!-- TermuxUtils -->
+    <string name="msg_report_issue">إذا أردت الإبلاغ عن هذه المشكلة، فانسخ نصها من قائمة الخيارات (النقاط الثلاث في الأعلى)، ثم أرسل بلاغًا عبر أحد الروابط التالية.\n\nإذا كنت ترسل تقريرًا عن تعطل تطبيق Termux، فيرجى ذكر ما كنت تفعله عند حدوث العطل وكيفية تكراره إن أمكن.\n\nإذا كنت تبلغ عن مشكلة على GitHub، فأرسلها إلى المستودع الذي ينتمي إليه التقرير. **من المرجح إغلاق أو حذف** البلاغات أو رسائل البريد التي تتضمن **لقطات شاشة (جزئية)** بدلًا من النص المنسوخ أو ملف التقرير تلقائيًا. يمكنك حذف أي معلومات خاصة بجهازك تعتبرها سرية أو لا ترغب في مشاركتها أو لا تتعلق بالمشكلة.\n\nلا نقدم دعمًا لأي أدوات أو برامج نصية متعلقة بالاختراق. **من المرجح إغلاق أو حذف** الأسئلة عنها، سواء بالبريد الإلكتروني أو على GitHub أو منتديات مجتمع Termux الرسمية الأخرى، تلقائيًا. وقد يؤدي ذلك إلى حظر **مؤقت أو دائم**. راجع %1$s/wiki/Hacking للتفاصيل.</string>
+
+    <string name="msg_termux_app_required_by_app">يتطلب التطبيق %1$s وجود &TERMUX_APP_NAME; لتشغيل أوامر Termux.</string>
+    <string name="error_termux_app_package_context_not_accessible">لا يمكن الوصول إلى تطبيق &TERMUX_APP_NAME; (سياق الحزمة).</string>
+    <string name="error_termux_prefix_dir_path_not_accessible">لا يمكن للتطبيق %1$s الوصول إلى مجلد $PREFIX الخاص بتطبيق &TERMUX_APP_NAME;. قد يكون السبب أنك لم تثبّت تطبيق &TERMUX_APP_NAME; أو لم تُعِدّه، أو أن تطبيقي &TERMUX_APP_NAME; و%1$s يحملان توقيعي APK مختلفين نتيجة تثبيتهما من مصدرين مختلفين. وقد يكون السبب أيضًا أن مجلد $PREFIX الخاص بـ &TERMUX_APP_NAME;، وهو \"&TERMUX_PREFIX_DIR_PATH;\"، غير موجود أو لا يملك أذونات القراءة والكتابة والتنفيذ.</string>
+
+
+
+    <!-- Miscellaneous -->
+    <string name="action_yes">نعم</string>
+    <string name="action_no">لا</string>
+    <string name="action_copy">نسخ</string>
+    <string name="action_share">مشاركة</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_save_to_file">حفظ في ملف</string>
+
+    <string name="msg_storage_permission_granted_on_request">منح المستخدم إذن التخزين عند طلبه</string>
+    <string name="msg_storage_permission_not_granted_on_request">لم يمنح المستخدم إذن التخزين عند طلبه</string>
+
+
+
+    <!-- Launcher Icons -->
+    <string name="action_enable_launcher_icon">تفعيل أيقونة التطبيق</string>
+    <string name="action_disable_launcher_icon">تعطيل أيقونة التطبيق</string>
+    <string name="msg_enabling_launcher_icon">جارٍ تفعيل أيقونة تشغيل تطبيق %1$s</string>
+    <string name="msg_disabling_launcher_icon">جارٍ تعطيل أيقونة تشغيل تطبيق %1$s</string>
+    <string name="setting_launcher_icon_title">تفعيل أيقونة التطبيق</string>
+    <string name="setting_launcher_icon_enabled_off">ستُعطّل أيقونة التطبيق.</string>
+    <string name="setting_launcher_icon_enabled_on">ستُفعّل أيقونة التطبيق. (افتراضي)</string>
+
+
+
+    <!-- Log Level -->
+    <string name="log_level_title">مستوى التسجيل</string>
+    <string name="log_level_off">معطّل</string>
+    <string name="log_level_normal">عادي</string>
+    <string name="log_level_debug">تصحيح الأخطاء</string>
+    <string name="log_level_verbose">مفصّل</string>
+    <string name="log_level_unknown">*غير معروف*</string>
+    <string name="log_level_value">ضُبط مستوى تسجيل logcat على \"%1$s\"</string>
+
+</resources>

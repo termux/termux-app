@@ -1,5 +1,7 @@
 package com.termux.shared.activities;
 
+import com.termux.shared.termux.activities.TermuxLocaleActivity;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -21,7 +23,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.termux.shared.interact.ShareUtils;
@@ -41,7 +42,7 @@ import java.util.Locale;
  *
  * {@code ` <activity android:name="com.termux.shared.activities.TextIOActivity" android:theme="@style/Theme.AppCompat.TermuxTextIOActivity" />` }
  */
-public class TextIOActivity extends AppCompatActivity {
+public class TextIOActivity extends TermuxLocaleActivity {
 
     private static final String CLASS_NAME = ReportActivity.class.getCanonicalName();
     public static final String EXTRA_TEXT_IO_INFO_OBJECT = CLASS_NAME + ".EXTRA_TEXT_IO_INFO_OBJECT";

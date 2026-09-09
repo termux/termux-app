@@ -1,8 +1,9 @@
 package com.termux.shared.activities;
 
+import com.termux.shared.termux.activities.TermuxLocaleActivity;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,7 +48,7 @@ import io.noties.markwon.recycler.SimpleEntry;
  * Also make an incremental call to {@link #deleteReportInfoFilesOlderThanXDays(Context, int, boolean)}
  * in the app to cleanup cached files.
  */
-public class ReportActivity extends AppCompatActivity {
+public class ReportActivity extends TermuxLocaleActivity {
 
     private static final String CLASS_NAME = ReportActivity.class.getCanonicalName();
     private static final String ACTION_DELETE_REPORT_INFO_OBJECT_FILE = CLASS_NAME + ".ACTION_DELETE_REPORT_INFO_OBJECT_FILE";
