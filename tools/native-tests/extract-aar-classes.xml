@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Standalone Maven helper. Nothing here reads a vendored jar or Android SDK. -->
+<project name="extract-androidx-aar-classes" default="extract">
+  <target name="extract">
+    <fail unless="build.dir" message="Maven must supply build.dir"/>
+    <mkdir dir="${build.dir}/aar-classes"/>
+    <unzip src="${build.dir}/aars/monitor.aar" dest="${build.dir}/aars/monitor">
+      <patternset><include name="classes.jar"/></patternset>
+    </unzip>
+    <unzip src="${build.dir}/aars/espresso.aar" dest="${build.dir}/aars/espresso">
+      <patternset><include name="classes.jar"/></patternset>
+    </unzip>
+    <copy file="${build.dir}/aars/monitor/classes.jar" tofile="${build.dir}/aar-classes/monitor.jar" overwrite="true"/>
+    <copy file="${build.dir}/aars/espresso/classes.jar" tofile="${build.dir}/aar-classes/espresso.jar" overwrite="true"/>
+  </target>
+</project>

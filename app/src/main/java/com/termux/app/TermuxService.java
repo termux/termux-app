@@ -29,6 +29,7 @@ import com.termux.shared.errors.Errno;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.shell.command.runner.app.AppShell;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
+import com.termux.shared.termux.settings.TermuxAppLocaleUtils;
 import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 import com.termux.shared.termux.shell.TermuxShellUtils;
 import com.termux.shared.termux.TermuxConstants;
@@ -291,7 +292,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         for (int i = 0; i < pendingPluginExecutionCommands.size(); i++) {
             ExecutionCommand executionCommand = pendingPluginExecutionCommands.get(i);
             if (!executionCommand.shouldNotProcessResults() && executionCommand.isPluginExecutionCommandWithPendingResult()) {
-                if (executionCommand.setStateFailed(Errno.ERRNO_CANCELLED.getCode(), this.getString(com.termux.shared.R.string.error_execution_cancelled))) {
+                if (executionCommand.setStateFailed(Errno.ERRNO_CANCELLED.getCode(), TermuxAppLocaleUtils.getLocalizedContext(this).getString(com.termux.shared.R.string.error_execution_cancelled))) {
                     TermuxPluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
                 }
             }
@@ -371,7 +372,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         executionCommand.runner = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_RUNNER,
             (intent.getBooleanExtra(TERMUX_SERVICE.EXTRA_BACKGROUND, false) ? Runner.APP_SHELL.getName() : Runner.TERMINAL_SESSION.getName()));
         if (Runner.runnerOf(executionCommand.runner) == null) {
-            String errmsg = this.getString(R.string.error_termux_service_invalid_execution_command_runner, executionCommand.runner);
+            String errmsg = TermuxAppLocaleUtils.getLocalizedContext(this).getString(R.string.error_termux_service_invalid_execution_command_runner, executionCommand.runner);
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
             return;
@@ -418,7 +419,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         else if (Runner.TERMINAL_SESSION.equalsRunner(executionCommand.runner))
             executeTermuxSessionCommand(executionCommand);
         else {
-            String errmsg = getString(R.string.error_termux_service_unsupported_execution_command_runner, executionCommand.runner);
+            String errmsg = TermuxAppLocaleUtils.getLocalizedContext(this).getString(R.string.error_termux_service_unsupported_execution_command_runner, executionCommand.runner);
             executionCommand.setStateFailed(Errno.ERRNO_FAILED.getCode(), errmsg);
             TermuxPluginUtils.processPluginExecutionCommandError(this, LOG_TAG, executionCommand, false);
         }
@@ -668,14 +669,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         else if (ShellCreateMode.NO_SHELL_WITH_NAME.equalsMode(executionCommand.shellCreateMode))
             if (DataUtils.isNullOrEmpty(executionCommand.shellName)) {
                 TermuxPluginUtils.setAndProcessPluginExecutionCommandError(this, LOG_TAG, executionCommand, false,
-                    getString(R.string.error_termux_service_execution_command_shell_name_unset, executionCommand.shellCreateMode));
+                    TermuxAppLocaleUtils.getLocalizedContext(this).getString(R.string.error_termux_service_execution_command_shell_name_unset, executionCommand.shellCreateMode));
                 return null;
             } else {
                return ShellCreateMode.NO_SHELL_WITH_NAME;
             }
         else {
             TermuxPluginUtils.setAndProcessPluginExecutionCommandError(this, LOG_TAG, executionCommand, false,
-                getString(R.string.error_termux_service_unsupported_execution_command_shell_create_mode, executionCommand.shellCreateMode));
+                TermuxAppLocaleUtils.getLocalizedContext(this).getString(R.string.error_termux_service_unsupported_execution_command_shell_create_mode, executionCommand.shellCreateMode));
             return null;
         }
     }
@@ -723,7 +724,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(this);
             if (preferences == null) return;
             if (preferences.arePluginErrorNotificationsEnabled(false))
-                Logger.showToast(this, this.getString(R.string.error_display_over_other_apps_permission_not_granted_to_start_terminal), true);
+                Logger.showToast(this, TermuxAppLocaleUtils.getLocalizedContext(this).getString(R.string.error_display_over_other_apps_permission_not_granted_to_start_terminal), true);
         }
     }
 
@@ -780,7 +781,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
 
 
     private Notification buildNotification() {
-        Resources res = getResources();
+        Resources res = TermuxAppLocaleUtils.getLocalizedContext(this).getResources();
 
         // Set pending intent to be launched when notification is clicked
         Intent notificationIntent = TermuxActivity.newInstance(this);
@@ -790,13 +791,8 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         // Set notification text
         int sessionCount = getTermuxSessionsSize();
         int taskCount = mShellManager.mTermuxTasks.size();
-        String notificationText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
-        if (taskCount > 0) {
-            notificationText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
-        }
-
         final boolean wakeLockHeld = mWakeLock != null;
-        if (wakeLockHeld) notificationText += " (wake lock held)";
+        String notificationText = getNotificationText(res, sessionCount, taskCount, wakeLockHeld);
 
 
         // Set notification priority
@@ -841,11 +837,27 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         return builder.build();
     }
 
+    static String getNotificationText(Resources res, int sessionCount, int taskCount, boolean wakeLockHeld) {
+        // Count labels avoid imposing English singular/plural rules on other languages.
+        String text = res.getString(R.string.notification_sessions, sessionCount);
+        if (taskCount > 0) text = res.getString(R.string.notification_tasks, text, taskCount);
+        if (wakeLockHeld) text = res.getString(R.string.notification_wake_lock_held, text);
+        return text;
+    }
+
     private void setupNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
         NotificationUtils.setupNotificationChannel(this, TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_ID,
             TermuxConstants.TERMUX_APP_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+    }
+
+    /** Refresh localized action labels without stopping the service or touching any session. */
+    public synchronized void onAppLocaleChanged() {
+        if (mWakeLock != null || !mShellManager.mTermuxSessions.isEmpty() || !mShellManager.mTermuxTasks.isEmpty()) {
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(
+                TermuxConstants.TERMUX_APP_NOTIFICATION_ID, buildNotification());
+        }
     }
 
     /** Update the shown foreground service notification after making any changes that affect it. */

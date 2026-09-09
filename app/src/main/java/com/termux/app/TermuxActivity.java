@@ -1,6 +1,5 @@
 package com.termux.app;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -32,6 +31,9 @@ import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.shared.activities.ReportActivity;
+import com.termux.shared.termux.activities.TermuxLocaleActivity;
+import com.termux.shared.termux.settings.TerminalLanguagePolicy;
+import com.termux.shared.termux.settings.TermuxAppLocaleUtils;
 import com.termux.shared.activity.ActivityUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
 import com.termux.shared.data.IntentUtils;
@@ -61,8 +63,9 @@ import com.termux.view.TerminalViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.os.LocaleListCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import java.util.Arrays;
@@ -77,7 +80,7 @@ import java.util.Arrays;
  * </ul>
  * about memory leaks.
  */
-public final class TermuxActivity extends AppCompatActivity implements ServiceConnection {
+public final class TermuxActivity extends TermuxLocaleActivity implements ServiceConnection {
 
     /**
      * The connection to the {@link TermuxService}. Requested in {@link #onCreate(Bundle)} with a call to
@@ -188,6 +191,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private static final int CONTEXT_MENU_HELP_ID = 7;
     private static final int CONTEXT_MENU_SETTINGS_ID = 8;
     private static final int CONTEXT_MENU_REPORT_ID = 9;
+    private static final int CONTEXT_MENU_ARABIC_TERMINAL_FLOW = 12;
 
     private static final String ARG_TERMINAL_TOOLBAR_TEXT_INPUT = "terminal_toolbar_text_input";
     private static final String ARG_ACTIVITY_RECREATED = "activity_recreated";
@@ -246,6 +250,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setTerminalToolbarView(savedInstanceState);
 
         setSettingsButtonView();
+
+        setLanguageButtonView();
 
         setNewSessionButtonView();
 
@@ -427,6 +433,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         // Update the {@link TerminalSession} and {@link TerminalEmulator} clients.
         mTermuxService.setTermuxTerminalSessionClient(mTermuxTerminalSessionActivityClient);
+        mTermuxService.onAppLocaleChanged();
     }
 
     @Override
@@ -447,6 +454,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onReloadProperties();
+        applyTerminalLanguageMode();
     }
 
 
@@ -489,6 +497,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // Set termux terminal view
         mTerminalView = findViewById(R.id.terminal_view);
         mTerminalView.setTerminalViewClient(mTermuxTerminalViewClient);
+        applyTerminalLanguageMode();
 
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onCreate();
@@ -563,6 +572,39 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
 
+    private String getSelectedLanguage() {
+        return TermuxAppLocaleUtils.getSelectedLanguage(this);
+    }
+
+    private void setLanguageButtonView() {
+        findViewById(R.id.language_button).setOnClickListener(v -> {
+            String[] names = getResources().getStringArray(R.array.app_language_names);
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.title_choose_language)
+                .setSingleChoiceItems(names, TerminalLanguagePolicy.ARABIC.equals(getSelectedLanguage()) ? 1 : 0,
+                    (dialog, which) -> {
+                        dialog.dismiss();
+                        String language = which == 1 ? TerminalLanguagePolicy.ARABIC : TerminalLanguagePolicy.ENGLISH;
+                        if (language.equals(getSelectedLanguage())) return;
+                        // Only an explicit language CHANGE resets the manual flow override. Recreating
+                        // an activity (rotation, theme or locale) never writes preference defaults.
+                        mPreferences.clearTerminalRtlTextShapingOverride();
+                        getDrawer().closeDrawers();
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language));
+                        applyTerminalLanguageMode();
+                    })
+                .setNegativeButton(com.termux.shared.R.string.action_cancel, null)
+                .show();
+        });
+    }
+
+    private void applyTerminalLanguageMode() {
+        if (mTerminalView == null || mPreferences == null || mProperties == null) return;
+        mTerminalView.setRtlTextShapingEnabled(TerminalLanguagePolicy.useArabicTerminalFlow(
+            getSelectedLanguage(), mPreferences.getTerminalRtlTextShapingOverride(),
+            mProperties.getTerminalRtlTextShapingOverride()));
+    }
+
     private void setSettingsButtonView() {
         ImageButton settingsButton = findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
@@ -598,10 +640,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
 
 
-    @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
-        if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
+        if (getDrawer().isDrawerOpen(Gravity.START)) {
             getDrawer().closeDrawers();
         } else {
             finishActivityIfNotFinishing();
@@ -645,6 +686,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         menu.add(Menu.NONE, CONTEXT_MENU_KILL_PROCESS_ID, Menu.NONE, getResources().getString(R.string.action_kill_process, getCurrentSession().getPid())).setEnabled(currentSession.isRunning());
         menu.add(Menu.NONE, CONTEXT_MENU_STYLING_ID, Menu.NONE, R.string.action_style_terminal);
         menu.add(Menu.NONE, CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON, Menu.NONE, R.string.action_toggle_keep_screen_on).setCheckable(true).setChecked(mPreferences.shouldKeepScreenOn());
+        boolean flowFromProperty = mProperties.getTerminalRtlTextShapingOverride() != null;
+        menu.add(Menu.NONE, CONTEXT_MENU_ARABIC_TERMINAL_FLOW, Menu.NONE,
+            flowFromProperty ? R.string.action_arabic_terminal_flow_from_properties : R.string.action_arabic_terminal_flow)
+            .setCheckable(true).setChecked(mTerminalView.isRtlTextShapingEnabled()).setEnabled(!flowFromProperty);
         menu.add(Menu.NONE, CONTEXT_MENU_HELP_ID, Menu.NONE, R.string.action_open_help);
         menu.add(Menu.NONE, CONTEXT_MENU_SETTINGS_ID, Menu.NONE, R.string.action_open_settings);
         menu.add(Menu.NONE, CONTEXT_MENU_REPORT_ID, Menu.NONE, R.string.action_report_issue);
@@ -688,6 +733,13 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 return true;
             case CONTEXT_MENU_TOGGLE_KEEP_SCREEN_ON:
                 toggleKeepScreenOn();
+                return true;
+            case CONTEXT_MENU_ARABIC_TERMINAL_FLOW:
+                if (mProperties.getTerminalRtlTextShapingOverride() == null) {
+                    mPreferences.setTerminalRtlTextShapingOverride(!mTerminalView.isRtlTextShapingEnabled());
+                    applyTerminalLanguageMode();
+                    showToast(getString(R.string.msg_terminal_flow_override), true);
+                }
                 return true;
             case CONTEXT_MENU_HELP_ID:
                 ActivityUtils.startActivity(this, new Intent(this, HelpActivity.class));

@@ -1,0 +1,28 @@
+name: Arabic resource validation
+
+on:
+  push:
+    paths:
+      - '**/src/main/res/**'
+      - 'app/src/main/AndroidManifest.xml'
+      - 'app/src/test/python/validate_arabic_resources.py'
+      - '.github/workflows/arabic_resources.yml'
+  pull_request:
+    paths:
+      - '**/src/main/res/**'
+      - 'app/src/main/AndroidManifest.xml'
+      - 'app/src/test/python/validate_arabic_resources.py'
+      - '.github/workflows/arabic_resources.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+      - name: Check Arabic resource and placeholder parity
+        run: python3 app/src/test/python/validate_arabic_resources.py

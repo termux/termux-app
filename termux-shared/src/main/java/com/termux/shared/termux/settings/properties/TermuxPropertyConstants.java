@@ -18,10 +18,13 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Version: v0.18.0
+ * Version: v0.19.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
+ *
+ * - 0.19.0
+ *      - Add opt-in terminal-rtl-text-shaping property (default false).
  *
  * - 0.1.0 (2021-03-11)
  *      - Initial Release.
@@ -96,6 +99,9 @@ import java.util.Set;
 public final class TermuxPropertyConstants {
 
     private static final String LOG_TAG = "TermuxPropertyConstants";
+
+    /** Explicit terminal rendering override; default false for non-language-aware consumers. */
+    public static final String KEY_TERMINAL_RTL_TEXT_SHAPING = "terminal-rtl-text-shaping";
 
     /* boolean */
 
@@ -400,6 +406,7 @@ public final class TermuxPropertyConstants {
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_RUN_TERMUX_AM_SOCKET_SERVER,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
+        KEY_TERMINAL_RTL_TEXT_SHAPING,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
@@ -446,6 +453,7 @@ public final class TermuxPropertyConstants {
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
+        KEY_TERMINAL_RTL_TEXT_SHAPING,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,

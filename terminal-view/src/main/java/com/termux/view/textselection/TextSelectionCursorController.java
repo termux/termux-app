@@ -194,6 +194,19 @@ public class TextSelectionCursorController implements CursorController {
             public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
                 int x1 = Math.round(mSelX1 * terminalView.mRenderer.getFontWidth());
                 int x2 = Math.round(mSelX2 * terminalView.mRenderer.getFontWidth());
+                if (terminalView.isRtlRenderingEnabled()) {
+                    // Logical bidi endpoints need not bound all selected pixels. Measure the row
+                    // once, not once per selected column; multiline selections span row edges.
+                    if (mSelY1 != mSelY2) {
+                        x1 = 0;
+                        x2 = terminalView.getWidth();
+                    } else {
+                        float[] bounds = terminalView.mRenderer.selectionBoundsX(terminalView.mEmulator,
+                            mSelY1, mSelX1, mSelX2);
+                        x1 = (int) Math.floor(bounds[0]);
+                        x2 = (int) Math.ceil(bounds[1]);
+                    }
+                }
                 int y1 = Math.round((mSelY1 - 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
                 int y2 = Math.round((mSelY2 + 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
 
@@ -219,11 +232,8 @@ public class TextSelectionCursorController implements CursorController {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
         if (handle == mStartHandle) {
-            mSelX1 = terminalView.getCursorX(x);
+            int previousRow = mSelY1;
             mSelY1 = terminalView.getCursorY(y);
-            if (mSelX1 < 0) {
-                mSelX1 = 0;
-            }
 
             if (mSelY1 < -scrollRows) {
                 mSelY1 = -scrollRows;
@@ -236,6 +246,7 @@ public class TextSelectionCursorController implements CursorController {
             if (mSelY1 > mSelY2) {
                 mSelY1 = mSelY2;
             }
+            mSelX1 = terminalView.getCursorX(x, mSelY1, false, previousRow == mSelY1 ? mSelX1 : -1);
             if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
                 mSelX1 = mSelX2;
             }
@@ -261,11 +272,8 @@ public class TextSelectionCursorController implements CursorController {
             mSelX1 = getValidCurX(screen, mSelY1, mSelX1);
 
         } else {
-            mSelX2 = terminalView.getCursorX(x);
+            int previousRow = mSelY2;
             mSelY2 = terminalView.getCursorY(y);
-            if (mSelX2 < 0) {
-                mSelX2 = 0;
-            }
 
             if (mSelY2 < -scrollRows) {
                 mSelY2 = -scrollRows;
@@ -276,6 +284,7 @@ public class TextSelectionCursorController implements CursorController {
             if (mSelY1 > mSelY2) {
                 mSelY2 = mSelY1;
             }
+            mSelX2 = terminalView.getCursorX(x, mSelY2, true, previousRow == mSelY2 ? mSelX2 : -1);
             if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
                 mSelX2 = mSelX1;
             }
@@ -324,9 +333,12 @@ public class TextSelectionCursorController implements CursorController {
 
                 final int cend = col + wc;
                 if (cx > col && cx < cend) {
-                    return cend;
+                    // Flow endpoints stay on the wide base; preserve upstream native semantics.
+                    return terminalView.isRtlRenderingEnabled() ? col : cend;
                 }
-                if (cend == col) {
+                if (terminalView.isRtlRenderingEnabled()) {
+                    if (wc <= 0) continue; // Marks must not stop a logical-cell search.
+                } else if (cend == col) {
                     return col;
                 }
                 col = cend;

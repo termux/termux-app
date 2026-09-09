@@ -25,6 +25,8 @@
 
             <com.termux.view.TerminalView
                 android:id="@+id/terminal_view"
+                android:layoutDirection="ltr"
+                android:textDirection="ltr"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:defaultFocusHighlightEnabled="false"
@@ -58,6 +60,15 @@
                         android:contentDescription="@string/action_open_settings"
                         app:tint="?attr/termuxActivityDrawerImageTint" />
                 </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/language_button"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="@string/action_choose_language"
+                    android:textAllCaps="false" />
 
                 <ListView
                     android:id="@+id/terminal_sessions_list"
@@ -96,6 +107,7 @@
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/terminal_toolbar_view_pager"
+            android:layoutDirection="ltr"
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="37.5dp"

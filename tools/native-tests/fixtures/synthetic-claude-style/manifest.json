@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "SYNTHETIC",
+  "program": "claude-style-pattern-NOT-real-CLI",
+  "dimensions": {
+    "rows": 24,
+    "cols": 80
+  },
+  "disclaimer": "Hand-authored ANSI reproducing an ASCII frame, Arabic bullet, and two-space continuation redraw pattern. No Claude/Codex process/API/authentication was used. Not evidence of actual Claude Code output.",
+  "streamFile": "stream.ansi",
+  "streamBytes": 508,
+  "streamSha256": "5755af992bbc6ce64401c6ced8fe6a072a363ca4dc330d1a3401a63163f558ba",
+  "actions": [
+    {
+      "index": 0,
+      "label": "initialScreen",
+      "offsetStart": 0,
+      "offsetEndExclusive": 371,
+      "byteCount": 371,
+      "deltaFile": "00-initialScreen.ansi",
+      "replayPrefixFile": "00-initialScreen.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 1,
+      "label": "redraw-indented-continuations",
+      "offsetStart": 371,
+      "offsetEndExclusive": 496,
+      "byteCount": 125,
+      "deltaFile": "01-redraw-indented-continuations.ansi",
+      "replayPrefixFile": "01-redraw-indented-continuations.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 2,
+      "label": "cursor-in-indented-arabic",
+      "offsetStart": 496,
+      "offsetEndExclusive": 508,
+      "byteCount": 12,
+      "deltaFile": "02-cursor-in-indented-arabic.ansi",
+      "replayPrefixFile": "02-cursor-in-indented-arabic.replay.ansi",
+      "expectedLogicalCursor": {
+        "terminalRow0Based": 6,
+        "terminalCol0Based": 2
+      }
+    }
+  ],
+  "initialLines1Based": {
+    "6": "• مرحبا بالعالم",
+    "7": "  هذا سطر متابعة عربي",
+    "8": "  بِسْمِ الله مع hello مرحبا 123"
+  },
+  "finalLines1Based": {
+    "6": "• مرحبا بالعالم",
+    "7": "  هذا سطر متابعة عربي بعد التحديث",
+    "8": "  بِسْمِ الله مع hello مرحبا 123"
+  },
+  "containsEnterAlternateScreen": false,
+  "redrawControls": [
+    "CUU 2: ESC[2A",
+    "EL entire line: ESC[2K",
+    "CUP: ESC[7;3H"
+  ]
+}

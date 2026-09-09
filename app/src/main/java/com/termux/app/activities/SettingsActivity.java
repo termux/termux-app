@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import com.termux.shared.termux.activities.TermuxLocaleActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -26,7 +26,7 @@ import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
 import com.termux.shared.theme.NightMode;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends TermuxLocaleActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

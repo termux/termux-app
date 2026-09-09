@@ -1,0 +1,4 @@
+# Recorded PTY CR/LF and saved UTF-8 bytes are the oracle; never normalize them.
+*.ansi binary
+fixtures/**/*.txt -text
+*.sh text eol=lf

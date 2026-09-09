@@ -1,0 +1,96 @@
+{
+  "upstream": "https://github.com/termux/termux-app",
+  "base_commit": "3b66f8799635a4dba4a206563048ff0e6792c487",
+  "verified_date": "2026-09-08",
+  "jdk": "17.0.20.1",
+  "gradle": "9.2.1",
+  "compile_sdk": 36,
+  "ndk": "29.0.14206865",
+  "gradle_debug_tests": {
+    "terminal-emulator": {
+      "tests": 145,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "terminal-view": {
+      "tests": 88,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 53,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "gradle_debug_test_total": 286,
+  "resource_validation": {
+    "xml_files": 67,
+    "manifest": true,
+    "app_strings": 113,
+    "app_string_arrays": 1,
+    "shared_strings": 55,
+    "terminal_view_strings": 3
+  },
+  "ci": {
+    "workflows": [
+      ".github/workflows/arabic_resources.yml",
+      ".github/workflows/native_renderer_tests.yml"
+    ],
+    "checks_passed_locally": true,
+    "github_actions_run": false,
+    "permissions": "contents: read"
+  },
+  "tested_java_xml_python_manifest_sha256": "d802b73eec54b6ccd2e094120321944a3a4a8cff56a00a8e54c0eecd185d47f6",
+  "apk": {
+    "filename": "termux-arabic-tui-fixed-arm64.apk",
+    "bytes": 38482517,
+    "sha256": "c476e6386889b2d4af22bbed6757c8ed3c5d8335b65b24b7f34211afcdff5429",
+    "signature_verified": true,
+    "zipalign_verified": true,
+    "certificate_sha256": "b6da01480eefd5fbf2cd3771b8d1021ec791304bdd6c4bf41d3faabad48ee5e1",
+    "signing": "Same repository public untrusted debug key; local test build, not an official release."
+  },
+  "not_verified": [
+    "Physical Android installation/OEM fonts/IMEs and selection-handle dragging",
+    "Real device OS upgrade and language change with live PTY sessions",
+    "Authenticated Claude Code or Codex CLI end-to-end sessions",
+    "Every arbitrary TUI widget layout or single-space field boundary",
+    "Upstream maintainer approval"
+  ],
+  "native_regression_harness": {
+    "testInvocations": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "apis": [
+      28,
+      34
+    ],
+    "boundaryReplays": 74,
+    "manifestCursorAssertions": 46,
+    "hitRoundTrips": 4256,
+    "rtlNativeDrawTextRunCalls": 348,
+    "realNanoSavedUtf8Checks": 4,
+    "outsideFieldPixelMismatches": 0,
+    "path": "tools/native-tests",
+    "real_programs": [
+      "GNU nano 8.3",
+      "GNU nano 9.1",
+      "htop 3.2.1"
+    ],
+    "synthetic": "Claude-style indented output/redraw fixture. Not an authenticated Claude Code session.",
+    "portability": "Clean run also passed from a relocated source checkout containing spaces."
+  },
+  "total_test_invocations": 304,
+  "regression_fixes": [
+    "Shape bounded RTL fields in interactive grid modes instead of disabling Arabic shaping",
+    "Keep numeric/ASCII prefixes and htop TIME+ at original columns",
+    "Suppress replaced native source glyphs and cursor before rasterization to avoid overhang trails",
+    "Preserve raw mouse columns outside shaped fields including wide-cell trailing halves",
+    "Use linear-time separator detection and column-to-field lookup"
+  ]
+}

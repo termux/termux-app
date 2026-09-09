@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "kind": "REAL",
+  "program": "htop",
+  "version": "htop 3.2.1",
+  "argv": [
+    "htop",
+    "--readonly",
+    "--delay=100",
+    "--pid=261"
+  ],
+  "dimensions": {
+    "rows": 24,
+    "cols": 80
+  },
+  "environment": {
+    "TERM": "xterm-256color",
+    "LC_ALL": "C.UTF-8",
+    "LANG": "C.UTF-8",
+    "HTOPRC": "/dev/null"
+  },
+  "captureMethod": "Python pty.openpty + TIOCSWINSZ + subprocess controlling terminal; bounded select read",
+  "captureNote": "ANSI bytes are unmodified merged stdout/stderr from the real executable. File/save expectations are logical UTF-8, not visual order.",
+  "exitCode": 0,
+  "streamFile": "stream.ansi",
+  "streamBytes": 7242,
+  "streamSha256": "873dfa65adf71094a0831f5b9159bf429332ef513ae4b814f43406d9209b5209",
+  "actions": [
+    {
+      "index": 0,
+      "label": "initialScreen",
+      "inputBase64": "",
+      "inputHex": "",
+      "inputSentMonotonicSeconds": 0.003522,
+      "offsetStart": 0,
+      "offsetEndExclusive": 1285,
+      "byteCount": 1285,
+      "deltaFile": "00-initialScreen.ansi",
+      "replayPrefixFile": "00-initialScreen.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 1,
+      "label": "horizontal-scroll-right",
+      "inputBase64": "G09DG09DG09DG09DG09DG09D",
+      "inputHex": "1b4f431b4f431b4f431b4f431b4f431b4f43",
+      "inputSentMonotonicSeconds": 0.283547,
+      "offsetStart": 1285,
+      "offsetEndExclusive": 2201,
+      "byteCount": 916,
+      "deltaFile": "01-horizontal-scroll-right.ansi",
+      "replayPrefixFile": "01-horizontal-scroll-right.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 2,
+      "label": "horizontal-scroll-further",
+      "inputBase64": "G09DG09DG09DG09DG09DG09D",
+      "inputHex": "1b4f431b4f431b4f431b4f431b4f431b4f43",
+      "inputSentMonotonicSeconds": 0.484524,
+      "offsetStart": 2201,
+      "offsetEndExclusive": 3156,
+      "byteCount": 955,
+      "deltaFile": "02-horizontal-scroll-further.ansi",
+      "replayPrefixFile": "02-horizontal-scroll-further.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 3,
+      "label": "horizontal-home",
+      "inputBase64": "G09EG09EG09EG09EG09EG09EG09EG09EG09EG09EG09EG09E",
+      "inputHex": "1b4f441b4f441b4f441b4f441b4f441b4f441b4f441b4f441b4f441b4f441b4f441b4f44",
+      "inputSentMonotonicSeconds": 0.685601,
+      "offsetStart": 3156,
+      "offsetEndExclusive": 5768,
+      "byteCount": 2612,
+      "deltaFile": "03-horizontal-home.ansi",
+      "replayPrefixFile": "03-horizontal-home.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 4,
+      "label": "tree-toggle",
+      "inputBase64": "dA==",
+      "inputHex": "74",
+      "inputSentMonotonicSeconds": 0.886977,
+      "offsetStart": 5768,
+      "offsetEndExclusive": 5950,
+      "byteCount": 182,
+      "deltaFile": "04-tree-toggle.ansi",
+      "replayPrefixFile": "04-tree-toggle.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 5,
+      "label": "cursor-down",
+      "inputBase64": "G09C",
+      "inputHex": "1b4f42",
+      "inputSentMonotonicSeconds": 1.08897,
+      "offsetStart": 5950,
+      "offsetEndExclusive": 5950,
+      "byteCount": 0,
+      "deltaFile": "05-cursor-down.ansi",
+      "replayPrefixFile": "05-cursor-down.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 6,
+      "label": "force-redraw",
+      "inputBase64": "DA==",
+      "inputHex": "0c",
+      "inputSentMonotonicSeconds": 4.091113,
+      "offsetStart": 5950,
+      "offsetEndExclusive": 7181,
+      "byteCount": 1231,
+      "deltaFile": "06-force-redraw.ansi",
+      "replayPrefixFile": "06-force-redraw.replay.ansi",
+      "expectedLogicalCursor": null
+    },
+    {
+      "index": 7,
+      "label": "exit",
+      "inputBase64": "cQ==",
+      "inputHex": "71",
+      "inputSentMonotonicSeconds": 4.293537,
+      "offsetStart": 7181,
+      "offsetEndExclusive": 7242,
+      "byteCount": 61,
+      "deltaFile": "07-exit.ansi",
+      "replayPrefixFile": "07-exit.replay.ansi",
+      "expectedLogicalCursor": null
+    }
+  ],
+  "containsEnterAlternateScreen": true,
+  "containsExitAlternateScreen": true,
+  "disposableProcess": {
+    "pid": 261,
+    "executable": "/usr/bin/python3",
+    "argv": [
+      "مرحبا بالعالم | بِسْمِ الله | hello مرحبا 123",
+      "-c",
+      "import time; time.sleep(90)"
+    ]
+  },
+  "isolation": "--readonly --pid filters htop to one disposable Python sleep process; HTOPRC=/dev/null prevents persistent rc state.",
+  "expectedLogicalCursor": null,
+  "cursorNote": "htop is a process viewer, not a text editor; cursor is hidden. No file edit/save applies.",
+  "limitations": [
+    "Host statistics and PID are real capture-time values, not stable across recapture.",
+    "Only filtered disposable-process view is captured; no real user command list is intentionally enumerated."
+  ],
+  "metadataNote": "Executable path normalized to program name; recorded ANSI, action offsets, inputs, and expectations are unchanged."
+}

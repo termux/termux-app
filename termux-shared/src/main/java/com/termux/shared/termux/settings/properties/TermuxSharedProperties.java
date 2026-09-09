@@ -610,6 +610,20 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_RUN_TERMUX_AM_SOCKET_SERVER, true);
     }
 
+    /** Standard shared property getter: absent or invalid values default to false. */
+    public boolean isTerminalRtlTextShapingEnabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_RTL_TEXT_SHAPING, true);
+    }
+
+    /**
+     * Language-aware callers must distinguish an absent/invalid property from explicit true/false.
+     * A valid property overrides the manual preference and language default, without rewriting either.
+     */
+    public Boolean getTerminalRtlTextShapingOverride() {
+        return SharedProperties.getBooleanValueForStringValue(
+            getPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_RTL_TEXT_SHAPING, null, true));
+    }
+
     public boolean shouldOpenTerminalTranscriptURLOnClick() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_ONCLICK_URL_OPEN, true);
     }

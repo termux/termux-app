@@ -1,9 +1,12 @@
 package com.termux.shared.termux.settings.preferences;
 
 /*
- * Version: v0.16.0
+ * Version: v0.17.0
  *
  * Changelog
+ *
+ * - 0.17.0
+ *      - Add optional manual terminal flow preference.
  *
  * - 0.1.0 (2021-03-12)
  *      - Initial Release.
@@ -86,6 +89,9 @@ public final class TermuxPreferenceConstants {
      * Termux app constants.
      */
     public static final class TERMUX_APP {
+
+        /** Optional manual terminal flow override. Absent means follow the selected app language. */
+        public static final String KEY_TERMINAL_RTL_TEXT_SHAPING = "terminal_rtl_text_shaping";
 
         /**
          * Defines the key for whether terminal view margin adjustment that is done to prevent soft
