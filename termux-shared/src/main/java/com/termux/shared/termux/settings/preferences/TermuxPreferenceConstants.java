@@ -95,6 +95,10 @@ public final class TermuxPreferenceConstants {
         public static final String KEY_TERMINAL_MARGIN_ADJUSTMENT =  "terminal_margin_adjustment";
         public static final boolean DEFAULT_TERMINAL_MARGIN_ADJUSTMENT = true;
 
+        /** Defines the key for whether to show a control for new terminal output while scrolled up. */
+        public static final String KEY_TERMINAL_NEW_OUTPUT_INDICATOR = "terminal_new_output_indicator";
+        public static final boolean DEFAULT_TERMINAL_NEW_OUTPUT_INDICATOR = true;
+
 
         /**
          * Defines the key for whether to show terminal toolbar containing extra keys and text input field.

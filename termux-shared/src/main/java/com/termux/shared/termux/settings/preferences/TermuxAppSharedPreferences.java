@@ -92,6 +92,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_MARGIN_ADJUSTMENT, value, false);
     }
 
+    public boolean isTerminalNewOutputIndicatorEnabled() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_NEW_OUTPUT_INDICATOR, TERMUX_APP.DEFAULT_TERMINAL_NEW_OUTPUT_INDICATOR);
+    }
+
+    public void setTerminalNewOutputIndicator(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_NEW_OUTPUT_INDICATOR, value, false);
+    }
+
 
 
     public boolean isSoftKeyboardEnabled() {

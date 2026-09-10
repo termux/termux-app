@@ -10,6 +10,12 @@
             app:summaryOn="@string/termux_terminal_view_terminal_margin_adjustment_on"
             app:title="@string/termux_terminal_view_terminal_margin_adjustment_title" />
 
+        <SwitchPreferenceCompat
+            app:key="terminal_new_output_indicator"
+            app:summaryOff="@string/termux_terminal_view_terminal_new_output_indicator_off"
+            app:summaryOn="@string/termux_terminal_view_terminal_new_output_indicator_on"
+            app:title="@string/termux_terminal_view_terminal_new_output_indicator_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

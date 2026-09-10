@@ -203,6 +203,11 @@
                     It should be enabled to try to fix the issue where soft keyboard covers part of extra keys/terminal view.
                     If it causes screen flickering on your devices, then disable it. (Default)</string>
 
+                <!-- Terminal View New Output Indicator -->
+                <string name="termux_terminal_view_terminal_new_output_indicator_title">Show new output indicator</string>
+                <string name="termux_terminal_view_terminal_new_output_indicator_off">New output will not show a down-arrow indicator.</string>
+                <string name="termux_terminal_view_terminal_new_output_indicator_on">New output will show a down-arrow indicator while scrolled up. (Default)</string>
+
 
 
     <!-- Termux:API App Preferences -->
