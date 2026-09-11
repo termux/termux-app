@@ -4,13 +4,18 @@ import android.util.Base64;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
 
 /**
  * Renders text into a screen. Contains all the terminal-specific knowledge and state. Emulates a subset of the X Window
  * System xterm terminal, which in turn is an emulator for a subset of the Digital Equipment Corporation vt100 terminal.
+ * <p>
+ * See also 7-bit Code Table defined at https://vt100.net/docs/vt220-rm/chapter2.html#S2.3.1
  * <p>
  * References:
  * <ul>
@@ -41,6 +46,15 @@ public final class TerminalEmulator {
     /** Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
     public static final int UNICODE_REPLACEMENT_CHAR = 0xFFFD;
 
+    /*
+     * Escape sequences starting with an ESC character.
+     *
+     * - https://vt100.net/docs/vt220-rm/chapter2.html#S2.5.1
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Controls-beginning-with-ESC
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-C1-lparen-8-Bit-rparen-Control-Characters
+     * - https://en.wikipedia.org/wiki/C0_and_C1_control_codes
+     */
+
     /** Escape processing: Not currently in an escape sequence. */
     private static final int ESC_NONE = 0;
     /** Escape processing: Have seen an ESC character - proceed to {@link #doEsc(int)} */
@@ -59,14 +73,66 @@ public final class TerminalEmulator {
     private static final int ESC_CSI_DOLLAR = 8;
     /** Escape processing: ESC % */
     private static final int ESC_PERCENT = 9;
-    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) */
+    /**
+     * Escape processing: `ESC ]` for Operating System Command (OSC)
+     * <p>
+     * `OSC` commands may be in one of the following formats:
+     * - `OSC Ps ; Pt BEL` where `BEL` is the bell control passed as `\a`.
+     * - `OSC Ps ; Pt ST` where `ST` is the string terminator passed as `ESC \`.
+     * `ST` is the preferred standard for modern terminals.
+     * <p>
+     * If an `OSC` escape sequence is received, then {@link #mEscapeState} is set to {@link #ESC_OSC}
+     * and {@link #receiveOsc(int)} is called by {@link #processCodePoint(int)}.
+     * - By default it will add bytes received after `OSC` escape sequence to {@link #mTerminalControlArgs}.
+     * - If a `BEL` is received, then {@link #doOsc(String)} is called to process
+     *   the OSC command.
+     * - If an `ESC` is received, then {@link #mEscapeState} is set to {@link #ESC_OSC__ESC} and
+     *   {@link #receiveOscEsc(int)} is called for the next code point.
+     *   - If the next code point is a `\` for `ST`, then {@link #doOsc(String)} is
+     *     called to process the OSC command.
+     *   - If the next code point is not a `\`, then {@link #mEscapeState} is set back to
+     *     {@link #ESC_OSC} as `ESC` may be part of command data as so it is added to
+     *     {@link #mTerminalControlArgs}, and for later code points {@link #receiveOsc(int)} is called
+     *     instead.
+     * <p>
+     * While an `OSC` is being received, {@link #mOscType} may be set to the command type when it
+     * has been fully received by {@link #setOscTypeVariables()}.
+     * <p>
+     * See also {@link #mIsFastPathOsc} for enabling fast path for specific `OSC` commands if required
+     * via {@link #setOscTypeVariables()}.
+     * <p>
+     * See also {@link #mIgnoreCrLfForOsc} to prevent printing of CR/LF characters for specific
+     * `OSC` commands if required via {@link #setOscTypeVariables()}.
+     * <p>
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
+     */
     private static final int ESC_OSC = 10;
-    /** Escape processing: ESC ] (AKA OSC - Operating System Controls) ESC */
-    private static final int ESC_OSC_ESC = 11;
+    /** Escape processing: `ESC` received while receiving a {@link #ESC_OSC} command.  */
+    private static final int ESC_OSC__ESC = 11;
     /** Escape processing: ESC [ > */
     private static final int ESC_CSI_BIGGERTHAN = 12;
-    /** Escape procession: "ESC P" or Device Control String (DCS) */
-    private static final int ESC_P = 13;
+    /**
+     * Escape procession: `ESC P` for Device Control String (DCS)
+     * <p>
+     * `DCS` commands are in the format `DCS data ST` where `ST` is the string terminator passed as `ESC \`.
+     * `data` is application defined raw data without any specific standards.
+     * <p>
+     * If an `DCS` escape sequence is received, then {@link #mEscapeState} is set to {@link #ESC_DCS}
+     * and {@link #doDcs(int)} is called by {@link #processCodePoint(int)}.
+     * - By default it will add bytes received after `DCS` escape sequence to {@link #mTerminalControlArgs}.
+     * - If an `ESC` is received by {@link #processCodePoint(int)}, then {@link #ESC_DCS__ESC} set
+     *   to `true`.
+     * - If the next code point is a `\` for `ST`, then {@link #doDcs(int)} processes the DCS command.
+     * - If the next code point is not a `\`, then {@link #ESC_DCS__ESC} is set back to `false` as
+     *   `ESC` may be part of command data as so it is added to {@link #mTerminalControlArgs}.
+     *  - For certain commands like sixel commands, {@link #doDcs(int)} alters the default behaviour.
+     * <p>
+     * See also {@link #mIsFastPathDcs} for enabling fast path for specific `DCS` commands if required.
+     * <p>
+     * <p>
+     * - https://vt100.net/docs/vt220-rm/chapter2.html#S2.5.3
+     */
+    private static final int ESC_DCS = 13;
     /** Escape processing: CSI > */
     private static final int ESC_CSI_QUESTIONMARK_ARG_DOLLAR = 14;
     /** Escape processing: CSI $ARGS ' ' */
@@ -79,10 +145,33 @@ public final class TerminalEmulator {
     private static final int ESC_CSI_SINGLE_QUOTE = 18;
     /** Escape processing: CSI ! */
     private static final int ESC_CSI_EXCLAMATION = 19;
-    /** Escape processing: "ESC _" or Application Program Command (APC). */
+    /**
+     * Escape processing: `ESC _` for Application Program Command (APC).
+     * <p>
+     * `APC` commands are in the format `APC data ST` where `ST` is the string terminator passed as `ESC \`.
+     * `data` is application defined raw data without any specific standards.
+     * <p>
+     * If an `APC` escape sequence is received, then {@link #mEscapeState} is set to {@link #ESC_APC}
+     * and {@link #receiveApc(int)} is called by {@link #processCodePoint(int)}.
+     * - By default it will add bytes received after `APC` escape sequence to {@link #mTerminalControlArgs}.
+     * - If an `ESC` is received, then {@link #mEscapeState} is set to {@link #ESC_APC__ESC} and
+     *   {@link #receiveApcEsc(int)} is called for the next code point.
+     *   - If the next code point is a `\` for `ST`, then {@link #doApc()} is called to
+     *     process the APC command.
+     *   - If the next code point is not a `\`, then {@link #mEscapeState} is set back to
+     *     {@link #ESC_APC} as `ESC` may be part of command data as so it is added to
+     *     {@link #mTerminalControlArgs}, and for later code points {@link #receiveApc(int)} is called
+     *     instead.
+     * <p>
+     * The only APC commands supported are the kitty graphics protocol `APC _G` commands, check
+     * {@link #doApcKittyGraphics(KittyImage)} for more info. All other APC commands are parsed, but
+     * ignored.
+     * <p>
+     * - https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Application-Program-Command-functions
+     */
     private static final int ESC_APC = 20;
-    /** Escape processing: "ESC _" or Application Program Command (APC), followed by Escape. */
-    private static final int ESC_APC_ESCAPE = 21;
+    /** Escape processing: `ESC` received while receiving a {@link #ESC_APC} command.  */
+    private static final int ESC_APC__ESC = 21;
     /** Escape processing: ESC [ <parameter bytes> */
     private static final int ESC_CSI_UNSUPPORTED_PARAMETER_BYTE = 22;
     /** Escape processing: ESC [ <parameter bytes> <intermediate bytes> */
@@ -90,9 +179,6 @@ public final class TerminalEmulator {
 
     /** The number of parameter arguments including colon separated sub-parameters. */
     private static final int MAX_ESCAPE_PARAMETERS = 32;
-
-    /** Needs to be large enough to contain reasonable OSC 52 pastes. */
-    private static final int MAX_OSC_STRING_LENGTH = 8192;
 
     /** DECSET 1 - application cursor keys. */
     private static final int DECSET_BIT_APPLICATION_CURSOR_KEYS = 1;
@@ -185,8 +271,187 @@ public final class TerminalEmulator {
     /** Holds the bit flags which arguments are sub parameters (after a colon) - bit N is set if <code>mArgs[N]</code> is a sub parameter. */
     private int mArgsSubParamsBitSet = 0;
 
-    /** Holds OSC and device control arguments, which can be strings. */
-    private final StringBuilder mOSCOrDeviceControlArgs = new StringBuilder();
+
+
+    /**
+     * The initial capacity for {@link #mTerminalControlArgs}.
+     */
+    private static final int TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY = 16;
+
+    /**
+     * The default max length for {@link #mTerminalControlArgs}.
+     * Needs to be large enough to contain reasonable OSC 52 pastes, sixel and iterm images data.
+     */
+    private static final int TERMINAL_CONTROL_ARGS__DEFAULT_MAX_LENGTH = 16384;
+
+    /**
+     * The max length for {@link #mTerminalControlArgs} used by {@link #collectTerminalControlArgs(int)}.
+     */
+    private int mTerminalControlArgsMaxLength = TERMINAL_CONTROL_ARGS__DEFAULT_MAX_LENGTH;
+
+    /** The terminal control arguments string buffer, like for OSC, DCS, APC commands. */
+    private StringBuilder mTerminalControlArgs = new StringBuilder(TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY);
+
+
+
+    /**
+     * The integer Operating System Command `type` received as `ESC ] type ;`.
+     * This will be set as soon as `type` followed by `;` is received, and before any further
+     * optional parameters are received.
+     */
+    private int mOscType = -1;
+
+    /**
+     * If `true`, then `processCodePoint()` will directly call `receiveOsc()` as a fast path
+     * without additional checks.
+     *
+     * Can be enabled for OSC commands via {@link #setOscTypeVariables()}.
+     */
+    private boolean mIsFastPathOsc = false;
+
+    /**
+     * If `true`, then `processCodePoint()` will not print any CR/LF characters received.
+     * This is ignored if `mIsFastPathOsc` is already `true` for a command.
+     *
+     * Can be enabled for OSC commands via {@link #setOscTypeVariables()}.
+     */
+    private boolean mIgnoreCrLfForOsc = false;
+
+
+    /**
+     * If `true`, then `processCodePoint()` will directly call `doDcs()` as a fast path
+     * without additional checks.
+     *
+     * Can be enabled for DCS commands via {@link #doDcs(int)}.
+     */
+    private boolean mIsFastPathDcs = false;
+
+    /** Whether processing an `ESC` for a DCS command. */
+    private boolean ESC_DCS__ESC = false;
+
+
+    /** Whether processing a sixel `DCS q s..s ST` or `DCS P1; P2; P3; q s..s ST` command to create a {@link TerminalSixel}. */
+    private boolean ESC_DCS__SIXEL = false;
+
+    /** Whether to check if sixel command is being received when processing a DCS command. */
+    private boolean ESC_DCS__CHECK_IF_SIXEL = true;
+
+    /** The command part number in case a long sixel command was broken into parts for processing. */
+    private int mSixelCommandPartNum;
+
+    /**
+     * The capacity to set for {@link #mTerminalControlArgs} used to store sixel commands before processing.
+     *
+     * See also {@link #ensureTerminalControlArgsCapacity(int)}.
+     */
+    private Integer mSixelArgsCapacity;
+
+    /**
+     * The initial capacity for sixel args stored in {@link #mTerminalControlArgs}.
+     */
+    private static final int SIXEL_ARGS__INITIAL_CAPACITY = 256;
+
+
+
+    /** The {@link ITermImage} if an iTerm image command is being processed. */
+    private ITermImage mITermImage;
+
+
+
+    /** The {@link #ESC_APC} command type is not known yet. */
+    private static final int APC_TYPE__NONE = -1;
+    /** The {@link #ESC_APC} command is not supported and its arguments will be ignored. */
+    private static final int APC_TYPE__UNSUPPORTED = 0;
+    /** The {@link #ESC_APC} command is a kitty graphics protocol `APC _G` command. */
+    private static final int APC_TYPE__KITTY_GRAPHICS = 1;
+    /**
+     * The {@link #ESC_APC} command cannot be processed, like if its control data is too long, so the
+     * rest of it is discarded instead of being printed on the terminal as text.
+     */
+    private static final int APC_TYPE__DISCARD = 2;
+
+    /**
+     * The Application Program Command `type` received as `ESC _ type`.
+     * This will be set as soon as the first code point after the `APC` escape sequence is received.
+     */
+    private int mApcType = APC_TYPE__NONE;
+
+    /**
+     * The initial capacity for the control data of a kitty graphics command stored in
+     * {@link #mTerminalControlArgs}. The `base64` encoded image data of a command is not stored in
+     * it, so only the `key=value` pairs before the `;` need to fit, which is normally under 64
+     * characters.
+     */
+    private static final int KITTY_GRAPHICS_CONTROL_DATA__INITIAL_CAPACITY = 128;
+
+    /**
+     * The max length of the control data of a kitty graphics command stored in
+     * {@link #mTerminalControlArgs}, which is the `key=value` pairs before the `;` that starts the
+     * `base64` encoded image data. The protocol defines around 25 keys with values of at most 10
+     * digits, so `4KB` is far more than a client can have a use for, and a command with control data
+     * longer than that is discarded instead of being printed on the terminal as text.
+     *
+     * The image data itself is not stored in {@link #mTerminalControlArgs} but is decoded as it is
+     * received by {@link KittyImage#readImageChar(char)}, so the size of the image data a single
+     * command can send is not limited, and is only bound in total by
+     * {@link KittyImage#IMAGE_DATA__MAX_LENGTH}.
+     */
+    private static final int KITTY_GRAPHICS_CONTROL_DATA__MAX_LENGTH = 4 * 1024;
+
+    /**
+     * The {@link KittyImage} if a kitty graphics image is being received with multiple commands,
+     * which is the case if the `m=1` key was passed with the last command received for the image.
+     */
+    private KittyImage mKittyImage;
+
+    /**
+     * The {@link KittyImage} of the kitty graphics command whose `base64` encoded image data is
+     * currently being received, which is set as soon as the `;` that ends the control data of the
+     * command has been received, and unset when the command has been processed.
+     */
+    private KittyImage mKittyGraphicsPayload;
+
+    /**
+     * The image data transmitted for a kitty graphics image id, which is kept so that the image can
+     * be displayed again with an `a=p` command without transmitting it again.
+     */
+    private static final class KittyStoredImage {
+
+        /** The image format the image data was transmitted with, check {@link KittyImage#getFormat()}. */
+        final int mFormat;
+
+        /** The image data, which is the raw pixel data for {@link KittyImage#isRawFormat()} formats. */
+        final byte[] mImage;
+
+        /** The width and height in pixels of the image data, only set for the raw formats. */
+        final int mPixelWidth, mPixelHeight;
+
+        KittyStoredImage(int format, byte[] image, int pixelWidth, int pixelHeight) {
+            mFormat = format;
+            mImage = image;
+            mPixelWidth = pixelWidth;
+            mPixelHeight = pixelHeight;
+        }
+
+    }
+
+    /**
+     * The images transmitted for kitty graphics image ids with the `a=t` and `a=T` actions.
+     * The map is in insertion order so that the oldest images can be evicted first if
+     * {@link #KITTY_IMAGES__MAX_COUNT} or {@link #KITTY_IMAGES__MAX_TOTAL_SIZE} is exceeded.
+     */
+    private final LinkedHashMap<Long, KittyStoredImage> mKittyImages = new LinkedHashMap<>();
+
+    /** The combined size in bytes of all the image data stored in {@link #mKittyImages}. */
+    private int mKittyImagesTotalSize;
+
+    /** The max number of images whose data is stored in {@link #mKittyImages}. */
+    private static final int KITTY_IMAGES__MAX_COUNT = 32;
+
+    /** The max combined size in bytes of all the image data stored in {@link #mKittyImages}. */
+    private static final int KITTY_IMAGES__MAX_TOTAL_SIZE = 8 * 1024 * 1024;
+
+
 
     /**
      * True if the current escape sequence should continue, false if the current escape sequence should be terminated.
@@ -330,8 +595,8 @@ public final class TerminalEmulator {
 
     public TerminalEmulator(TerminalOutput session, int columns, int rows, int cellWidthPixels, int cellHeightPixels, Integer transcriptRows, TerminalSessionClient client) {
         mSession = session;
-        mScreen = mMainBuffer = new TerminalBuffer(columns, getTerminalTranscriptRows(transcriptRows), rows);
-        mAltBuffer = new TerminalBuffer(columns, rows, rows);
+        mScreen = mMainBuffer = new TerminalBuffer(client, columns, getTerminalTranscriptRows(transcriptRows), rows);
+        mAltBuffer = new TerminalBuffer(client, columns, rows, rows);
         mClient = client;
         mRows = rows;
         mColumns = columns;
@@ -347,8 +612,26 @@ public final class TerminalEmulator {
         setCursorBlinkState(true);
     }
 
+
+
     public TerminalBuffer getScreen() {
         return mScreen;
+    }
+
+    public int getRows() {
+        return mRows;
+    }
+
+    public int getColumns() {
+        return mColumns;
+    }
+
+    public int getCellWidthPixels() {
+        return mCellWidthPixels;
+    }
+
+    public int getCellHeightPixels() {
+        return mCellHeightPixels;
     }
 
     public boolean isAlternateBufferActive() {
@@ -361,6 +644,8 @@ public final class TerminalEmulator {
         else
             return transcriptRows;
     }
+
+
 
     /**
      * @param mouseButton one of the MOUSE_* constants of this class.
@@ -571,12 +856,36 @@ public final class TerminalEmulator {
     }
 
     public void processCodePoint(int b) {
+        mScreen.doTerminalBitmapsGC(300000);
+
+        if (mEscapeState == ESC_OSC && mIsFastPathOsc) {
+            mContinueSequence = false;
+            receiveOsc(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
+            return;
+        }
+
+        if (mEscapeState == ESC_DCS && mIsFastPathDcs) {
+            if (b == 27) { // ESC
+                ESC_DCS__ESC = true;
+                return;
+            }
+            mContinueSequence = false;
+            doDcs(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
+            return;
+        }
+
         // The Application Program-Control (APC) string might be arbitrary non-printable characters, so handle that early.
         if (mEscapeState == ESC_APC) {
-            doApc(b);
+            mContinueSequence = false;
+            receiveApc(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
             return;
-        } else if (mEscapeState == ESC_APC_ESCAPE) {
-            doApcEscape(b);
+        } else if (mEscapeState == ESC_APC__ESC) {
+            mContinueSequence = false;
+            receiveApcEsc(b);
+            if (!mContinueSequence) mEscapeState = ESC_NONE;
             return;
         }
 
@@ -585,7 +894,7 @@ public final class TerminalEmulator {
                 break;
             case 7: // Bell (BEL, ^G, \a). If in an OSC sequence, BEL may terminate a string; otherwise signal bell.
                 if (mEscapeState == ESC_OSC)
-                    doOsc(b);
+                    receiveOsc(b);
                 else
                     mSession.onBell();
                 break;
@@ -614,10 +923,19 @@ public final class TerminalEmulator {
             case 10: // Line feed (LF, \n).
             case 11: // Vertical tab (VT, \v).
             case 12: // Form feed (FF, \f).
-                doLinefeed();
+                // Ignore CR/LF inside DCS by default (including sixel) or OSC if requested (like for iTerm).
+                if (!
+                    (mEscapeState == ESC_DCS ||
+                    ((mEscapeState == ESC_OSC || mEscapeState == ESC_OSC__ESC) && mIgnoreCrLfForOsc))) {
+                    doLinefeed();
+                }
                 break;
             case 13: // Carriage return (CR, \r).
-                setCursorCol(mLeftMargin);
+                if (!
+                    (mEscapeState == ESC_DCS ||
+                    ((mEscapeState == ESC_OSC || mEscapeState == ESC_OSC__ESC) && mIgnoreCrLfForOsc))) {
+                    setCursorCol(mLeftMargin);
+                }
                 break;
             case 14: // Shift Out (Ctrl-N, SO) → Switch to Alternate Character Set. This invokes the G1 character set.
                 mUseLineDrawingUsesG0 = false;
@@ -635,13 +953,14 @@ public final class TerminalEmulator {
                 break;
             case 27: // ESC
                 // Starts an escape sequence unless we're parsing a string
-                if (mEscapeState == ESC_P) {
+                if (mEscapeState == ESC_DCS) {
                     // XXX: Ignore escape when reading device control sequence, since it may be part of string terminator.
+                    ESC_DCS__ESC = true;
                     return;
                 } else if (mEscapeState != ESC_OSC) {
                     startEscapeSequence();
                 } else {
-                    doOsc(b);
+                    receiveOsc(b);
                 }
                 break;
             default:
@@ -841,13 +1160,13 @@ public final class TerminalEmulator {
                     case ESC_PERCENT:
                         break;
                     case ESC_OSC:
-                        doOsc(b);
+                        receiveOsc(b);
                         break;
-                    case ESC_OSC_ESC:
-                        doOscEsc(b);
+                    case ESC_OSC__ESC:
+                        receiveOscEsc(b);
                         break;
-                    case ESC_P:
-                        doDeviceControl(b);
+                    case ESC_DCS:
+                        doDcs(b);
                         break;
                     case ESC_CSI_QUESTIONMARK_ARG_DOLLAR:
                         if (b == 'p') {
@@ -917,13 +1236,40 @@ public final class TerminalEmulator {
         }
     }
 
-    /** When in {@link #ESC_P} ("device control") sequence. */
-    private void doDeviceControl(int b) {
-        switch (b) {
-            case (byte) '\\': // End of ESC \ string Terminator
-            {
-                String dcs = mOSCOrDeviceControlArgs.toString();
-                // DCS $ q P t ST. Request Status String (DECRQSS)
+
+
+    /**
+     * Do {@link #ESC_DCS}. Check its docs for more info.
+     */
+    private void doDcs(final int b) {
+        if (
+            // End of DCS if string terminator ST `ESC \` received.
+            (ESC_DCS__ESC && b == '\\') ||
+            // If sixel continuation after sixel start and a
+            // Color Introducer `#`, Graphics Repeat Introducer `!` or Raster Attributes `"`
+            // command is received, then process any previous commands, or if end of input
+            // with a ST received.
+            // If `b` is a Color Introducer `#`, Graphics Repeat Introducer `!` or Raster Attributes `"`
+            // command, then it is added to buffer in code below and more input is waited for as
+            // further arguments need to be received for its command before it can be processed,
+            // which is not until the next command is received.
+            // We wait till at least `mTerminalControlArgsMaxLength / 2` commands string has
+            // been received. The divide by 2 is done since if near the max length, a new command
+            // starts and it does not end before the max length, then `Terminal control args overflow
+            // error would occur.
+            // If the first command has been fully received, then we run it immediately in case
+            // it is the Raster Attributes command containing the "rough" horizontal and vertical
+            // size of image, which is used to set the capacity of the `mTerminalControlArgs` buffer
+            // and also resize the bitmap, so that memory allocations are avoided if possible.
+            // `mTerminalControlArgs.length() > 1` is done so that loop does not engage on first
+            // character after `q` and only after first command has been fully received.
+            (ESC_DCS__SIXEL && ((b == '#' || b == '!' || b == '"') &&
+                ((mTerminalControlArgs.length() >= (mTerminalControlArgsMaxLength / 2)) || (mTerminalControlArgs.length() > 1 && mSixelCommandPartNum == 1))))
+        ) {
+                String dcs = mTerminalControlArgs.toString();
+
+                // Request Selection or Setting (DECRQSS) `DCS $ q P t ST`.
+                // - https://vt100.net/docs/vt510-rm/DECRQSS.html
                 if (dcs.startsWith("$q")) {
                     if (dcs.equals("$q\"p")) {
                         // DECSCL, conformance level, http://www.vt100.net/docs/vt510-rm/DECSCL:
@@ -1021,48 +1367,401 @@ public final class TerminalEmulator {
                             Logger.logError(mClient, LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
                         }
                     }
+                }
+                // If `s..s` or `ST` received from Sixel Device Control String `DCS q s..s ST` or `DCS P1; P2; P3; q s..s ST` command.
+                else if (ESC_DCS__SIXEL) {
+                    mSixelCommandPartNum++;
+
+                    boolean isValidDcs = processSixelDcs(dcs);
+
+                    if (!isValidDcs) {
+                        clearTerminalControlArgs();
+                        clearDcsTypeVariables();
+                        finishSequence();
+                        return;
+                    }
+
+                    if (ESC_DCS__ESC && b == '\\') {
+                        int n = mScreen.sixelEnd(mCursorCol, mCursorRow, mCellWidthPixels, mCellHeightPixels);
+                        for(; n > 0; n--) {
+                            doLinefeed();
+                        }
+
+                        // Clear DCS args buffer and variables and finish sequence.
+                    } else {
+                        ESC_DCS__ESC = false;
+
+                        // Clear DCS args buffer to receive further new input in empty buffer.
+                        clearTerminalControlArgs();
+
+                        // Increase capacity to expected capacity if `Raster Attributes` command
+                        // was sent with image width and height, or to default
+                        // `SIXEL_ARGS__INITIAL_CAPACITY` set by `startIfSixelDcs()`.
+                        if (mSixelArgsCapacity != null) {
+                            ensureTerminalControlArgsCapacity(mSixelArgsCapacity);
+                        }
+
+                        // If `b` is a Color Introducer `#`, Graphics Repeat Introducer `!` or Raster Attributes `"`
+                        // command, then add to buffer and wait for more input as further arguments
+                        // need to be received for its command before it can be processed, which is
+                        // not until the next command is received.
+                        if (!collectTerminalControlArgs(b)) return;
+
+                        return;
+                    }
                 } else {
                     if (LOG_ESCAPE_SEQUENCES)
                         Logger.logError(mClient, LOG_TAG, "Unrecognized device control string: " + dcs);
                 }
+
+                // Clear DCS args buffer and variables and finish sequence.
+                clearTerminalControlArgs();
+                clearDcsTypeVariables();
                 finishSequence();
-            }
-            break;
-            default:
-                if (mOSCOrDeviceControlArgs.length() > MAX_OSC_STRING_LENGTH) {
-                    // Too long.
-                    mOSCOrDeviceControlArgs.setLength(0);
-                    finishSequence();
-                } else {
-                    mOSCOrDeviceControlArgs.appendCodePoint(b);
-                    continueSequence(mEscapeState);
+        } else {
+                ESC_DCS__ESC = false;
+
+                if (!collectTerminalControlArgs(b)) return;
+
+                if (ESC_DCS__CHECK_IF_SIXEL && !ESC_DCS__SIXEL) {
+                    // Check if `DCS q` or `DCS P1; P2; P3; q` received from Sixel
+                    // Device Control String `DCS q s..s ST` or `DCS P1; P2; P3; q s..s ST` command.
+                    // If received, then wait for more input after `q`.
+                    if (b == 'q') {
+                        startIfSixelDcs();
+                    } else if (b == ';' || (b >= '0' && b <= '9')) {
+                        // Ignore.
+                    } else {
+                        ESC_DCS__CHECK_IF_SIXEL = false;
+                    }
                 }
         }
     }
 
-    /**
-     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
-     */
-    private void doApc(int b) {
-        if (b == 27) {
-            continueSequence(ESC_APC_ESCAPE);
-        }
-        // Eat APC sequences silently for now.
+    public void clearDcsTypeVariables() {
+        ESC_DCS__ESC = false;
+        mIsFastPathDcs = false;
+
+        ESC_DCS__SIXEL = false;
+        ESC_DCS__CHECK_IF_SIXEL = true;
+        mSixelCommandPartNum = 0;
+        mSixelArgsCapacity = null;
+        mScreen.sixelClear();
     }
 
-    /**
-     * When in {@link #ESC_APC} (APC, Application Program Command) sequence.
-     */
-    private void doApcEscape(int b) {
-        if (b == '\\') {
-            // A String Terminator (ST), ending the APC escape sequence.
-            finishSequence();
-        } else {
-            // The Escape character was not the start of a String Terminator (ST),
-            // but instead just data inside of the APC escape sequence.
-            continueSequence(ESC_APC);
+
+
+    private void startIfSixelDcs() {
+        int[] sixelDcsSetupArgs = getSixelDcsSetupArgs(mTerminalControlArgs.toString(), 0);
+        if (sixelDcsSetupArgs != null) {
+            mIsFastPathDcs = true;
+            ESC_DCS__SIXEL = true;
+            ESC_DCS__CHECK_IF_SIXEL = false;
+            mSixelCommandPartNum = 1;
+
+            // Do not actually increase capacity yet, as it will be increased by `doDcs()` after
+            // first command has been received, which is checked to see if its a `Raster Attributes`
+            // command with image width and height to calculate expected capacity.
+            mSixelArgsCapacity = SIXEL_ARGS__INITIAL_CAPACITY;
+
+            // The `P1; P2; P3;` arguements in `sixelDcsSetupArgs` are ignored as they are not supported currently (if ever).
+            mScreen.sixelStart(100, 100);
+            clearTerminalControlArgs();
         }
     }
+
+    private int[] getSixelDcsSetupArgs(String dcs, int index) {
+        int[] args = {/* `P1=0`/`2:1` */ 0, /* `P2=0` */ 0, /* `P3=0` */ 0};
+
+        if (dcs.charAt(index) == 'q') return args;
+
+        char ch;
+
+        int arg = 0; boolean incArg = false;
+        while (index < dcs.length()) {
+            ch = dcs.charAt(index);
+            if (ch >= '0' && ch <= '9') {
+                if (incArg) { arg++; incArg = false; }
+                args[arg] = args[arg] * 10 + ch - '0';
+                if (args[arg] < 0) { // Overflow.
+                    break;
+                }
+                index++;
+            } else if (ch == ';') {
+                index++;
+
+                if (arg == 2) {
+                    if (index < dcs.length()) {
+                        if (dcs.charAt(index) == 'q') {
+                            return args;
+                        } else {
+                            // Must be some other command, so no need to check again.
+                            ESC_DCS__CHECK_IF_SIXEL = false;
+                        }
+                    }
+                    break;
+                }
+
+                incArg = true;
+            } else if (ch == 'q') {
+                // If optional parameters `P1`, `P2` or `P3` are not all passed, or
+                // a parameter did not end with a `;`, but is followed by `q`.
+                return args;
+            } else {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean processSixelDcs(String dcs) {
+        int index = 0;
+
+        char ch;
+        int repeat = 1;
+        int color;
+        boolean isValidDcs = true;
+
+        // FIXME: Use `StringUtils.truncateLogStringWithSnippet()` when its added for logging `dcs` input
+        //  in errors as it may be truncated from end before index if error length is greater than
+        //  `Logger.LOGGER_ENTRY_MAX_SAFE_PAYLOAD`.
+        while (index < dcs.length()) {
+            ch = dcs.charAt(index);
+
+            if (
+                // Sixel data characters in the range of `?` (0x3F) to `~` (0x7E).
+                // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.2.1
+                (ch >= '?' && ch <= '~')
+                // Graphics Carriage Return `$`.
+                // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.4
+                || ch == '$'
+                // Graphics New Line `-`.
+                // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.5
+                || ch == '-'
+            ) {
+                mScreen.sixelReadData(ch, repeat);
+                index++;
+                repeat = 1;
+            }
+            // Color Introducer `#`
+            // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.3
+            else if (ch == '#') {
+                index++; // Consume '#'.
+
+                color = 0;
+                while (index < dcs.length()) {
+                    ch = dcs.charAt(index);
+                    if (ch >= '0' && ch <= '9') {
+                        color = color * 10 + ch - '0';
+                        if (color < 0) { // Overflow.
+                            Logger.logError(mClient, LOG_TAG, "The sixel color command Pc value overflow at index " + index + " of sixel input: " + dcs);
+                            isValidDcs = false;
+                            break;
+                        }
+                        index++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (color > 255) {
+                    Logger.logError(mClient, LOG_TAG, "The sixel color command Pc value " + color + " is not between 0-255 at index " + index + " of sixel input: " + dcs);
+                    isValidDcs = false;
+                    break;
+                }
+
+                if (!isValidDcs) {
+                    break;
+                }
+
+                // Basic Colors `# Pc`
+                // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.3.1
+                if (index == dcs.length() || dcs.charAt(index) != ';') {
+                    mScreen.sixelSetColor(color);
+                }
+                // HLS or RGB Colors `# Pc; Pu; Px; Py; Pz`
+                // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.3.2
+                else if (dcs.charAt(index) == ';') {
+                    index++; // Consume ';'.
+
+                    int[] args = {0, 0, 0, 0};
+                    int arg = 0; boolean incArg = false;
+                    while (index < dcs.length()) {
+                        ch = dcs.charAt(index);
+                        if (ch >= '0' && ch <= '9') {
+                            if (incArg) { arg++; incArg = false; }
+                            args[arg] = args[arg] * 10 + ch - '0';
+                            if (args[arg] < 0) { // Overflow.
+                                String argName = "";
+                                switch (arg) { case 0: argName = "Pu"; break; case 1: argName = "pX"; break; case 2: argName = "pY"; break; case 3: argName = "pZ"; break; }
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command " + argName + " value overflow at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
+                            }
+                        } else if (ch == ';') {
+                            if (arg == 3) { // Pz must not end with a ';'.
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command Pz value " + args[3] + " must not end with a semicolon ';' at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
+                            }
+
+                            incArg = true;
+                        } else {
+                            break;
+                        }
+                        index++;
+                    }
+
+                    if (!isValidDcs) {
+                        break;
+                    }
+
+                    for (int i = 0; i < args.length; i++) {
+                        if (i == 0) { // Pu must equal 1 or 2.
+                            if ((args[i] != 1 && args[i] != 2)) {
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command Pu value " + args[i] + " is not 1 or 2 at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
+                            }
+                        } else {
+                            int limit = 100;
+                            if (args[0] == 1 && i == 1) limit = 360;
+                            if (args[i] < 0 || args[i] > limit) {
+                                String argName = "";
+                                switch (i) { case 1: argName = "pX"; break; case 2: argName = "pY"; break; case 3: argName = "pZ"; break; }
+                                Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command " + argName + " value " + args[i] + " is not between 0-" + limit + " at index " + index + " of sixel input: " + dcs);
+                                isValidDcs = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isValidDcs && arg == 3) { // If complete spec is received and is valid.
+                        if (args[0] == 2) { // Only RGB is supported.
+                            mScreen.sixelSetRGBColor(color, args[1], args[2], args[3]);
+                        } else if (args[0] == 1) { // HLS is not supported.
+                            Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command Pu value " + args[0] + " is not supported at index " + index + " of sixel input: " + dcs);
+                            mScreen.sixelIgnore();
+                            break;
+                        }
+                    } else {
+                        if (isValidDcs)
+                            Logger.logError(mClient, LOG_TAG, "The sixel non-basic color command expected 4 arguments at index " + index + " of sixel input: " + dcs);
+                        isValidDcs = false;
+                        break;
+                    }
+                }
+            }
+            // Graphics Repeat Introducer `! Pn character`.
+            // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.1
+            else if (ch == '!') {
+                index++; // Consume '!'.
+
+                repeat = 0;
+                while (index < dcs.length()) {
+                    ch = dcs.charAt(index);
+                    if (ch >= '0' && ch <= '9') {
+                        repeat = repeat * 10 + ch - '0';
+                        if (repeat < 0) { // Overflow.
+                            Logger.logError(mClient, LOG_TAG, "The sixel repeat command Pn value overflow at index " + index + " of sixel input: " + dcs);
+                            isValidDcs = false;
+                            break;
+                        }
+                        index++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (repeat > TerminalSixel.SIXEL__MAX_REPEAT) {
+                    Logger.logError(mClient, LOG_TAG, "The sixel repeat command Pn value " + repeat + " is greater than max repeat value " +
+                        TerminalSixel.SIXEL__MAX_REPEAT + " at index " + index + " of sixel input: " + dcs);
+                    mScreen.sixelIgnore();
+                    break;
+                }
+
+                if (!isValidDcs) {
+                    break;
+                }
+            }
+            // Raster Attributes `" Pan; Pad; Ph; Pv`
+            // - https://vt100.net/docs/vt3xx-gp/chapter14.html#S14.3.2
+            else if (ch == '"') {
+                index++; // Consume '"'.
+
+                int[] args = {0, 0, 0, 0};
+                int arg = 0; boolean incArg = false;
+                while (index < dcs.length()) {
+                    ch = dcs.charAt(index);
+                    if (ch >= '0' && ch <= '9') {
+                        if (incArg) { arg++; incArg = false; }
+                        args[arg] = args[arg] * 10 + ch - '0';
+                        if (args[arg] < 0) { // Overflow.
+                            String argName = "";
+                            switch (arg) { case 0: argName = "Pan"; break; case 1: argName = "Pad"; break; case 2: argName = "pH"; break; case 3: argName = "pV"; break; }
+                            Logger.logError(mClient, LOG_TAG, "The sixel raster command " + argName + " value overflow at index " + index + " of sixel input: " + dcs);
+                            isValidDcs = false;
+                            break;
+                        }
+                    } else if (ch == ';') {
+                        if (arg == 3) { // Pv must not end with a ';'.
+                            Logger.logError(mClient, LOG_TAG, "The sixel raster command Pv value " + args[3] + " must not end with a semicolon ';' at index " + index + " of sixel input: " + dcs);
+                            isValidDcs = false;
+                            break;
+                        }
+                        incArg = true;
+                    } else {
+                        break;
+                    }
+                    index++;
+                }
+
+                if (isValidDcs && arg == 3) { // If complete spec is received and is valid.
+                    // Raster pixel aspect ratio is not supported currently.
+                    // Raster "rough" horizontal and vertical size of image may be sent at start of
+                    // sixel data string, like done by `img2sixel`, so increase sixel commands args
+                    // buffer capacity (`mTerminalControlArgs`) and resize sixel bitmap in
+                    // `TerminalSixel` at start, instead of having to keep resizing buffer/bitmap
+                    // as more sixel data is received, which has a performance hit due to
+                    // memory reallocations and copying.
+                    int sixelWidth = args[2]; // `Ph`
+                    int sixelHeight = args[3]; // `Pv`
+                    if (sixelWidth > 0 && sixelHeight > 0) {
+                        // 2% extra for sixel commands/parameters in addition to image data.
+                        int sixelArgsExpectedLength = (int) (sixelWidth * sixelHeight * 1.02);
+                        // If sixel commands are too long, they are divided into parts, and if a
+                        // new command starts near `mTerminalControlArgsMaxLength / 2`, it could
+                        // contain image data for 1 pixel line of image width, so add that.
+                        int sixelArgsPartsExpectedLength = (int) ((((double) mTerminalControlArgsMaxLength / 2) + sixelWidth) * 1.02);
+                        int sixelArgsExpectedCapacity = Math.min(sixelArgsPartsExpectedLength, sixelArgsExpectedLength);
+                        if (sixelArgsExpectedCapacity > SIXEL_ARGS__INITIAL_CAPACITY) {
+                            mSixelArgsCapacity = sixelArgsExpectedCapacity;
+                        }
+
+                        mScreen.sixelResize(sixelWidth, sixelHeight);
+                    }
+                } else {
+                    if (isValidDcs)
+                        Logger.logError(mClient, LOG_TAG, "The sixel raster command expected 4 arguments at index " + index + " of sixel input: " + dcs);
+                    isValidDcs = false;
+                    break;
+                }
+            }
+            else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\f' || ch == '\r') {
+                index++;
+            } else {
+                // Invalid character.
+                Logger.logError(mClient, LOG_TAG, "Invalid character '" + ch + "' (" + (byte) ch + ") at index " + index + " of sixel input: " + dcs);
+                isValidDcs = false;
+                break;
+            }
+        }
+        
+        return isValidDcs;
+    }
+
+
 
     private int nextTabStop(int numTabs) {
         for (int i = mCursorCol + 1; i < mColumns; i++)
@@ -1475,8 +2174,9 @@ public final class TerminalEmulator {
             case '0': // SS3, ignore.
                 break;
             case 'P': // Device control string
-                mOSCOrDeviceControlArgs.setLength(0);
-                continueSequence(ESC_P);
+                clearTerminalControlArgs();
+                clearDcsTypeVariables();
+                continueSequence(ESC_DCS);
                 break;
             case '[':
                 continueSequence(ESC_CSI);
@@ -1485,13 +2185,16 @@ public final class TerminalEmulator {
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, true);
                 break;
             case ']': // OSC
-                mOSCOrDeviceControlArgs.setLength(0);
+                clearTerminalControlArgs();
+                clearOscTypeVariables();
                 continueSequence(ESC_OSC);
                 break;
             case '>': // DECKPNM
                 setDecsetinternalBit(DECSET_BIT_APPLICATION_KEYPAD, false);
                 break;
             case '_': // APC - Application Program Command.
+                clearTerminalControlArgs();
+                clearApcTypeVariables();
                 continueSequence(ESC_APC);
                 break;
             default:
@@ -1720,7 +2423,7 @@ public final class TerminalEmulator {
                 // The important part that may still be used by some (tmux stores this value but does not currently use it)
                 // is the first response parameter identifying the terminal service class, where we send 64 for "vt420".
                 // This is followed by a list of attributes which is probably unused by applications. Send like xterm.
-                if (getArg0(0) == 0) mSession.write("\033[?64;1;2;6;9;15;18;21;22c");
+                if (getArg0(0) == 0) mSession.write("\033[?64;1;2;4;6;9;15;18;21;22c");
                 break;
             case 'd': // ESC [ Pn d - Vert Position Absolute
                 setCursorRow(Math.min(Math.max(1, getArg0(1)), mRows) - 1);
@@ -1984,44 +2687,658 @@ public final class TerminalEmulator {
         }
     }
 
-    private void doOsc(int b) {
+
+
+    /**
+     * Receive {@link #ESC_APC}. Check its docs for more info.
+     */
+    private void receiveApc(final int b) {
         switch (b) {
-            case 7: // Bell.
-                doOscSetTextParameters("\007");
-                break;
             case 27: // Escape.
-                continueSequence(ESC_OSC_ESC);
+                continueSequence(ESC_APC__ESC);
                 break;
             default:
-                collectOSCArgs(b);
+                // The `base64` encoded image data of a kitty graphics command is decoded as it is
+                // received instead of being collected in the args buffer first, so that a client
+                // that sends an entire image with a single command is supported.
+                if (mKittyGraphicsPayload != null) {
+                    mKittyGraphicsPayload.readImageChar((char) b);
+                    continueSequence(ESC_APC);
+                    return;
+                }
+
+                if (mApcType == APC_TYPE__DISCARD) {
+                    continueSequence(ESC_APC);
+                    return;
+                }
+
+                if (!collectTerminalControlArgs(b)) {
+                    abortApc();
+                    return;
+                }
+
+                if (mApcType == APC_TYPE__NONE) {
+                    setApcTypeVariables();
+                }
+
+                if (mApcType == APC_TYPE__KITTY_GRAPHICS) {
+                    if (b == ';') {
+                        startApcKittyGraphicsPayload();
+                    } else if (mTerminalControlArgs.length() >= KITTY_GRAPHICS_CONTROL_DATA__MAX_LENGTH) {
+                        Logger.logError(mClient, LOG_TAG, "Discarding kitty graphics command with" +
+                            " control data longer than max length " + KITTY_GRAPHICS_CONTROL_DATA__MAX_LENGTH);
+                        mKittyImage = null;
+                        mApcType = APC_TYPE__DISCARD;
+                        clearTerminalControlArgs();
+                    }
+                }
                 break;
         }
     }
 
-    private void doOscEsc(int b) {
+    /**
+     * Receive {@link #ESC_APC__ESC}. Check its docs for more info.
+     */
+    private void receiveApcEsc(final int b) {
         switch (b) {
             case '\\':
-                doOscSetTextParameters("\033\\");
+                doApc();
+                clearApcTypeVariables();
+                break;
+            default:
+                // The ESC character was not followed by a \, so it and the current character are
+                // part of the command data.
+                if (mKittyGraphicsPayload != null) {
+                    mKittyGraphicsPayload.readImageChar((char) 27);
+                    mKittyGraphicsPayload.readImageChar((char) b);
+                    continueSequence(ESC_APC);
+                    break;
+                }
+
+                if (mApcType == APC_TYPE__DISCARD) {
+                    continueSequence(ESC_APC);
+                    break;
+                }
+
+                // Insert the ESC and the current character in arg buffer.
+                if (!collectTerminalControlArgs(27)) {
+                    abortApc();
+                    return;
+                }
+                if (!collectTerminalControlArgs(b)) {
+                    abortApc();
+                    return;
+                }
+                continueSequence(ESC_APC);
+                break;
+        }
+    }
+
+    /**
+     * Abort an {@link #ESC_APC} command whose args could not be collected, like if the args buffer
+     * overflowed. The command will not be processed, and the data received for any kitty graphics
+     * image being transmitted with multiple commands is incomplete and must be dropped.
+     */
+    private void abortApc() {
+        mKittyImage = null;
+        clearApcTypeVariables();
+    }
+
+    /**
+     * Start receiving the `base64` encoded image data of a kitty graphics command, which is called
+     * as soon as the `;` that ends its control data has been received, so that the image data can be
+     * decoded as it is received instead of being collected in {@link #mTerminalControlArgs} first.
+     */
+    private void startApcKittyGraphicsPayload() {
+        KittyImage kittyImage = resolveApcKittyGraphicsCommand();
+
+        // The control data has been read, and the image data is not stored in the args buffer, so it
+        // is no longer needed for this command.
+        clearTerminalControlArgs();
+
+        if (!kittyImage.isFailed()) {
+            kittyImage.startImage();
+        }
+
+        // The image data is still passed to the command if it has already failed, so that it is
+        // discarded instead of being printed on the terminal as text.
+        mKittyGraphicsPayload = kittyImage;
+    }
+
+    /**
+     * Read the control data of a kitty graphics command from {@link #mTerminalControlArgs} and get
+     * the {@link KittyImage} to process the command with, which is the {@link #mKittyImage} that is
+     * still being received if the command is a continuation chunk for it.
+     *
+     * @return Returns the {@link KittyImage} for the command, which will have
+     * {@link KittyImage#getErrorCode()} set if the control data was not valid.
+     */
+    private KittyImage resolveApcKittyGraphicsCommand() {
+        KittyImage kittyImage = new KittyImage(mClient);
+
+        // The `mTerminalControlArgs` contains `G<control data>[;]`.
+        if (kittyImage.readControlData(mTerminalControlArgs, /* `G` */ 1) < 0) {
+            // The control data is not valid, so an image that is still being received cannot be
+            // continued by this command either.
+            mKittyImage = null;
+            return kittyImage;
+        }
+
+        // As per the protocol, a continuation chunk of an image being received with multiple
+        // commands only passes the `m` and `q` keys, so a command that passes the `a` key is always
+        // a new command, even if the previous image was not received completely.
+        if (mKittyImage != null) {
+            if (kittyImage.hasAction()) {
+                Logger.logWarn(mClient, LOG_TAG, "A new kitty graphics command received while an image was still being received");
+                mKittyImage = null;
+            } else {
+                mKittyImage.readContinuationControlData(kittyImage);
+                kittyImage = mKittyImage;
+            }
+        }
+
+        return kittyImage;
+    }
+
+    /**
+     * Set {@link #ESC_APC} type variables. The type of an `APC` command is defined by the first
+     * code point received after the `APC` escape sequence.
+     */
+    void setApcTypeVariables() {
+        if (mApcType != APC_TYPE__NONE) return;
+        if (mTerminalControlArgs.length() < 1) return;
+
+        if (mTerminalControlArgs.charAt(0) == 'G') {
+            // Only the control data of a kitty graphics command is stored in the args buffer, since
+            // its image data is decoded as it is received, so only a small capacity is required.
+            mApcType = APC_TYPE__KITTY_GRAPHICS;
+            ensureTerminalControlArgsCapacity(KITTY_GRAPHICS_CONTROL_DATA__INITIAL_CAPACITY);
+        } else {
+            mApcType = APC_TYPE__UNSUPPORTED;
+        }
+    }
+
+    /**
+     * Clear {@link #ESC_APC} type variables.
+     *
+     * The {@link #mKittyImage} is not cleared as sequential APC commands will be received for an
+     * image transmitted with multiple commands, and the variable is required to be set until the
+     * final command for it is received.
+     */
+    public void clearApcTypeVariables() {
+        mApcType = APC_TYPE__NONE;
+        mKittyGraphicsPayload = null;
+    }
+
+    /**
+     * Do {@link #ESC_APC}. Check its docs for more info.
+     */
+    private void doApc() {
+        if (mKittyGraphicsPayload != null) {
+            // The image data of the command has already been received and decoded.
+            doApcKittyGraphics(mKittyGraphicsPayload);
+        } else if (mApcType == APC_TYPE__KITTY_GRAPHICS) {
+            // A command without any image data, like `a=p` and `a=d`.
+            KittyImage kittyImage = resolveApcKittyGraphicsCommand();
+            if (!kittyImage.isFailed()) {
+                kittyImage.startImage();
+            }
+            doApcKittyGraphics(kittyImage);
+        } else {
+            // All other APC commands are silently ignored, like xterm does.
+            if (LOG_ESCAPE_SEQUENCES)
+                Logger.logWarn(mClient, LOG_TAG, "Ignoring unsupported APC command");
+        }
+
+        // Free image data from memory held in apc command arguments as it is no longer needed.
+        clearTerminalControlArgs();
+
+        finishSequence();
+    }
+
+
+
+    /**
+     * Do a kitty graphics protocol `APC _ G <control data> [; <payload>] ST` command.
+     *
+     * Only a minimal subset of the protocol is supported.
+     *
+     * The following is supported:
+     * - `a=t` (transmit), `a=T` (transmit and display), `a=p` (display an image that was already
+     *   transmitted), `a=q` (query) and `a=d` (delete) actions.
+     * - `t=d` (direct) transmission medium, where the image data is sent in the command payload.
+     * - `f=100` (`PNG`), `f=24` (raw `RGB`) and `f=32` (raw `RGBA`) image formats, with the pixel
+     *   dimensions of the raw formats passed with the `s` and `v` keys.
+     * - `m=1`/`m=0` chunked transmission of the image data with multiple commands.
+     * - `i=<image id>` and `p=<placement id>`, and the `d=a`, `d=A`, `d=i` and `d=I` delete modes.
+     * - `c=<columns>`/`r=<rows>` for the number of cells to display the image in.
+     * - `x=`, `y=`, `w=` and `h=` for displaying only a source rectangle of the transmitted image,
+     *   which is cropped out of the image before it is scaled to the cells it is displayed in.
+     * - `C=1` for not moving the cursor after displaying an image.
+     * - `q=<quiet level>` for suppressing success and error responses.
+     *
+     * The following is **not** supported and will result in an `ENOTSUP` error response:
+     * - `t=f`, `t=t` and `t=s` transmission mediums, where the image data is read from a file or
+     *   shared memory. Reading arbitrary files that the terminal has access to on behalf of a
+     *   client is a security concern, so this is intentionally not implemented.
+     * - `o=z` (`zlib`) compressed image data.
+     * - The `a=f` (animation frame), `a=a` (animate) and `a=c` (compose) actions.
+     *
+     * The image data of a command is decoded as it is received by {@link KittyImage#readImageChar(char)}
+     * instead of being collected in {@link #mTerminalControlArgs} first, so a client may send an
+     * entire image with a single command instead of splitting it into the chunks of at most `4096`
+     * bytes the protocol recommends.
+     *
+     * The keys for unsupported features are read but ignored instead of resulting in an error
+     * response, since a client is expected to be able to send them for images this terminal can
+     * display. Every key other than the `a`, `d`, `t`, `o`, `f`, `i`, `p`, `m`, `q`, `c`, `r`, `s`,
+     * `v`, `C`, `x`, `y`, `w` and `h` keys listed above is ignored, and its value is not validated
+     * since it is not used. These are the `I` (image number), `z` (z-index), `X` and `Y` (pixel
+     * offset of the image inside its first cell) and `U` (unicode placeholder) keys, the `S`, `O`,
+     * `P` and `Q` keys for the transmission mediums and placement features that are not supported,
+     * and any key that is not part of the protocol at all. Note that not honouring `X` and `Y` means
+     * an image is aligned to the cell grid instead of being offset by up to one cell width and
+     * height, and that not honouring `I` means a client must pass an image id with the `i` key for
+     * an image it wants to display again with an `a=p` command.
+     *
+     * - https://sw.kovidgoyal.net/kitty/graphics-protocol/
+     */
+    private void doApcKittyGraphics(KittyImage kittyImage) {
+        if (kittyImage.isFailed()) {
+            mKittyImage = null;
+            respondToKittyGraphicsCommand(kittyImage);
+            return;
+        }
+
+        // Wait for the remaining chunks of the image before processing the command. No response is
+        // sent until the final chunk has been received.
+        if (kittyImage.hasMoreChunks()) {
+            mKittyImage = kittyImage;
+            return;
+        }
+
+        mKittyImage = null;
+
+        switch (kittyImage.getAction()) {
+            case KittyImage.ACTION__QUERY:
+                doKittyGraphicsQuery(kittyImage);
+                break;
+            case KittyImage.ACTION__TRANSMIT:
+            case KittyImage.ACTION__TRANSMIT_AND_DISPLAY:
+                doKittyGraphicsTransmit(kittyImage);
+                break;
+            case KittyImage.ACTION__PUT:
+                doKittyGraphicsPut(kittyImage);
+                break;
+            case KittyImage.ACTION__DELETE:
+                doKittyGraphicsDelete(kittyImage);
+                break;
+            default:
+                kittyImage.setStateFailed(KittyImage.ERROR__ENOTSUP, "unsupported action");
+                break;
+        }
+
+        respondToKittyGraphicsCommand(kittyImage);
+    }
+
+    /**
+     * Do a kitty graphics `a=q` command.
+     *
+     * The command is used by clients to detect whether the terminal supports the protocol, and the
+     * image data passed with it must be validated but must not be stored or displayed.
+     */
+    private void doKittyGraphicsQuery(KittyImage kittyImage) {
+        // The transmission medium, image format and compression have already been validated while
+        // reading the control data, so only the image data itself is left to validate. The image
+        // data of the `f=100` (`PNG`) format is not decoded into a bitmap for a query, since that
+        // would be an expensive operation for data that is going to be discarded.
+        kittyImage.finishImage();
+    }
+
+    /** Do a kitty graphics `a=t` or `a=T` command. */
+    private void doKittyGraphicsTransmit(KittyImage kittyImage) {
+        if (!kittyImage.finishImage()) return;
+
+        long imageId = kittyImage.getImageId();
+        KittyStoredImage storedImage = new KittyStoredImage(kittyImage.getFormat(),
+            kittyImage.getDecodedImage(), kittyImage.getPixelWidth(), kittyImage.getPixelHeight());
+
+        // The image is only stored if it can be referenced by an image id with an `a=p` command later.
+        if (imageId != KittyImage.IMAGE_ID__NONE) {
+            storeKittyImage(imageId, storedImage);
+        }
+
+        if (kittyImage.getAction() == KittyImage.ACTION__TRANSMIT_AND_DISPLAY) {
+            placeKittyImage(kittyImage, storedImage);
+        }
+    }
+
+    /**
+     * Do a kitty graphics `a=p` command to display an image that was already transmitted with an
+     * `a=t` or `a=T` command without transmitting the image data again.
+     */
+    private void doKittyGraphicsPut(KittyImage kittyImage) {
+        long imageId = kittyImage.getImageId();
+        if (imageId == KittyImage.IMAGE_ID__NONE) {
+            kittyImage.setStateFailed(KittyImage.ERROR__EINVAL, "missing image id");
+            return;
+        }
+
+        KittyStoredImage storedImage = mKittyImages.get(imageId);
+        if (storedImage == null) {
+            kittyImage.setStateFailed(KittyImage.ERROR__ENOENT, "no image transmitted for image id");
+            return;
+        }
+
+        placeKittyImage(kittyImage, storedImage);
+    }
+
+    /** Display a kitty graphics image at the cursor position as a placement of its image id. */
+    private void placeKittyImage(KittyImage kittyImage, KittyStoredImage storedImage) {
+        // The source rectangle is validated against the dimensions the image was transmitted with if
+        // they are known, so that a client gets an error response instead of the wrong part of the
+        // image being displayed.
+        if (!kittyImage.validateSourceRectangle(storedImage.mPixelWidth, storedImage.mPixelHeight)) {
+            return;
+        }
+
+        int[] cursorDelta = mScreen.addTerminalBitmapForKittyImage(storedImage.mFormat, storedImage.mImage,
+            storedImage.mPixelWidth, storedImage.mPixelHeight,
+            kittyImage.getSourceX(), kittyImage.getSourceY(),
+            kittyImage.getSourceWidth(), kittyImage.getSourceHeight(),
+            mCursorCol, mCursorRow, mCellWidthPixels, mCellHeightPixels,
+            kittyImage.getWidthPixels(mCellWidthPixels), kittyImage.getHeightPixels(mCellHeightPixels),
+            kittyImage.shouldPreserveAspectRatio(),
+            kittyImage.getImageId(), kittyImage.getPlacementId());
+
+        // A bitmap always covers at least one column if it was created successfully.
+        if (cursorDelta[1] < 1) {
+            kittyImage.setStateFailed(KittyImage.ERROR__EBADPNG, "displaying image failed");
+            return;
+        }
+
+        // The `C=1` key requires the cursor to be left where it was, which clients that position the
+        // cursor themselves before displaying an image rely on.
+        if (kittyImage.shouldMoveCursor()) {
+            moveCursorAfterTerminalBitmap(cursorDelta);
+        }
+    }
+
+    /** Do a kitty graphics `a=d` command. */
+    private void doKittyGraphicsDelete(KittyImage kittyImage) {
+        char deleteMode = kittyImage.getDeleteMode();
+        switch (deleteMode) {
+            case KittyImage.DELETE_MODE__NONE: // The `d` key defaults to `d=a`.
+            case KittyImage.DELETE_MODE__ALL:
+            case KittyImage.DELETE_MODE__ALL_AND_FREE_DATA:
+                // All the placements are deleted regardless of the image id passed as per the protocol.
+                mScreen.deleteAllKittyImagePlacements();
+                if (deleteMode == KittyImage.DELETE_MODE__ALL_AND_FREE_DATA) {
+                    clearKittyImages();
+                }
+                break;
+            case KittyImage.DELETE_MODE__ID:
+            case KittyImage.DELETE_MODE__ID_AND_FREE_DATA:
+                long imageId = kittyImage.getImageId();
+                if (imageId == KittyImage.IMAGE_ID__NONE) {
+                    kittyImage.setStateFailed(KittyImage.ERROR__EINVAL, "missing image id");
+                    return;
+                }
+
+                // Deleting an image that does not exist is not an error as per the protocol. Only
+                // the placement passed with the `p` key is deleted if it is passed.
+                mScreen.deleteKittyImagePlacements(imageId, kittyImage.getPlacementId());
+                if (deleteMode == KittyImage.DELETE_MODE__ID_AND_FREE_DATA) {
+                    removeKittyImage(imageId);
+                }
+                break;
+            default:
+                // The `d=n`, `d=c`, `d=p`, `d=q`, `d=r`, `d=x`, `d=y` and `d=z` delete modes require
+                // image numbers or coordinates, which are not supported.
+                kittyImage.setStateFailed(KittyImage.ERROR__ENOTSUP, "unsupported delete mode");
+                break;
+        }
+    }
+
+    /**
+     * Send the response for a kitty graphics command as per the quiet level passed with its `q` key.
+     *
+     * The success response is `ESC _ G i=<id> ; OK ST` and the error response is
+     * `ESC _ G i=<id> ; <error code> : <error message> ST`.
+     */
+    private void respondToKittyGraphicsCommand(KittyImage kittyImage) {
+        // A response cannot be matched with the command that caused it without an image id, so none
+        // is sent, like kitty does.
+        long imageId = kittyImage.getImageId();
+        if (imageId == KittyImage.IMAGE_ID__NONE) return;
+
+        int quiet = kittyImage.getQuiet();
+
+        if (!kittyImage.isFailed()) {
+            if (quiet >= KittyImage.QUIET__SUCCESS) return;
+            mSession.write("\033_Gi=" + imageId + ";OK\033\\");
+        } else {
+            if (quiet >= KittyImage.QUIET__ALL) return;
+            mSession.write("\033_Gi=" + imageId + ";" + kittyImage.getErrorCode() + ":" + kittyImage.getErrorMessage() + "\033\\");
+        }
+    }
+
+    /**
+     * Store the image transmitted for a kitty graphics image id so that it can be displayed again
+     * with an `a=p` command and freed with an `a=d,d=I` command.
+     */
+    private void storeKittyImage(long imageId, KittyStoredImage storedImage) {
+        removeKittyImage(imageId);
+
+        if (storedImage.mImage.length > KITTY_IMAGES__MAX_TOTAL_SIZE) {
+            Logger.logWarn(mClient, LOG_TAG, "Not storing kitty graphics image " + imageId + " with" +
+                " size " + storedImage.mImage.length + " greater than max total size " + KITTY_IMAGES__MAX_TOTAL_SIZE);
+            return;
+        }
+
+        mKittyImages.put(imageId, storedImage);
+        mKittyImagesTotalSize += storedImage.mImage.length;
+
+        // Evict the oldest images if the storage limits are exceeded.
+        Iterator<Map.Entry<Long, KittyStoredImage>> iterator = mKittyImages.entrySet().iterator();
+        while (iterator.hasNext() &&
+            (mKittyImages.size() > KITTY_IMAGES__MAX_COUNT || mKittyImagesTotalSize > KITTY_IMAGES__MAX_TOTAL_SIZE)) {
+            Map.Entry<Long, KittyStoredImage> entry = iterator.next();
+            if (entry.getKey() == imageId) continue;
+            mKittyImagesTotalSize -= entry.getValue().mImage.length;
+            iterator.remove();
+        }
+    }
+
+    /** Remove the image stored for a kitty graphics image id. */
+    private void removeKittyImage(long imageId) {
+        KittyStoredImage storedImage = mKittyImages.remove(imageId);
+        if (storedImage != null) {
+            mKittyImagesTotalSize -= storedImage.mImage.length;
+        }
+    }
+
+    /** Remove the image data stored for all the kitty graphics image ids. */
+    private void clearKittyImages() {
+        mKittyImages.clear();
+        mKittyImagesTotalSize = 0;
+    }
+
+    /**
+     * Get the length of the image data stored for a kitty graphics image id, or `-1` if no image
+     * data is stored for it.
+     */
+    public int getKittyImageDataLength(long imageId) {
+        KittyStoredImage storedImage = mKittyImages.get(imageId);
+        return storedImage != null ? storedImage.mImage.length : -1;
+    }
+
+    /**
+     * Move the cursor to after a {@link TerminalBitmap} that was added to the screen.
+     *
+     * If the image fits on the screen, then the cursor is moved to the column after the image on the
+     * last row the image covers, otherwise it is wrapped to the first column of the row after the
+     * image.
+     *
+     * **Note that this changes the behaviour of sixel and iTerm images as well.** The condition to
+     * check if the image fits was `col < mColumns - 1`, which treated an image that ends exactly at
+     * the last column of the screen as if it did not fit, and so consumed one row more than the image
+     * covers and left the cursor at the first column of it. An image that ends exactly at the last
+     * column does fit, so the condition must be `col < mColumns`. Check the `0003` patch in the pull
+     * request for this as a standalone change.
+     *
+     * @param cursorDelta The cursor delta returned by
+     * {@link TerminalBuffer#addTerminalBitmapForImage(byte[], int, int, int, int, int, int, boolean)},
+     * where the first value is the number of rows the bitmap covers on the screen and the second
+     * value is the number of columns. The array is not modified, since it is the
+     * {@link TerminalBitmap#getCursorDelta()} array of the bitmap itself.
+     */
+    void moveCursorAfterTerminalBitmap(int[] cursorDelta) {
+        int rows = cursorDelta[0];
+        int col = cursorDelta[1] + mCursorCol;
+        if (col < mColumns) {
+            rows -= 1;
+        } else {
+            col = 0;
+        }
+        for (; rows > 0; rows--) {
+            doLinefeed();
+        }
+        mCursorCol = col;
+    }
+
+
+
+
+    /**
+     * Receive {@link #ESC_OSC}. Check its docs for more info.
+     */
+    private void receiveOsc(final int b) {
+        switch (b) {
+            case 7: // Bell.
+                doOsc("\007");
+                clearOscTypeVariables();
+                break;
+            case 27: // Escape.
+                continueSequence(ESC_OSC__ESC);
+                break;
+            default:
+                if (!collectTerminalControlArgs(b)) return;
+                if (mOscType == -1) {
+                    setOscTypeVariables();
+                }
+                break;
+        }
+    }
+
+    /**
+     * Receive {@link #ESC_OSC__ESC}. Check its docs for more info.
+     */
+    private void receiveOscEsc(final int b) {
+        switch (b) {
+            case '\\':
+                doOsc("\033\\");
+                clearOscTypeVariables();
                 break;
             default:
                 // The ESC character was not followed by a \, so insert the ESC and
                 // the current character in arg buffer.
-                collectOSCArgs(27);
-                collectOSCArgs(b);
+                if (!collectTerminalControlArgs(27)) return;
+                if (!collectTerminalControlArgs(b)) return;
                 continueSequence(ESC_OSC);
                 break;
         }
     }
 
-    /** An Operating System Controls (OSC) Set Text Parameters. May come here from BEL or ST. */
-    private void doOscSetTextParameters(String bellOrStringTerminator) {
+    /**
+     * Set {@link #ESC_OSC} type variables.
+     */
+    void setOscTypeVariables() {
+        if (mOscType >= 0) return;
+        if (mTerminalControlArgs.indexOf(":") < 0) return;
+
+        int value = -1;
+        int argsLength = mTerminalControlArgs.length();
+
+        // Extract initial $value from initial "$value;..." string.
+        for (int i = 0; i < argsLength; i++) {
+            char b = mTerminalControlArgs.charAt(i);
+            if (b == ';') {
+                mOscType = value;
+                break;
+            } else if (b >= '0' && b <= '9') {
+                value = ((value < 0) ? 0 : value * 10) + (b - '0');
+            } else {
+                mOscType = -2; // Unknown sequence.
+                return;
+            }
+        }
+
+        if (mOscType >= 0) {
+            Integer terminalControlArgsCapacity = null;
+            Integer terminalControlArgsMaxLength = null;
+            switch (mOscType) {
+                case 52:
+                    // Android has a `~100KB` limit for sharing/sending `UTF-16` encoded `String`
+                    // with binder tranasactions, including clipboard, otherwise can result in a
+                    // `TransactionTooLargeException`.
+                    // - https://www.reddit.com/r/tasker/comments/prro8t/autoshare_crashed_when_i_pasted_the_file_path/
+                    terminalControlArgsMaxLength = (100 * 1024)  +
+                        /* `52;Pc;` */ 10;
+                    break;
+                case 1337: // iTerm image command sends the base64 encoded image, do not run complex logic for each byte.
+                    mIsFastPathOsc = true;
+                    mIgnoreCrLfForOsc = true;
+                    // Expect large amount of data for image bytes.
+                    // `imgcat` utility splits image bytes into 200-byte chunks when sending with `FilePart=` commands.
+                    // - https://github.com/gnachman/iTerm2-shell-integration/blob/d1d4012068c3c6761d5676c28ed73e0e2df2b715/utilities/imgcat#L89
+                    // > Older versions of tmux have a limit of 256 bytes for the entire sequence.
+                    // - https://iterm2.com/documentation-images.html
+                    terminalControlArgsCapacity = 256;
+                    terminalControlArgsMaxLength = TerminalBitmap.MAX_BITMAP_SIZE +
+                        /* `1337;File=inline=1;size=209715200;name=xxxxxxxxxxxxxxxxxxxxxxxx;width=8192px;height=8192px;preserveAspectRatio=1:` */ 150;
+                    break;
+            }
+
+            if (terminalControlArgsCapacity != null) {
+                ensureTerminalControlArgsCapacity(terminalControlArgsCapacity);
+            }
+
+            if (terminalControlArgsMaxLength != null) {
+                setTerminalControlArgsMaxLength(terminalControlArgsMaxLength);
+            }
+        }
+    }
+
+    /**
+     * Clear {@link #ESC_OSC} type variables.
+     */
+    public void clearOscTypeVariables() {
+        mOscType = -1;
+        mIsFastPathOsc = false;
+        mIgnoreCrLfForOsc = false;
+    }
+
+    /**
+     * Do {@link #ESC_OSC}. Check its docs for more info.
+     *
+     * This handles Set Text Parameters commands.
+     *
+     * The `bellOrStringTerminator` defines whether `OSC` command terminated with a `BEL` or `ST`.
+     */
+    private void doOsc(String bellOrStringTerminator) {
         int value = -1;
         String textParameter = "";
+        int argsLength = mTerminalControlArgs.length();
+
         // Extract initial $value from initial "$value;..." string.
-        for (int mOSCArgTokenizerIndex = 0; mOSCArgTokenizerIndex < mOSCOrDeviceControlArgs.length(); mOSCArgTokenizerIndex++) {
-            char b = mOSCOrDeviceControlArgs.charAt(mOSCArgTokenizerIndex);
+        for (int i = 0; i < argsLength; i++) {
+            char b = mTerminalControlArgs.charAt(i);
             if (b == ';') {
-                textParameter = mOSCOrDeviceControlArgs.substring(mOSCArgTokenizerIndex + 1);
+                // Do not make a copy of `mTerminalControlArgs` for lengthy commands.
+                if (value != 1337) {
+                    textParameter = mTerminalControlArgs.substring(i + 1);
+                }
                 break;
             } else if (b >= '0' && b <= '9') {
                 value = ((value < 0) ? 0 : value * 10) + (b - '0');
@@ -2110,10 +3427,10 @@ public final class TerminalEmulator {
             case 52: // Manipulate Selection Data. Skip the optional first selection parameter(s).
                 int startIndex = textParameter.indexOf(";") + 1;
                 try {
-                    String clipboardText = new String(Base64.decode(textParameter.substring(startIndex), 0), StandardCharsets.UTF_8);
+                    String clipboardText = new String(Base64.decode(textParameter.substring(startIndex), Base64.DEFAULT), StandardCharsets.UTF_8);
                     mSession.onCopyTextToClipboard(clipboardText);
                 } catch (Exception e) {
-                    Logger.logError(mClient, LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter + "");
+                    Logger.logError(mClient, LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter + "'");
                 }
                 break;
             case 104:
@@ -2151,10 +3468,117 @@ public final class TerminalEmulator {
                 break;
             case 119: // Reset highlight color.
                 break;
+            case 1337: // iTerm image
+                // - https://iterm2.com/documentation-images.html
+                // - https://iterm2.com/documentation-escape-codes.html
+                String controlCommandPrefix = mTerminalControlArgs.substring(5, Math.min(19, argsLength));
+
+                if (controlCommandPrefix.startsWith("File=") ||
+                    controlCommandPrefix.startsWith("MultipartFile=") ||
+                    controlCommandPrefix.startsWith("FilePart=") ||
+                    controlCommandPrefix.equals("FileEnd")) {
+
+                    ITermImage iTermImage = null;
+                    boolean oscArgsCleared = false;
+                    int index;
+                    // `File = [optional arguments] : base-64 encoded file contents ^G`
+                    if (controlCommandPrefix.startsWith("File=")) {
+                        if (mITermImage != null) {
+                            Logger.logWarn(mClient, LOG_TAG, "A new iTerm 'File' command received while already processing a 'MultipartFile' command");
+                            mITermImage = null; // Unset old image.
+                        }
+
+                        iTermImage = new ITermImage(mClient, /* multiPart */ false);
+                        if ((index = iTermImage.readArguments(this, mTerminalControlArgs, /* `1337;File=` */ 10)) < 10 ||
+                            !iTermImage.readImage(mTerminalControlArgs, index)) {
+                            iTermImage = null;
+                        } else {
+                            // Free image data from memory held in osc command arguments as it is no longer needed.
+                            clearTerminalControlArgs();
+                            oscArgsCleared = true;
+                            if (!iTermImage.decodeImage()) {
+                                iTermImage = null;
+                            }
+                        }
+                    }
+                    // `MultipartFile = [optional arguments] ^G`
+                    else if (controlCommandPrefix.startsWith("MultipartFile=")) {
+                        if (mITermImage != null) {
+                            Logger.logWarn(mClient, LOG_TAG, "A new iTerm 'MultipartFile' command received while already processing a 'MultipartFile' command");
+                            mITermImage = null; // Unset old image.
+                        }
+
+                        iTermImage = new ITermImage(mClient, /* multiPart */ true);
+                        if (iTermImage.readArguments(this, mTerminalControlArgs, /* `1337;MultipartFile=` */ 19) < 19) {
+                            iTermImage = null;
+                        } else {
+                            mITermImage = iTermImage;
+                        }
+                    }
+                    // `FilePart = base64 encoded file contents ^G`
+                    else if (controlCommandPrefix.startsWith("FilePart=")) {
+                        if (mITermImage == null) {
+                            Logger.logError(mClient, LOG_TAG, "An iTerm 'FilePart' command received without a 'MultipartFile' command preceding it");
+                            return;
+                        }
+
+                        if (!mITermImage.readImage(mTerminalControlArgs, /* `1337;FilePart=` */ 14)) {
+                            mITermImage = null;
+                        }
+                    }
+                    // `FileEnd ^G`
+                    else if (controlCommandPrefix.equals("FileEnd")) {
+                        if (mITermImage == null) {
+                            Logger.logError(mClient, LOG_TAG, "An iTerm 'FileEnd' command received without a 'MultipartFile' command preceding it");
+                            return;
+                        }
+
+                        iTermImage = mITermImage;
+                        mITermImage = null; // Free global reference so that memory is freed at end function.
+                        if (
+                            !iTermImage.setMultiPartImageRead() ||
+                            !iTermImage.decodeImage()) {
+                            iTermImage = null;
+                        }
+                    }
+
+                    // Free image data from memory held in osc command arguments as it is no longer needed.
+                    if (!oscArgsCleared)
+                        clearTerminalControlArgs();
+
+                    if (iTermImage != null && iTermImage.isImageDecoded()) {
+                        // Display image as inline in Terminal.
+                        if (iTermImage.isInline()) {
+                            int[] cursorDelta = mScreen.addTerminalBitmapForImage(iTermImage.getDecodedImage(),
+                                mCursorCol, mCursorRow, mCellWidthPixels, mCellHeightPixels,
+                                iTermImage.getWidth(), iTermImage.getHeight(),
+                                iTermImage.shouldPreserveAspectRatio());
+
+                            moveCursorAfterTerminalBitmap(cursorDelta);
+                        }
+                        // Saving files in downloads folder is not supported currently.
+                        else {}
+                    }
+                    break;
+                } else if (controlCommandPrefix.startsWith("ReportCellSize")) {
+                    mSession.write(String.format(Locale.ENGLISH, "\0331337;ReportCellSize=%d;%d\007", mCellHeightPixels, mCellWidthPixels));
+                }
+
+                // Free image from memory for any non `MultipartFile=` related commands.
+                mITermImage = null;
             default:
                 unknownParameter(value);
                 break;
         }
+
+        // Free image from memory if an incomplete `MultipartFile` command was received without a `FileEnd`.
+        // The `mITermImage` cannot set to `null` in `clearOscTypeVariables()` as sequential
+        // OSC commands will be received for `MultipartFile` commands, and the variable is required
+        // to be set until the final `FileEnd` command is received.
+        if (mITermImage != null && value != 1337) {
+            mITermImage = null;
+        }
+
         finishSequence();
     }
 
@@ -2285,14 +3709,93 @@ public final class TerminalEmulator {
         return result;
     }
 
-    private void collectOSCArgs(int b) {
-        if (mOSCOrDeviceControlArgs.length() < MAX_OSC_STRING_LENGTH) {
-            mOSCOrDeviceControlArgs.appendCodePoint(b);
-            continueSequence(mEscapeState);
+
+
+    /** Collect code point in {@link #mTerminalControlArgs}. */
+    private boolean collectTerminalControlArgs(int b) {
+        // FIXME: Use `Logger.logErrorDebug()` and elsewhere in terminal code when support is added
+        //  to prevent logging potentially private data to logcat unless user has increased log level.
+        if (mTerminalControlArgs.length() < mTerminalControlArgsMaxLength) {
+            try {
+                // Appending can cause an increase in capacity and cause an OOM.
+                mTerminalControlArgs.appendCodePoint(b);
+                continueSequence(mEscapeState);
+                return true;
+            } catch (Throwable t) {
+                if (t instanceof OutOfMemoryError) System.gc();
+                Logger.logError(mClient, LOG_TAG, "Terminal control args collect failed for" +
+                " char '" + (char) b + "' (numeric value=" + b + ") and" +
+                " args string '" + mTerminalControlArgs.substring(0, Math.min(100, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length() +
+                ": " + t.getMessage());
+            }
         } else {
-            unknownSequence(b);
+            Logger.logError(mClient, LOG_TAG, "Terminal control args input will" +
+                " overflow max args length " + mTerminalControlArgsMaxLength + " for" +
+                " char '" + (char) b + "' (numeric value=" + b + ") and" +
+                " args string '" + mTerminalControlArgs.substring(0, Math.min(100, mTerminalControlArgs.length())) + "...' with length " + mTerminalControlArgs.length());
+        }
+
+        clearTerminalControlArgs();
+        finishSequence();
+        return false;
+    }
+
+    /** Clear {@link #mTerminalControlArgs}. */
+    private void clearTerminalControlArgs() {
+        mTerminalControlArgsMaxLength = TERMINAL_CONTROL_ARGS__DEFAULT_MAX_LENGTH;
+
+        if (mTerminalControlArgs.capacity() <= TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY) {
+            // Mark existing buffer as empty and reuse old array already allocated in
+            // `StringBuffer` for future commands if required.
+            mTerminalControlArgs.setLength(0);
+        } else {
+            // `setLength()` will only update internal length marker and not reduce internal array
+            // capacity, and to deallocate extra memory `trimToSize()` needs to be called, which
+            // creates another smaller array.
+            // So just allocate a new object with an array with required initial capacity directly
+            // instead of setting length to 0, then trimming to create a smaller array, then
+            // increasing capacity again by creating a new array with required initial capacity by
+            // calling `ensureCapacity()`.
+            mTerminalControlArgs = new StringBuilder(TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY);
         }
     }
+
+    /**
+     * Ensure enough capacity for {@link #mTerminalControlArgs} to prevent repeated reallocation of
+     * memory and copying as more data is received and appended, like with `append(char)`.
+     *
+     * The default capacity for {@link #mTerminalControlArgs} is defined by
+     * {@link #TERMINAL_CONTROL_ARGS__INITIAL_CAPACITY}.
+     *
+     * By default, if `StringBuilder` reaches capacity, it sets new capacity to `(oldCapacity * 2) + 2`.
+     * So if initial capacity is `16`, and data to be received is 1024 bytes, then 6 reallocations
+     * will be done, so command processors should
+     * - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:libcore/ojluni/src/main/java/java/lang/AbstractStringBuilder.java;l=758
+     * - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:libcore/ojluni/src/main/java/java/lang/AbstractStringBuilder.java;l=183
+     * - https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:libcore/ojluni/src/main/java/java/lang/AbstractStringBuilder.java;l=210
+     *
+     * See also {@link StringBuilder#ensureCapacity(int)}.
+     *
+     * @param capacity The new capacity.
+     */
+    private void ensureTerminalControlArgsCapacity(int capacity) {
+        mTerminalControlArgs.ensureCapacity(capacity);
+    }
+
+    /**
+     * Set {@link #mTerminalControlArgsMaxLength} in case a command expects a larger input.
+     *
+     * @param length The new max length.
+     */
+    private void setTerminalControlArgsMaxLength(int length) {
+        if (length > 0) {
+            mTerminalControlArgsMaxLength = length;
+        }
+    }
+
+
+
+
 
     private void unimplementedSequence(int b) {
         logError("Unimplemented sequence char '" + (char) b + "' (U+" + String.format("%04x", b) + ")");
@@ -2578,6 +4081,13 @@ public final class TerminalEmulator {
 
         mColors.reset();
         mSession.onColorsChanged();
+
+        clearTerminalControlArgs();
+        clearOscTypeVariables();
+        clearApcTypeVariables();
+        mITermImage = null;
+        mKittyImage = null;
+        clearKittyImages();
     }
 
     public String getSelectedText(int x1, int y1, int x2, int y2) {

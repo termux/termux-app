@@ -1,6 +1,15 @@
 package com.termux.terminal;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+
+import android.os.SystemClock;
 
 /**
  * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical screen and the scroll
@@ -9,6 +18,12 @@ import java.util.Arrays;
  * See {@link #externalToInternalRow(int)} for how to map from logical screen rows to array indices.
  */
 public final class TerminalBuffer {
+
+    public static final String LOG_TAG = "TerminalBuffer";
+
+
+
+    private TerminalSessionClient mClient;
 
     TerminalRow[] mLines;
     /** The length of {@link #mLines}. */
@@ -20,22 +35,73 @@ public final class TerminalBuffer {
     /** The index in the circular buffer where the visible screen starts. */
     private int mScreenFirstRow = 0;
 
+
+    /**
+     * The {@link TerminalSixel} if a sixel command is being processed, from which the final
+     * {@link TerminalBitmap} is created.
+     */
+    private TerminalSixel mTerminalSixel;
+
+
+    /** The map for bitmap number to the {@link TerminalBitmap} loaded in the terminal. */
+    private final HashMap<Integer, TerminalBitmap> mTerminalBitmaps;
+
+    /** The time since last garbage collection for all the {@link TerminalBitmap} that are loaded in the terminal. */
+    private long mTerminalBitmapsLastGC;
+
+    /**
+     * The bitmap number start for {@link #mTerminalBitmaps} keys.
+     *
+     * The bitmap number and coordinates are encoded in the `long` {@link TerminalRow#mStyle} for
+     * the `TerminalRow` character of a column by
+     * {@link TerminalBitmap#buildOrThrow(TerminalBuffer, int, Bitmap, int, int, int, int)} by
+     * getting encoded value from {@link TextStyle#encodeTerminalBitmap(int, int, int)}.
+     * The `TerminalRenderer.render()` then checks during rendering terminal output whether a
+     * character at a row/coloumn index is a bitmap instead of text by calling
+     * `TextStyle.isTerminalBitmap()`.
+     */
+    public static final int TERMINAL_BITMAP__NUM_START = 0;
+
+    /**
+     * The bitmap number end for {@link #mTerminalBitmaps} keys.
+     */
+    public static final int TERMINAL_BITMAP__NUM_END = Integer.MAX_VALUE;
+
+
+
+
+    public TerminalBuffer(int columns, int totalRows, int screenRows) {
+        this(null, columns, totalRows, screenRows);
+    }
+
     /**
      * Create a transcript screen.
      *
+     * @param client    the {@link TerminalSessionClient}.
      * @param columns    the width of the screen in characters.
      * @param totalRows  the height of the entire text area, in rows of text.
      * @param screenRows the height of just the screen, not including the transcript that holds lines that have scrolled off
      *                   the top of the screen.
      */
-    public TerminalBuffer(int columns, int totalRows, int screenRows) {
+    public TerminalBuffer(TerminalSessionClient client, int columns, int totalRows, int screenRows) {
+        mClient = client;
+
         mColumns = columns;
         mTotalRows = totalRows;
         mScreenRows = screenRows;
         mLines = new TerminalRow[totalRows];
 
         blockSet(0, 0, columns, screenRows, ' ', TextStyle.NORMAL);
+        mTerminalBitmaps = new HashMap<>();
+        mTerminalBitmapsLastGC = SystemClock.uptimeMillis();
     }
+
+
+
+    public TerminalSessionClient getClient() {
+        return mClient;
+    }
+
 
     public String getTranscriptText() {
         return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows).trim();
@@ -401,6 +467,10 @@ public final class TerminalBuffer {
         if (mLines[blankRow] == null) {
             mLines[blankRow] = new TerminalRow(mColumns, style);
         } else {
+            // Remove bitmaps that are completely scrolled out.
+            if(mLines[blankRow].mHasTerminalBitmap) {
+                removeScrolledOutTerminalBitmaps(blankRow);
+            }
             mLines[blankRow].clear(style);
         }
     }
@@ -439,9 +509,13 @@ public final class TerminalBuffer {
             throw new IllegalArgumentException(
                 "Illegal arguments! blockSet(" + sx + ", " + sy + ", " + w + ", " + h + ", " + val + ", " + mColumns + ", " + mScreenRows + ")");
         }
-        for (int y = 0; y < h; y++)
+        for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++)
                 setChar(sx + x, sy + y, val, style);
+            if (sx + w == mColumns && val == ' ') {
+                clearLineWrap(sy + y);
+            }
+        }
     }
 
     public TerminalRow allocateFullLineIfNecessary(int row) {
@@ -484,7 +558,7 @@ public final class TerminalBuffer {
         }
     }
 
-    public void clearTranscript() {
+    public synchronized void clearTranscript() {
         if (mScreenFirstRow < mActiveTranscriptRows) {
             Arrays.fill(mLines, mTotalRows + mScreenFirstRow - mActiveTranscriptRows, mTotalRows, null);
             Arrays.fill(mLines, 0, mScreenFirstRow, null);
@@ -492,6 +566,359 @@ public final class TerminalBuffer {
             Arrays.fill(mLines, mScreenFirstRow - mActiveTranscriptRows, mScreenFirstRow, null);
         }
         mActiveTranscriptRows = 0;
+        clearTerminalBitmaps();
+    }
+
+
+
+    public synchronized TerminalBitmap getTerminalBitmap(long style) {
+        int bitmapNum = TextStyle.getTerminalBitmapNum(style);
+        return bitmapNum >= TERMINAL_BITMAP__NUM_START ? mTerminalBitmaps.get(bitmapNum): null;
+    }
+
+    public synchronized void clearTerminalBitmaps() {
+        mTerminalBitmaps.clear();
+    }
+
+    public synchronized Bitmap getSixelBitmap(long style) {
+        TerminalBitmap terminalBitmap = getTerminalBitmap(style);
+        return terminalBitmap != null ? terminalBitmap.mBitmap : null;
+    }
+
+
+    public synchronized Rect getSixelRect(long style) {
+        TerminalBitmap terminalBitmap = getTerminalBitmap(style);
+        if (terminalBitmap == null) {
+            return null;
+        }
+
+        int x = TextStyle.getTerminalBitmapX(style);
+        int y = TextStyle.getTerminalBitmapY(style);
+        return new Rect(
+            x * terminalBitmap.mCellWidth,
+            y * terminalBitmap.mCellHeight,
+            (x + 1) * terminalBitmap.mCellWidth,
+            (y + 1) * terminalBitmap.mCellHeight);
+    }
+
+
+    public synchronized void sixelStart(int width, int height) {
+        mTerminalSixel = TerminalSixel.build(getClient(), width, height);
+    }
+
+    public synchronized int sixelEnd(int x, int y, int cellW, int cellH) {
+        if (mTerminalSixel == null) return 0;
+
+        int bitmapNum = getFreeTerminalBitmapNum();
+        if (bitmapNum < TERMINAL_BITMAP__NUM_START) {
+            Logger.logError(mClient, LOG_TAG, "Cannot create more than " + TERMINAL_BITMAP__NUM_END + " bitmaps");
+            return 0;
+        }
+
+        TerminalBitmap terminalBitmap = TerminalBitmap.build(this, bitmapNum, mTerminalSixel, x, y, cellW, cellH);
+        mTerminalSixel = null;
+        if (terminalBitmap == null || terminalBitmap.getBitmap() == null) {
+            return 0;
+        }
+        addTerminalBitmap(terminalBitmap);
+
+        doTerminalBitmapsGC(30000);
+        return terminalBitmap.mScrollLines;
+    }
+
+    /** Clears the {@link #mTerminalSixel} by setting it to `null`. */
+    public synchronized void sixelClear() {
+        mTerminalSixel = null;
+    }
+
+    /**
+     * Clears the {@link #mTerminalSixel} by setting it to `null` and logs error.
+     * Call this on error if further sixel commands/data should be parsed to prevent them from
+     * printing on terminal, but sixel rendering should be ignored.
+     */
+    public synchronized void sixelIgnore() {
+        Logger.logError(mClient, LOG_TAG, "Ignoring sixel rendering");
+        mTerminalSixel = null;
+    }
+
+    public synchronized boolean sixelReadData(int codePoint, int repeat) {
+        //  If an error occurred during processing (like OOM), then remaining sixel command is
+        //  completely read, but is ignored.
+        if (mTerminalSixel != null) {
+            if (!mTerminalSixel.readData(codePoint, repeat)) {
+                sixelIgnore();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized boolean sixelResize(int sixelWidth, int sixelHeight) {
+        //  If an error occurred during processing (like OOM), then remaining sixel command is
+        //  completely read, but is ignored.
+        if (mTerminalSixel != null) {
+            if (!mTerminalSixel.resize(sixelWidth, sixelHeight)) {
+                sixelIgnore();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized void sixelSetColor(int color) {
+        if (mTerminalSixel != null)
+            mTerminalSixel.setColor(color);
+    }
+
+    public synchronized void sixelSetRGBColor(int color, int r, int g, int b) {
+        if (mTerminalSixel != null)
+            mTerminalSixel.setRGBColor(color, r, g, b);
+    }
+
+
+
+    private synchronized int getFreeTerminalBitmapNum() {
+        int bitmapNum = TERMINAL_BITMAP__NUM_START;
+        while (mTerminalBitmaps.containsKey(bitmapNum)) {
+            bitmapNum++;
+            if (bitmapNum == TERMINAL_BITMAP__NUM_END) {
+                return -1;
+            }
+        }
+        return bitmapNum;
+    }
+
+
+    public synchronized int[] addTerminalBitmapForImage(byte[] image, int x, int y, int cellW, int cellH, int width, int height, boolean shouldPreserveAspectRatio) {
+        int bitmapNum = getFreeTerminalBitmapNum();
+        if (bitmapNum < TERMINAL_BITMAP__NUM_START) {
+            Logger.logError(mClient, LOG_TAG, "Cannot create more than " + TERMINAL_BITMAP__NUM_END + " bitmaps");
+            return new int[] {0, 0};
+        }
+
+        TerminalBitmap terminalBitmap = TerminalBitmap.build(this, bitmapNum, image, x, y,
+            cellW, cellH, width, height, shouldPreserveAspectRatio);
+        if (terminalBitmap == null || terminalBitmap.getBitmap() == null) {
+            return new int[] {0, 0};
+        }
+        addTerminalBitmap(terminalBitmap);
+
+        doTerminalBitmapsGC(30000);
+        return terminalBitmap.mCursorDelta;
+    }
+
+
+    /**
+     * Add a {@link TerminalBitmap} to the screen for a placement of a kitty graphics image.
+     *
+     * @param format The kitty graphics image format, check {@link KittyImage#FORMAT__PNG} and
+     *               {@link KittyImage#isRawFormat()} for more info.
+     * @param image The image data, which is the raw pixel data for the raw formats.
+     * @param pixelWidth The width in pixels of the image data, only required for the raw formats.
+     * @param pixelHeight The height in pixels of the image data, only required for the raw formats.
+     * @param sourceX The x coordinate in pixels of the source rectangle of the image to display.
+     * @param sourceY The y coordinate in pixels of the source rectangle of the image to display.
+     * @param sourceWidth The width in pixels of the source rectangle, or a value `< 1` for the rest
+     *                    of the image after `sourceX`.
+     * @param sourceHeight The height in pixels of the source rectangle, or a value `< 1` for the
+     *                     rest of the image after `sourceY`.
+     * @param kittyImageId The kitty graphics image id the bitmap is a placement of.
+     * @param kittyPlacementId The kitty graphics placement id of the bitmap.
+     * @return Returns an array with the number of rows the bitmap covers on the screen as the first
+     * value and the number of columns as the second value, or `{0, 0}` if the bitmap could not be
+     * created.
+     */
+    public synchronized int[] addTerminalBitmapForKittyImage(int format, byte[] image,
+                                                             int pixelWidth, int pixelHeight,
+                                                             int sourceX, int sourceY,
+                                                             int sourceWidth, int sourceHeight,
+                                                             int x, int y, int cellW, int cellH,
+                                                             int width, int height, boolean shouldPreserveAspectRatio,
+                                                             long kittyImageId, long kittyPlacementId) {
+        int bitmapNum = getFreeTerminalBitmapNum();
+        if (bitmapNum < TERMINAL_BITMAP__NUM_START) {
+            Logger.logError(mClient, LOG_TAG, "Cannot create more than " + TERMINAL_BITMAP__NUM_END + " bitmaps");
+            return new int[] {0, 0};
+        }
+
+        TerminalBitmap terminalBitmap = TerminalBitmap.buildForKittyImage(this, bitmapNum, format, image,
+            pixelWidth, pixelHeight, sourceX, sourceY, sourceWidth, sourceHeight, x, y,
+            cellW, cellH, width, height, shouldPreserveAspectRatio);
+
+        if (terminalBitmap == null || terminalBitmap.getBitmap() == null) {
+            return new int[] {0, 0};
+        }
+        terminalBitmap.setKittyImage(kittyImageId, kittyPlacementId);
+        addTerminalBitmap(terminalBitmap);
+
+        doTerminalBitmapsGC(30000);
+        return terminalBitmap.mCursorDelta;
+    }
+
+    /** Add a {@link TerminalBitmap} to {@link #mTerminalBitmaps} for the bitmap number it was created with. */
+    synchronized void addTerminalBitmap(TerminalBitmap terminalBitmap) {
+        mTerminalBitmaps.put(terminalBitmap.getBitmapNum(), terminalBitmap);
+    }
+
+
+    /**
+     * Delete the placements of a kitty graphics image and remove the {@link TerminalBitmap} that
+     * were created for them.
+     *
+     * @param kittyImageId The image id whose placements to delete.
+     * @param kittyPlacementId The placement id to delete, or {@link KittyImage#PLACEMENT_ID__NONE}
+     *                         to delete all the placements of the image.
+     */
+    public synchronized void deleteKittyImagePlacements(long kittyImageId, long kittyPlacementId) {
+        deleteKittyImagePlacements(kittyImageId, kittyPlacementId, false);
+    }
+
+    /**
+     * Delete the placements of all the kitty graphics images and remove the {@link TerminalBitmap}
+     * that were created for them. The bitmaps for sixel and iTerm images are not removed.
+     */
+    public synchronized void deleteAllKittyImagePlacements() {
+        deleteKittyImagePlacements(KittyImage.IMAGE_ID__NONE, KittyImage.PLACEMENT_ID__NONE, true);
+    }
+
+    private synchronized void deleteKittyImagePlacements(long kittyImageId, long kittyPlacementId, boolean allImages) {
+        if (mTerminalBitmaps.isEmpty()) return;
+
+        Set<Integer> bitmapsToRemove = new HashSet<>();
+        for (Map.Entry<Integer, TerminalBitmap> terminalBitmap : mTerminalBitmaps.entrySet()) {
+            TerminalBitmap bitmap = terminalBitmap.getValue();
+            if (!bitmap.isKittyImage()) continue;
+            if (!allImages &&
+                (bitmap.getKittyImageId() != kittyImageId ||
+                    (kittyPlacementId != KittyImage.PLACEMENT_ID__NONE &&
+                        bitmap.getKittyPlacementId() != kittyPlacementId))) {
+                continue;
+            }
+            bitmapsToRemove.add(terminalBitmap.getKey());
+        }
+
+        if (bitmapsToRemove.isEmpty()) return;
+
+        // Clear the cells of the screen and the transcript that the placements were rendered in.
+        for (TerminalRow line : mLines) {
+            if (line == null || !line.mHasTerminalBitmap) continue;
+
+            boolean hasTerminalBitmap = false;
+            for (int column = 0; column < mColumns; column++) {
+                int bitmapNum = TextStyle.getTerminalBitmapNum(line.getStyle(column));
+                if (bitmapNum < TERMINAL_BITMAP__NUM_START) continue;
+
+                if (bitmapsToRemove.contains(bitmapNum)) {
+                    line.setChar(column, ' ', TextStyle.NORMAL);
+                } else {
+                    hasTerminalBitmap = true;
+                }
+            }
+
+            // The flag is used to skip lines while removing and garbage collecting bitmaps, so it
+            // must be unset if the line no longer contains any bitmap cell.
+            line.mHasTerminalBitmap = hasTerminalBitmap;
+        }
+
+        for (Integer bitmapNum : bitmapsToRemove) {
+            mTerminalBitmaps.remove(bitmapNum);
+        }
+    }
+
+
+    /** Remove bitmaps that are completely scrolled out. */
+    public synchronized void removeScrolledOutTerminalBitmaps(int row) {
+        Set<Integer> bitmapsToRemove = new HashSet<>();
+
+        for (int column = 0; column < mColumns; column++) {
+            long columnStyle = mLines[row].getStyle(column);
+            int bitmapNum = TextStyle.getTerminalBitmapNum(columnStyle);
+            if (bitmapNum >= TERMINAL_BITMAP__NUM_START) {
+                bitmapsToRemove.add(bitmapNum);
+            }
+        }
+
+        if (row + 1 < mTotalRows) {
+            TerminalRow nextLine = mLines[row + 1];
+            if (nextLine.mHasTerminalBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    long columnStyle = nextLine.getStyle(column);
+                    int bitmapNum = TextStyle.getTerminalBitmapNum(columnStyle);
+                    if (bitmapNum >= TERMINAL_BITMAP__NUM_START) {
+                        bitmapsToRemove.add(bitmapNum);
+                    }
+                }
+            }
+        }
+
+        for(Integer bitmapStyle : bitmapsToRemove) {
+            mTerminalBitmaps.remove(bitmapStyle);
+        }
+    }
+
+    /**
+     * Remove the {@link TerminalBitmap} for the bitmap numbers that are no longer referenced by any
+     * cell of the screen or the transcript, which is called by
+     * {@link TerminalBitmap#buildOrThrow(TerminalBuffer, int, Bitmap, int, int, int, int)} with the
+     * bitmap numbers of the cells that were overwritten by a new bitmap.
+     *
+     * This does not rely on {@link #doTerminalBitmapsGC(int)}, which only runs once per `timeDelta`
+     * and would otherwise let a client that displays a new image at the same position for every frame
+     * keep every one of them in memory, since the kitty graphics `a=p` action can display an image
+     * that was already transmitted with a command of only around 30 bytes.
+     *
+     * The bitmaps are not recycled, since they may still be referenced by the renderer of the
+     * terminal view on another thread, so only the reference held by this buffer is released and the
+     * memory is freed once the garbage collector runs.
+     *
+     * @param bitmapNums The bitmap numbers to release if they are unreferenced. The set is modified.
+     */
+    synchronized void releaseUnreferencedTerminalBitmaps(Set<Integer> bitmapNums) {
+        if (bitmapNums == null || bitmapNums.isEmpty()) return;
+
+        for (TerminalRow line : mLines) {
+            if (line == null || !line.mHasTerminalBitmap) continue;
+            for (int column = 0; column < mColumns; column++) {
+                int bitmapNum = TextStyle.getTerminalBitmapNum(line.getStyle(column));
+                if (bitmapNum >= TERMINAL_BITMAP__NUM_START && bitmapNums.remove(bitmapNum) && bitmapNums.isEmpty()) {
+                    // All the bitmaps are still referenced by a cell.
+                    return;
+                }
+            }
+        }
+
+        for (Integer bitmapNum : bitmapNums) {
+            mTerminalBitmaps.remove(bitmapNum);
+        }
+    }
+
+    public synchronized void doTerminalBitmapsGC(int timeDelta) {
+        if (mTerminalBitmaps.isEmpty() || mTerminalBitmapsLastGC + timeDelta > SystemClock.uptimeMillis()) {
+            return;
+        }
+
+        Set<Integer> bitmapsToKeep = new HashSet<>();
+
+        for (int line = 0; line < mLines.length; line++) {
+            if(mLines[line] != null && mLines[line].mHasTerminalBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    long style = mLines[line].getStyle(column);
+                    int bitmapNum = TextStyle.getTerminalBitmapNum(style);
+                    if (bitmapNum >= TERMINAL_BITMAP__NUM_START) {
+                        bitmapsToKeep.add(bitmapNum);
+                    }
+                }
+            }
+        }
+
+        Set<Integer> bitmapNums = new HashSet<>(mTerminalBitmaps.keySet());
+        for (Integer bitmapNum: bitmapNums) {
+            if (!bitmapsToKeep.contains(bitmapNum)) {
+                mTerminalBitmaps.remove(bitmapNum);
+            }
+        }
+
+        mTerminalBitmapsLastGC = SystemClock.uptimeMillis();
     }
 
 }
