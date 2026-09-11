@@ -1,24 +1,24 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
 
 android {
-    namespace "com.termux.emulator"
+    namespace = "com.termux.terminal"
 
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
 
+    dependencies {
+        implementation "androidx.annotation:annotation:1.9.0"
+    }
+
     defaultConfig {
         minSdkVersion project.properties.minSdkVersion.toInteger()
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
             ndkBuild {
-                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
+                cFlags "-std=c11"
             }
-        }
-
-        ndk {
-            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
     }
 
@@ -29,57 +29,18 @@ android {
         }
     }
 
-    externalNativeBuild {
-        ndkBuild {
-            path "src/main/jni/Android.mk"
-        }
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    testOptions {
-        unitTests.returnDefaultValues = true
-    }
-
-    publishing {
-        multipleVariants {
-            withSourcesJar()
-            withJavadocJar()
-            allVariants()
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.mk"
         }
-    }
-}
-
-tasks.withType(Test) {
-    testLogging {
-        events "started", "passed", "skipped", "failed"
     }
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.9.0"
     testImplementation "junit:junit:4.13.2"
-}
-
-task sourceJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    archiveClassifier = "sources"
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            // Creates a Maven publication called "release".
-            release(MavenPublication) {
-                from components.default
-                groupId = 'com.termux'
-                artifactId = 'terminal-emulator'
-                version = '0.118.0'
-                artifact(sourceJar)
-            }
-        }
-    }
 }
