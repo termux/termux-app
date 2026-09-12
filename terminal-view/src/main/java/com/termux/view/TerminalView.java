@@ -7,6 +7,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.gaphics.Paint;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
@@ -44,6 +45,12 @@ import com.termux.view.textselection.TextSelectionCursorController;
 
 /** View displaying and interacting with a {@link TerminalSession}. */
 public final class TerminalView extends View {
+    // --- The Variables of CTRL + F5 Logic ---
+    private boolean f5IsPressed = false;
+    private StringBuilder f5InputBuffer = new StringBuilder();
+    private final Paint f5ModePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private String[] f5ModeLines = new String[0];
+    // --- End of the Variables (CTRL + F5 Logic) ---
 
     /** Log terminal view key and IME events. */
     private static boolean TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
@@ -766,6 +773,80 @@ public final class TerminalView extends View {
      * https://cs.android.com/android/platform/superproject/+/master:frameworks/base/services/core/java/com/android/server/input/InputManagerService.java;l=2158
      * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:frameworks/base/services/core/jni/com_android_server_input_InputManagerService.cpp;l=616
      */
+    // --- Module of CTRL + F5 Logic ---
+    private boolean handleF5ModeInput(int keyCode, KeyEvent event) {
+        // --- CTRL + F5 --- 
+        // Write "Hello, User! Write license for view the license, or exit for exit of mode." 
+        // And wait the User write 'license' or 'exit'
+        // Checking: CTRL + F5 pressed?
+        if (keyCode == KeyEvent.KEYCODE_F5 && event.isCtrlPressed() && event.getRepeatCount() == 0) {
+            // Clear the Buffer (prevention)
+            f5InputBuffer.setLength(0);
+            // Print the Message
+            f5ModeLines = new String[] {
+               "Hello, User! Write license for view the license, or exit for exit of mode.",
+               "termux> $?"
+            };
+            // Variable (f5IsPressed): false -> true
+            f5IsPressed = true;
+            invalidate();
+            return true;
+        }
+        // Logic of Mode: Input
+        if (f5IsPressed) {
+            // Removed: Last Line. Redesigned: Line. Backspace: Prevented from reaching the shell.
+            if (keyCode == KeyEvent.KEYCODE_DEL) {
+                if (f5InputBuffer.length() > 0) {
+                    f5InputBuffer.setLength(f5InputBuffer.length() - 1);
+                    invalidate();
+                }
+                 return true;
+            }
+            // Variable for char writted
+            int character = event.getUnicodeChar();
+            // character == 10 (\n)?
+            if (character == 10) {
+               String command = f5InputBuffer.toString();
+               // command == "license"?
+               if (command.equals("license")) {
+                  // Show the License 
+                  f5ModeLines = new String[] {
+                    "The Official Termux (termux/termux-app, https://github.com/) is licensed under GPLv3.",
+                    "And the Termux is released under GPLv3.",
+                    "Thanks for visiting and using the Termux!",
+                    "termux> $?  "
+                  };
+                  f5InputBuffer.setLength(0);
+                  invalidate();
+                  return true;
+                }
+                // command == "exit"?
+                if (command.equals("exit")) {
+                   // Mode: Normal Termux (default mode)
+                   f5InputBuffer.setLength(0);
+                   f5ModeLines = new String[0];
+                   f5IsPressed = false;
+                   invalidate();
+                   return true;
+                }
+               // Tratament of "No exit or license commands? Unknown Command."
+              f5ModeLines = new String[] {
+                            "Unknown command. Type license or exit.",
+                            "termux> $?"
+               };
+              f5InputBuffer.setLength(0);
+              invalidate();
+            } else {
+                f5InputBuffer.append((char) character);
+                invalidate();
+            }
+            // NO independencies of Shell
+            return true;
+        }
+        // --- End of CTRL + F5 Logic ---
+        return false;
+    }
+    // --- End of Module CTRL + F5 Logic ---
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
@@ -774,7 +855,7 @@ public final class TerminalView extends View {
         if (isSelectingText()) {
             stopTextSelectionMode();
         }
-
+    
         if (mClient.onKeyDown(keyCode, event, mTermSession)) {
             invalidate();
             return true;
@@ -1033,6 +1114,22 @@ public final class TerminalView extends View {
 
             // render the text selection handles
             renderTextSelection();
+
+            // --- Module Added: CTRL + F5 Print Logic ---
+            if (f5IsPressed) {
+                f5ModePaint.setColor(0xFFFFFFFF);
+                f5ModePaint.setTextSize(mRenderer.mTextSize);
+                for (int i = 0; i < f5ModeLines.length; i++) {      
+                    canvas.drawText(
+                        i == f5ModeLines.length - 1
+                        ? f5ModeLines[i] + f5InputBuffer
+                        : f5ModeLines[i],
+                       10,
+                       20 + (i + 1) * mRenderer.mFontLineSpacing,
+                      f5ModePaint
+               );
+            }
+            // --- End of Module (CTRL + F5) ---
         }
     }
 
