@@ -7,7 +7,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.gaphics.Paint;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
@@ -805,7 +805,7 @@ public final class TerminalView extends View {
             // Variable for char writted
             int character = event.getUnicodeChar();
             // character == 10 (\n)?
-            if (character == 10) {
+            if (character == 10 || character == 13) {
                String command = f5InputBuffer.toString();
                // command == "license"?
                if (command.equals("license")) {
@@ -849,6 +849,9 @@ public final class TerminalView extends View {
     // --- End of Module CTRL + F5 Logic ---
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // --- Call the Function of CTRL + F5 Logic ---
+        if (handleF5ModeInput(keyCode, event)) return true; 
+        // --- End of Call ---
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
             mClient.logInfo(LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
         if (mEmulator == null) return true;
@@ -1116,20 +1119,21 @@ public final class TerminalView extends View {
             renderTextSelection();
 
             // --- Module Added: CTRL + F5 Print Logic ---
-            if (f5IsPressed) {
+           if (f5IsPressed) {
                 f5ModePaint.setColor(0xFFFFFFFF);
                 f5ModePaint.setTextSize(mRenderer.mTextSize);
                 for (int i = 0; i < f5ModeLines.length; i++) {      
-                    canvas.drawText(
-                        i == f5ModeLines.length - 1
-                        ? f5ModeLines[i] + f5InputBuffer
-                        : f5ModeLines[i],
-                       10,
-                       20 + (i + 1) * mRenderer.mFontLineSpacing,
-                      f5ModePaint
-               );
-            }
-            // --- End of Module (CTRL + F5) ---
+                     canvas.drawText(
+                     i == f5ModeLines.length - 1
+                     ? f5ModeLines[i] + f5InputBuffer
+                     : f5ModeLines[i],
+                     10,
+                     20 + (i + 1) * mRenderer.mFontLineSpacing,
+                     f5ModePaint
+                    );
+                } 
+           }
+        // --- End of Module (CTRL + F5) ---
         }
     }
 
