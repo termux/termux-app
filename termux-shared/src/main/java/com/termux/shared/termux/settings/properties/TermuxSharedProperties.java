@@ -13,6 +13,7 @@ import com.termux.shared.termux.TermuxConstants;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -467,7 +468,7 @@ public abstract class TermuxSharedProperties {
     public static Integer getCodePointForSessionShortcuts(String key, String value) {
         if (key == null) return null;
         if (value == null) return null;
-        String[] parts = value.toLowerCase().trim().split("\\+");
+        String[] parts = value.toLowerCase(Locale.ROOT).trim().split("\\+");
         String input = parts.length == 2 ? parts[1].trim() : null;
         if (!(parts.length == 2 && parts[0].trim().equals("ctrl")) || input.isEmpty() || input.length() > 2) {
             Logger.logError(LOG_TAG, "Keyboard shortcut '" + key + "' is not Ctrl+<something>");
