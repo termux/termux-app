@@ -476,11 +476,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     TerminalSession storedSession = mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast();
                     if (storedSession != null && !mTermuxService.isSessionAttached(storedSession)) {
                         mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
-                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
-                        // In multi-window mode with all sessions attached, create a new session
-                        mTermuxTerminalSessionActivityClient.addNewSession(false, null);
                     } else {
-                        mTermuxTerminalSessionActivityClient.setCurrentSession(storedSession);
+                        // A separate task may be fullscreen while another window still owns the
+                        // stored session. Every new window needs its own session in that case.
+                        mTermuxTerminalSessionActivityClient.addNewSession(false, null);
                     }
                 }
             }

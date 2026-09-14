@@ -290,7 +290,7 @@ public final class TerminalView extends View {
      * @return The previous session that was attached (may be null), so caller can detach it
      */
     public TerminalSession attachSession(TerminalSession session) {
-        if (session == mTermSession) return null;
+        if (session == mTermSession) return mTermSession;
 
         TerminalSession previousSession = mTermSession;
 

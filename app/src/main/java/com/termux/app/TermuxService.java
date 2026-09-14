@@ -657,6 +657,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
                 TermuxPluginUtils.processPluginExecutionCommandResult(this, LOG_TAG, executionCommand);
 
             mShellManager.mTermuxSessions.remove(termuxSession);
+            mSessionAttachments.remove(termuxSession.getTerminalSession().mHandle);
 
             // Notify all activities that sessions list has been updated
             notifyAllSessionListsUpdated();
@@ -774,6 +775,14 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
     /** Remove an activity client when its activity is destroyed. */
     public synchronized void removeTermuxTerminalSessionClient(TermuxTerminalSessionActivityClient client) {
         mActivityClients.remove(client);
+        // Previously displayed sessions can still refer to this client after being detached.
+        // Keep their callbacks on a surviving activity, or the service if no windows remain.
+        for (TermuxSession termuxSession : mShellManager.mTermuxSessions) {
+            TerminalSession session = termuxSession.getTerminalSession();
+            if (!isSessionAttached(session)) {
+                session.updateTerminalSessionClient(getTermuxTerminalSessionClient());
+            }
+        }
     }
 
     /** This should be called when {@link TermuxActivity} has been destroyed and in {@link #onUnbind(Intent)}
@@ -785,6 +794,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
             mShellManager.mTermuxSessions.get(i).getTerminalSession().updateTerminalSessionClient(mTermuxTerminalSessionServiceClient);
 
         mActivityClients.clear();
+        mSessionAttachments.clear();
     }
 
     /** Reset a specific session's client to the service client. Used when an activity is destroyed

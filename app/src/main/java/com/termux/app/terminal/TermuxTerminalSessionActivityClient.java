@@ -70,13 +70,24 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
      * Should be called when mActivity.onStart() is called
      */
     public void onStart() {
+        if (mActivity.isFinishing()) return;
+
         // The service has connected, but data may have changed since we were last in the foreground.
-        if (mActivity.getTermuxService() != null) {
+        TermuxService service = mActivity.getTermuxService();
+        if (service != null) {
             TerminalSession currentSession = mActivity.getCurrentSession();
             // In multi-window mode, keep the current attached session if it's still valid.
             // Only restore from preferences if we don't have a valid session attached.
-            if (currentSession == null || mActivity.getTermuxService().getTermuxSessionForTerminalSession(currentSession) == null) {
-                setCurrentSession(getCurrentStoredSessionOrLast());
+            if (currentSession == null || service.getTermuxSessionForTerminalSession(currentSession) == null) {
+                TerminalSession session = getCurrentStoredSessionOrLast();
+                if (session == null || service.isSessionAttachedToOther(session, mActivity.getActivityId())) {
+                    session = service.claimFirstUnattachedSession(mActivity.getActivityId());
+                }
+                if (session == null) {
+                    mActivity.finishActivityIfNotFinishing();
+                    return;
+                }
+                setCurrentSession(session);
             }
             termuxSessionListNotifyUpdated();
         }
@@ -301,17 +312,13 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (session == null) return;
 
         TermuxService service = mActivity.getTermuxService();
+        // Claim ownership before changing the view or its callbacks. Lifecycle restoration and
+        // service requests also reach here, without the drawer's ownership check.
+        if (service == null || !service.attachSession(session, mActivity.getActivityId())) return;
+
         TerminalSession previousSession = mActivity.getTerminalView().attachSession(session);
         if (previousSession != session) {
-            // Session changed - update attachment state through the service
-            if (service != null) {
-                // Detach the previous session from this activity
-                if (previousSession != null) {
-                    service.detachSession(previousSession, mActivity.getActivityId());
-                }
-                // Attach the new session to this activity
-                service.attachSession(session, mActivity.getActivityId());
-            }
+            service.detachSession(previousSession, mActivity.getActivityId());
 
             // notify about switched session if not already displaying the session
             notifyOfSessionChange();
@@ -320,6 +327,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         // Set this activity's client on the session so it receives callbacks (render updates, etc.)
         // This is important for multi-window support where each window needs its own client.
         session.updateTerminalSessionClient(this);
+        service.notifyAllSessionListsUpdated();
 
         // We call the following even when the session is already being displayed since config may
         // be stale, like current session not selected or scrolled to.
@@ -479,7 +487,11 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
 
-        int index = service.removeTermuxSession(finishedSession);
+        service.removeTermuxSession(finishedSession);
+
+        // Background sessions can still send callbacks to this activity. Their exit must not
+        // replace its current session or close a window displaying a different live session.
+        if (finishedSession != mActivity.getCurrentSession()) return;
 
         int size = service.getTermuxSessionsSize();
         if (size == 0) {
