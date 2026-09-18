@@ -79,6 +79,7 @@ public final class BidiLayout {
                     for (int i = 0; i < columns; i++) {
                         LogicalCell cell = cached.visualCells[i];
                         int lCol = cached.visualToLogical[i];
+                        cell.style = rowObject.getStyle(lCol);
                         cell.insideCursor = (lCol == cursorCol && cursorVisible);
                         cell.insideSelection = hasSel && (i >= vSelStart && i <= vSelEnd);
                     }
@@ -178,11 +179,27 @@ public final class BidiLayout {
         for (int i = 0; i < activeLength; i++) {
             int cp = logicalCells[i].codePoint;
             if (cp == 0) {
-                bidiChars[i] = ' ';
+                // Continuation cell of a wide character or empty cell
+                if (i > 0 && logicalCells[i - 1].displayWidth == 2) {
+                    bidiChars[i] = bidiChars[i - 1];
+                } else {
+                    bidiChars[i] = ' ';
+                }
             } else if (Character.isSupplementaryCodePoint(cp)) {
-                bidiChars[i] = ' '; // standard LTR placeholder
+                byte dir = (byte) Character.getDirectionality(cp);
+                boolean isRtlChar = (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+                                     dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC);
+                bidiChars[i] = isRtlChar ? '\u0627' : 'A';
             } else {
-                bidiChars[i] = (char) cp;
+                int w = logicalCells[i].displayWidth;
+                if (w == 2) {
+                    byte dir = (byte) Character.getDirectionality(cp);
+                    boolean isRtlChar = (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+                                         dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC);
+                    bidiChars[i] = isRtlChar ? '\u0627' : 'A';
+                } else {
+                    bidiChars[i] = (char) cp;
+                }
             }
         }
 
@@ -203,6 +220,18 @@ public final class BidiLayout {
                 logicalCells[i].isRtl = (levels[i] % 2 != 0);
             }
             Bidi.reorderVisually(levels, 0, activeVisualToLogical, 0, activeLength);
+
+            // Ensure wide characters (displayWidth == 2) keep their lead and continuation cells together in visual LTR order
+            for (int i = 0; i < activeLength - 1; i++) {
+                int lCol = activeVisualToLogical[i];
+                if (lCol < columns && logicalCells[lCol].displayWidth == 2) {
+                    int nextCol = lCol + 1;
+                    if (i > 0 && activeVisualToLogical[i - 1] == nextCol) {
+                        activeVisualToLogical[i - 1] = lCol;
+                        activeVisualToLogical[i] = nextCol;
+                    }
+                }
+            }
 
             // Map active reordered portion
             for (int i = 0; i < activeLength; i++) {

@@ -54,6 +54,13 @@ public final class TerminalRenderer {
      */
     private final float[] asciiMeasures = new float[127];
 
+    /** Reusable buffer for measuring non-ASCII/combining cells without GC allocations. */
+    private final char[] mCellMeasureBuffer = new char[64];
+    /** Reusable cell array for batching runs without allocation. */
+    private BidiLayout.LogicalCell[] mRunCells = new BidiLayout.LogicalCell[256];
+    /** Reusable char buffer for encoding runs into drawTextRun. */
+    private char[] mRunCharBuffer = new char[1024];
+
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
         mTypeface = typeface;
@@ -138,26 +145,27 @@ public final class TerminalRenderer {
                 final boolean isRtl = cell.isRtl;
 
                 // Measure the advance width of this cell. ASCII cells without combining characters
-                // use the pre-computed lookup table; all other cells call measureText.
-                final float measuredCodePointWidth;
-                if (codePoint == 0) {
-                    measuredCodePointWidth = 0f;
-                } else if (codePoint < asciiMeasures.length && cell.combiningChars == null) {
-                    measuredCodePointWidth = asciiMeasures[codePoint];
+                // use the pre-computed lookup table; all other cells call measureText into reusable buffer.
+                // Note: for RTL cells, fontWidthMismatch is always false by definition, so we skip measurement entirely.
+                final boolean fontWidthMismatch;
+                if (isRtl || codePointWcWidth <= 0) {
+                    fontWidthMismatch = false;
                 } else {
-                    int cap = Character.charCount(codePoint)
-                            + (cell.combiningChars != null ? cell.combiningCount * 2 : 0);
-                    char[] buf = new char[cap];
-                    int len = Character.toChars(codePoint, buf, 0);
-                    if (cell.combiningChars != null) {
-                        for (int i = 0; i < cell.combiningCount; i++)
-                            len += Character.toChars(cell.combiningChars[i], buf, len);
+                    final float measuredCodePointWidth;
+                    if (codePoint == 0) {
+                        measuredCodePointWidth = 0f;
+                    } else if (codePoint < asciiMeasures.length && cell.combiningChars == null) {
+                        measuredCodePointWidth = asciiMeasures[codePoint];
+                    } else {
+                        int len = Character.toChars(codePoint, mCellMeasureBuffer, 0);
+                        if (cell.combiningChars != null) {
+                            for (int i = 0; i < cell.combiningCount; i++)
+                                len += Character.toChars(cell.combiningChars[i], mCellMeasureBuffer, len);
+                        }
+                        measuredCodePointWidth = mTextPaint.measureText(mCellMeasureBuffer, 0, len);
                     }
-                    measuredCodePointWidth = mTextPaint.measureText(buf, 0, len);
+                    fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
                 }
-
-                final boolean fontWidthMismatch = !isRtl && codePointWcWidth > 0
-                        && Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
 
                 if (style != lastRunStyle
                         || insideCursor != lastRunInsideCursor
@@ -222,32 +230,35 @@ public final class TerminalRenderer {
         final boolean invertCursorTextColor =
                 insideCursor && cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK;
 
+        if (runColumns > mRunCells.length) {
+            mRunCells = new BidiLayout.LogicalCell[Math.max(runColumns, mRunCells.length * 2)];
+        }
+
         // Collect non-empty cells.
         int count = 0;
-        BidiLayout.LogicalCell[] cells = new BidiLayout.LogicalCell[runColumns];
         for (int c = startCol; c < endCol; c++) {
             BidiLayout.LogicalCell rc = visualCells[c];
             if (rc.displayWidth == 0 && rc.codePoint == 0) continue;
-            cells[count++] = rc;
+            mRunCells[count++] = rc;
         }
 
         // Reorder RTL cells into logical column order for the shaping engine.
         if (isRtl) {
             for (int i = 1; i < count; i++) {
-                BidiLayout.LogicalCell key = cells[i];
+                BidiLayout.LogicalCell key = mRunCells[i];
                 int j = i - 1;
-                while (j >= 0 && cells[j].originalColumn > key.originalColumn) {
-                    cells[j + 1] = cells[j];
+                while (j >= 0 && mRunCells[j].originalColumn > key.originalColumn) {
+                    mRunCells[j + 1] = mRunCells[j];
                     j--;
                 }
-                cells[j + 1] = key;
+                mRunCells[j + 1] = key;
             }
         }
 
         // Compute exact buffer capacity: each codepoint (base or combining) may need 2 chars.
         int capacity = 0;
         for (int i = 0; i < count; i++) {
-            BidiLayout.LogicalCell rc = cells[i];
+            BidiLayout.LogicalCell rc = mRunCells[i];
             if (rc.codePoint == 0) {
                 capacity += 1;
             } else {
@@ -259,18 +270,21 @@ public final class TerminalRenderer {
             }
         }
 
-        char[] runBuffer = new char[capacity];
+        if (capacity > mRunCharBuffer.length) {
+            mRunCharBuffer = new char[Math.max(capacity, mRunCharBuffer.length * 2)];
+        }
+
         int used = 0;
         for (int i = 0; i < count; i++) {
-            BidiLayout.LogicalCell rc = cells[i];
+            BidiLayout.LogicalCell rc = mRunCells[i];
             if (rc.codePoint != 0) {
-                used += Character.toChars(rc.codePoint, runBuffer, used);
+                used += Character.toChars(rc.codePoint, mRunCharBuffer, used);
                 if (rc.combiningChars != null) {
                     for (int k = 0; k < rc.combiningCount; k++)
-                        used += Character.toChars(rc.combiningChars[k], runBuffer, used);
+                        used += Character.toChars(rc.combiningChars[k], mRunCharBuffer, used);
                 }
             } else if (rc.displayWidth > 0) {
-                runBuffer[used++] = ' ';
+                mRunCharBuffer[used++] = ' ';
             }
         }
 
@@ -278,39 +292,38 @@ public final class TerminalRenderer {
         final Typeface originalTypeface = mTextPaint.getTypeface();
         if (isRtl) mTextPaint.setTypeface(Typeface.DEFAULT);
 
-        // Determine the run's rendered advance width.
-        final float measuredWidth;
-        if (isRtl) {
-            measuredWidth = mTextPaint.measureText(runBuffer, 0, used);
-        } else if (fontWidthMismatch) {
-            float total = 0f;
-            for (int i = 0; i < count; i++) {
-                BidiLayout.LogicalCell rc = cells[i];
-                if (rc.codePoint != 0) {
-                    int cap = Character.charCount(rc.codePoint)
-                            + (rc.combiningChars != null ? rc.combiningCount * 2 : 0);
-                    char[] t = new char[cap];
-                    int tl = Character.toChars(rc.codePoint, t, 0);
-                    if (rc.combiningChars != null) {
-                        for (int k = 0; k < rc.combiningCount; k++)
-                            tl += Character.toChars(rc.combiningChars[k], t, tl);
+        try {
+            // Determine the run's rendered advance width.
+            final float measuredWidth;
+            if (isRtl) {
+                measuredWidth = mTextPaint.measureText(mRunCharBuffer, 0, used);
+            } else if (fontWidthMismatch) {
+                float total = 0f;
+                for (int i = 0; i < count; i++) {
+                    BidiLayout.LogicalCell rc = mRunCells[i];
+                    if (rc.codePoint != 0) {
+                        int tl = Character.toChars(rc.codePoint, mCellMeasureBuffer, 0);
+                        if (rc.combiningChars != null) {
+                            for (int k = 0; k < rc.combiningCount; k++)
+                                tl += Character.toChars(rc.combiningChars[k], mCellMeasureBuffer, tl);
+                        }
+                        total += mTextPaint.measureText(mCellMeasureBuffer, 0, tl);
+                    } else {
+                        total += mFontWidth;
                     }
-                    total += mTextPaint.measureText(t, 0, tl);
-                } else {
-                    total += mFontWidth;
                 }
+                measuredWidth = total;
+            } else {
+                measuredWidth = runColumns * mFontWidth;
             }
-            measuredWidth = total;
-        } else {
-            measuredWidth = runColumns * mFontWidth;
+
+            drawTextRun(canvas, mRunCharBuffer, palette, heightOffset,
+                    startCol, runColumns, 0, used, measuredWidth,
+                    cursorColor, cursorShape, style,
+                    reverseVideo || invertCursorTextColor || insideSelection, isRtl);
+        } finally {
+            if (isRtl) mTextPaint.setTypeface(originalTypeface);
         }
-
-        drawTextRun(canvas, runBuffer, palette, heightOffset,
-                startCol, runColumns, 0, used, measuredWidth,
-                cursorColor, cursorShape, style,
-                reverseVideo || invertCursorTextColor || insideSelection, isRtl);
-
-        if (isRtl) mTextPaint.setTypeface(originalTypeface);
     }
 
     private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y,
@@ -413,7 +426,7 @@ public final class TerminalRenderer {
 
     public int translateVisualToLogicalColumn(TerminalEmulator mEmulator, int visualCol, int row) {
         if (visualCol < 0) return 0;
-        if (visualCol >= mEmulator.mColumns) return mEmulator.mColumns - 1;
+        if (visualCol >= mEmulator.mColumns) return mEmulator.mColumns;
 
         TerminalBuffer screen = mEmulator.getScreen();
         if (row < -screen.getActiveTranscriptRows() || row >= mEmulator.mRows) return visualCol;
@@ -424,13 +437,17 @@ public final class TerminalRenderer {
         TerminalRow rowObject = screen.allocateFullLineIfNecessary(internalRow);
         if (rowObject == null) return visualCol;
 
+        if (rowObject.mVisualToLogical != null && rowObject.mVisualToLogical.length == mEmulator.mColumns) {
+            return rowObject.mVisualToLogical[visualCol];
+        }
+
         BidiLayout layout = BidiLayout.build(rowObject, mEmulator.mColumns, -1, false, -1, -1, -1, -1, -1, false);
         return layout.visualToLogical[visualCol];
     }
 
     public int translateLogicalToVisualColumn(TerminalEmulator mEmulator, int logicalCol, int row) {
         if (logicalCol < 0) return 0;
-        if (logicalCol >= mEmulator.mColumns) return mEmulator.mColumns - 1;
+        if (logicalCol >= mEmulator.mColumns) return mEmulator.mColumns;
 
         TerminalBuffer screen = mEmulator.getScreen();
         if (row < -screen.getActiveTranscriptRows() || row >= mEmulator.mRows) return logicalCol;
@@ -440,6 +457,10 @@ public final class TerminalRenderer {
 
         TerminalRow rowObject = screen.allocateFullLineIfNecessary(internalRow);
         if (rowObject == null) return logicalCol;
+
+        if (rowObject.mLogicalToVisual != null && rowObject.mLogicalToVisual.length == mEmulator.mColumns) {
+            return rowObject.mLogicalToVisual[logicalCol];
+        }
 
         BidiLayout layout = BidiLayout.build(rowObject, mEmulator.mColumns, -1, false, -1, -1, -1, -1, -1, false);
         return layout.logicalToVisual[logicalCol];

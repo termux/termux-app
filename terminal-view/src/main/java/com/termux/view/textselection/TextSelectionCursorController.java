@@ -82,8 +82,19 @@ public class TextSelectionCursorController implements CursorController {
     public void render() {
         if (!isActive()) return;
 
-        mStartHandle.positionAtCursor(mSelX1, mSelY1, false);
-        mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, false);
+        if (mSelY1 == mSelY2) {
+            int v1 = logicalToVisual(mSelX1, mSelY1);
+            int v2 = logicalToVisual(mSelX2, mSelY2);
+            int vStart = Math.min(v1, v2);
+            int vEnd = Math.max(v1, v2);
+            mStartHandle.positionAtVisual(vStart, mSelY1, false);
+            mEndHandle.positionAtVisual(vEnd + 1, mSelY2, false);
+        } else {
+            int v1 = logicalToVisual(mSelX1, mSelY1);
+            int v2 = logicalToVisual(mSelX2, mSelY2);
+            mStartHandle.positionAtVisual(v1, mSelY1, false);
+            mEndHandle.positionAtVisual(v2 + 1, mSelY2, false);
+        }
 
         if (mActionMode != null) {
             mActionMode.invalidate();
@@ -192,18 +203,14 @@ public class TextSelectionCursorController implements CursorController {
 
             @Override
             public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                int visualCol1 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX1, mSelY1);
-                int visualCol2 = terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, mSelX2, mSelY2);
-                int x1 = Math.round(visualCol1 * terminalView.mRenderer.getFontWidth());
-                int x2 = Math.round(visualCol2 * terminalView.mRenderer.getFontWidth());
+                int visualCol1 = logicalToVisual(mSelX1, mSelY1);
+                int visualCol2 = logicalToVisual(mSelX2, mSelY2);
+                int minCol = Math.min(visualCol1, visualCol2);
+                int maxCol = Math.max(visualCol1, visualCol2);
+                int x1 = Math.round(minCol * terminalView.mRenderer.getFontWidth());
+                int x2 = Math.round((maxCol + 1) * terminalView.mRenderer.getFontWidth());
                 int y1 = Math.round((mSelY1 - 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
                 int y2 = Math.round((mSelY2 + 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
-
-                if (x1 > x2) {
-                    int tmp = x1;
-                    x1 = x2;
-                    x2 = tmp;
-                }
 
                 int terminalBottom = terminalView.getBottom();
                 int top = y1 + mHandleHeight;
@@ -216,15 +223,18 @@ public class TextSelectionCursorController implements CursorController {
         }, ActionMode.TYPE_FLOATING);
     }
 
+    private int logicalToVisual(int logicalCol, int row) {
+        return terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, logicalCol, row);
+    }
+
+    private int visualToLogical(int visualCol, int row) {
+        return terminalView.mRenderer.translateVisualToLogicalColumn(terminalView.mEmulator, visualCol, row);
+    }
+
     @Override
     public void updatePosition(TextSelectionHandleView handle, int x, int y) {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
-        // ponytail: local l2v/v2l shorthands — the mRenderer/mEmulator chain was repeated 8×
-        final java.util.function.BiFunction<Integer, Integer, Integer> l2v =
-            (lx, ly) -> terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, lx, ly);
-        final java.util.function.BiFunction<Integer, Integer, Integer> v2l =
-            (vx, vy) -> terminalView.mRenderer.translateVisualToLogicalColumn(terminalView.mEmulator, vx, vy);
         if (handle == mStartHandle) {
             mSelY1 = terminalView.getCursorY(y);
             if (mSelY1 < -scrollRows) {
@@ -242,11 +252,11 @@ public class TextSelectionCursorController implements CursorController {
                 mSelY1 = mSelY2;
             }
             if (mSelY1 == mSelY2) {
-                int vSelX1 = l2v.apply(mSelX1, mSelY1);
-                int vSelX2 = l2v.apply(mSelX2, mSelY2);
+                int vSelX1 = logicalToVisual(mSelX1, mSelY1);
+                int vSelX2 = logicalToVisual(mSelX2, mSelY2);
                 if (vSelX1 > vSelX2) {
                     vSelX1 = vSelX2;
-                    mSelX1 = v2l.apply(vSelX1, mSelY1);
+                    mSelX1 = visualToLogical(vSelX1, mSelY1);
                 }
             }
 
@@ -287,11 +297,11 @@ public class TextSelectionCursorController implements CursorController {
                 mSelY2 = mSelY1;
             }
             if (mSelY1 == mSelY2) {
-                int vSelX1 = l2v.apply(mSelX1, mSelY1);
-                int vSelX2 = l2v.apply(mSelX2, mSelY2);
+                int vSelX1 = logicalToVisual(mSelX1, mSelY1);
+                int vSelX2 = logicalToVisual(mSelX2, mSelY2);
                 if (vSelX1 > vSelX2) {
                     vSelX2 = vSelX1;
-                    mSelX2 = v2l.apply(vSelX2, mSelY2);
+                    mSelX2 = visualToLogical(vSelX2, mSelY2);
                 }
             }
 

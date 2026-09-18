@@ -1064,8 +1064,8 @@ public final class TerminalView extends View {
     }
 
     public int getPointX(int cx, int cy) {
-        if (cx > mEmulator.mColumns) {
-            cx = mEmulator.mColumns;
+        if (cx >= mEmulator.mColumns) {
+            return Math.round(mEmulator.mColumns * mRenderer.mFontWidth);
         }
         int visualCol = mRenderer.translateLogicalToVisualColumn(mEmulator, cx, cy);
         return Math.round(visualCol * mRenderer.mFontWidth);
