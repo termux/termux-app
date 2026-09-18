@@ -25,6 +25,7 @@ public class TerminalRendererBufferTest extends TestCase {
         t.testAsciiGate_plainAscii_usesFastPath();
         t.testAsciiGate_boundary_del();
         t.testBidiReordering_arabicWord();
+        t.testBidiReordering_promptPreservedAtLeft();
         t.testBidiReordering_wideCharPreserved();
         t.testTerminalRow_cacheInvalidationOnSetChar();
         t.testTerminalRow_cacheInvalidationOnClear();
@@ -160,7 +161,7 @@ public class TerminalRendererBufferTest extends TestCase {
     public void testBidiReordering_arabicWord() {
         // "مرحبا" in logical order: M, R, H, B, A (indices 0, 1, 2, 3, 4)
         char[] chars = { '\u0645', '\u0631', '\u062D', '\u0628', '\u0627' };
-        Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
+        Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_LEFT_TO_RIGHT);
         assertFalse(bidi.isLeftToRight());
 
         byte[] levels = new byte[chars.length];
@@ -179,11 +180,36 @@ public class TerminalRendererBufferTest extends TestCase {
         assertEquals(0, (int) visualToLogical[4]);
     }
 
+    public void testBidiReordering_promptPreservedAtLeft() {
+        // "$ مرحبا" : Prompt '$' (idx 0), ' ' (idx 1), then Arabic 'م' 'ر' 'ح' 'ب' 'ا' (idx 2..6)
+        char[] chars = { '$', ' ', '\u0645', '\u0631', '\u062D', '\u0628', '\u0627' };
+        Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_LEFT_TO_RIGHT);
+        assertFalse(bidi.isLeftToRight());
+
+        byte[] levels = new byte[chars.length];
+        Integer[] visualToLogical = new Integer[chars.length];
+        for (int i = 0; i < chars.length; i++) {
+            levels[i] = (byte) bidi.getLevelAt(i);
+            visualToLogical[i] = i;
+        }
+        Bidi.reorderVisually(levels, 0, visualToLogical, 0, chars.length);
+
+        // Prompt MUST remain at visual 0 and 1 on the left side of the terminal
+        assertEquals(0, (int) visualToLogical[0]);
+        assertEquals(1, (int) visualToLogical[1]);
+        // Arabic word is reversed at visual 2..6
+        assertEquals(6, (int) visualToLogical[2]);
+        assertEquals(5, (int) visualToLogical[3]);
+        assertEquals(4, (int) visualToLogical[4]);
+        assertEquals(3, (int) visualToLogical[5]);
+        assertEquals(2, (int) visualToLogical[6]);
+    }
+
     public void testBidiReordering_wideCharPreserved() {
         // Wide char placeholder representation with strong LTR markers
         // Ensuring lead (idx 5) and continuation (idx 6) remain in visual order
         char[] chars = { '\u0645', '\u0631', '\u062D', '\u0628', '\u0627', 'A', 'A', '\u0639', '\u0627' };
-        Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
+        Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_LEFT_TO_RIGHT);
 
         byte[] levels = new byte[chars.length];
         Integer[] visualToLogical = new Integer[chars.length];

@@ -203,7 +203,9 @@ public final class BidiLayout {
             }
         }
 
-        Bidi bidi = new Bidi(bidiChars, 0, null, 0, activeLength, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
+        // The terminal grid base direction is strictly Left-to-Right (column 0 is on the visual left).
+        // Using DIRECTION_LEFT_TO_RIGHT ensures the shell prompt ($) never shifts to the right or gets overwritten.
+        Bidi bidi = new Bidi(bidiChars, 0, null, 0, activeLength, Bidi.DIRECTION_LEFT_TO_RIGHT);
 
         if (bidi.isLeftToRight()) {
             for (int i = 0; i < columns; i++) {

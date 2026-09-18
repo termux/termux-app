@@ -167,12 +167,21 @@ public final class TerminalRenderer {
                     fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
                 }
 
-                if (style != lastRunStyle
-                        || insideCursor != lastRunInsideCursor
-                        || insideSelection != lastRunInsideSelection
-                        || isRtl != lastRunIsRtl
-                        || fontWidthMismatch
-                        || lastRunFontWidthMismatch) {
+                final boolean splitRun;
+                if (isRtl && lastRunIsRtl) {
+                    // Cursive Arabic/RTL text requires unbroken text runs for HarfBuzz to connect glyphs.
+                    // Do not split RTL runs on cursor or selection transitions.
+                    splitRun = (style != lastRunStyle);
+                } else {
+                    splitRun = (style != lastRunStyle
+                            || insideCursor != lastRunInsideCursor
+                            || insideSelection != lastRunInsideSelection
+                            || isRtl != lastRunIsRtl
+                            || fontWidthMismatch
+                            || lastRunFontWidthMismatch);
+                }
+
+                if (splitRun) {
                     if (vCol != 0) {
                         flushRun(canvas, mEmulator, visualCells, palette, heightOffset,
                                 lastRunStartColumn, vCol, lastRunStyle,
@@ -288,16 +297,113 @@ public final class TerminalRenderer {
             }
         }
 
-        // Switch to the system default typeface for RTL runs to enable native cursive shaping.
-        final Typeface originalTypeface = mTextPaint.getTypeface();
-        if (isRtl) mTextPaint.setTypeface(Typeface.DEFAULT);
+        if (isRtl) {
+            final Typeface originalTypeface = mTextPaint.getTypeface();
+            mTextPaint.setTypeface(Typeface.DEFAULT);
+            try {
+                // 1. Draw cell backgrounds, selection highlights, and cursor in unscaled grid coordinates
+                final float top = heightOffset - mFontLineSpacingAndAscent + mFontAscent;
+                final float bottom = heightOffset;
+                final int defaultBg = palette[TextStyle.COLOR_INDEX_BACKGROUND];
 
+                for (int c = startCol; c < endCol; c++) {
+                    BidiLayout.LogicalCell cell = visualCells[c];
+                    int cellBg = TextStyle.decodeBackColor(cell.style);
+                    if ((cellBg & 0xff000000) != 0xff000000) cellBg = palette[cellBg];
+                    if (cellBg != defaultBg) {
+                        mTextPaint.setColor(cellBg);
+                        canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
+                    }
+                    if (cell.insideSelection) {
+                        mTextPaint.setColor(0x6033B5E5);
+                        canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
+                    }
+                    if (cell.insideCursor) {
+                        int cColor = emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
+                        float cLeft = c * mFontWidth;
+                        float cRight = (c + 1) * mFontWidth;
+                        float cursorH = mFontLineSpacingAndAscent - mFontAscent;
+                        if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
+                            mTextPaint.setColor(cColor);
+                            canvas.drawRect(cLeft, bottom - cursorH / 4.f, cRight, bottom, mTextPaint);
+                        } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
+                            mTextPaint.setColor(cColor);
+                            canvas.drawRect(cLeft, bottom - cursorH, cLeft + mFontWidth / 4.f, bottom, mTextPaint);
+                        } else {
+                            // Block cursor: draw semi-transparent overlay so shaped Arabic letters remain visible
+                            mTextPaint.setColor((cColor & 0x00FFFFFF) | 0x80000000);
+                            canvas.drawRect(cLeft, bottom - cursorH, cRight, bottom, mTextPaint);
+                        }
+                    }
+                }
+
+                // 2. Measure advance width of the contiguous Arabic run
+                final float measuredWidth = mTextPaint.measureText(mRunCharBuffer, 0, used);
+
+                // 3. Setup text paint
+                int foreColor = TextStyle.decodeForeColor(style);
+                final int effect = TextStyle.decodeEffect(style);
+                final boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
+                final boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
+                final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
+                final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
+                final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
+
+                if ((foreColor & 0xff000000) != 0xff000000) {
+                    if (bold && foreColor >= 0 && foreColor < 8) foreColor += 8;
+                    foreColor = palette[foreColor];
+                }
+                if (reverseVideo ^ (effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0) {
+                    int backColor = TextStyle.decodeBackColor(style);
+                    if ((backColor & 0xff000000) != 0xff000000) backColor = palette[backColor];
+                    foreColor = backColor;
+                }
+                if (dim) {
+                    int red   = (0xFF & (foreColor >> 16)) * 2 / 3;
+                    int green = (0xFF & (foreColor >>  8)) * 2 / 3;
+                    int blue  = (0xFF &  foreColor)        * 2 / 3;
+                    foreColor = 0xFF000000 | (red << 16) | (green << 8) | blue;
+                }
+
+                mTextPaint.setFakeBoldText(bold);
+                mTextPaint.setUnderlineText(underline);
+                mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
+                mTextPaint.setStrikeThruText(strikeThrough);
+                mTextPaint.setColor(foreColor);
+
+                // 4. Draw shaped text run
+                if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
+                    float left = startCol * mFontWidth;
+                    float mes = measuredWidth / mFontWidth;
+                    boolean savedMatrix = false;
+                    if (Math.abs(mes - runColumns) > 0.01 && mes > 0) {
+                        canvas.save();
+                        canvas.scale(runColumns / mes, 1.f);
+                        left *= mes / runColumns;
+                        savedMatrix = true;
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used,
+                                left, heightOffset - mFontLineSpacingAndAscent, true, mTextPaint);
+                    } else {
+                        canvas.drawText(mRunCharBuffer, 0, used,
+                                left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
+                    }
+
+                    if (savedMatrix) canvas.restore();
+                }
+            } finally {
+                mTextPaint.setTypeface(originalTypeface);
+            }
+            return;
+        }
+
+        // LTR run processing
         try {
             // Determine the run's rendered advance width.
             final float measuredWidth;
-            if (isRtl) {
-                measuredWidth = mTextPaint.measureText(mRunCharBuffer, 0, used);
-            } else if (fontWidthMismatch) {
+            if (fontWidthMismatch) {
                 float total = 0f;
                 for (int i = 0; i < count; i++) {
                     BidiLayout.LogicalCell rc = mRunCells[i];
@@ -320,9 +426,8 @@ public final class TerminalRenderer {
             drawTextRun(canvas, mRunCharBuffer, palette, heightOffset,
                     startCol, runColumns, 0, used, measuredWidth,
                     cursorColor, cursorShape, style,
-                    reverseVideo || invertCursorTextColor || insideSelection, isRtl);
+                    reverseVideo || invertCursorTextColor || insideSelection, false);
         } finally {
-            if (isRtl) mTextPaint.setTypeface(originalTypeface);
         }
     }
 
