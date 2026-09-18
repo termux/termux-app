@@ -45,19 +45,8 @@ public class TextSelectionCursorController implements CursorController {
     @Override
     public void show(MotionEvent event) {
         setInitialTextSelectionPosition(event);
-        if (mSelY1 == mSelY2) {
-            int v1 = logicalToVisual(mSelX1, mSelY1);
-            int v2 = logicalToVisual(mSelX2, mSelY2);
-            int vStart = Math.min(v1, v2);
-            int vEnd = Math.max(v1, v2);
-            mStartHandle.positionAtVisual(vStart, mSelY1, true);
-            mEndHandle.positionAtVisual(vEnd + 1, mSelY2, true);
-        } else {
-            int v1 = logicalToVisual(mSelX1, mSelY1);
-            int v2 = logicalToVisual(mSelX2, mSelY2);
-            mStartHandle.positionAtVisual(v1, mSelY1, true);
-            mEndHandle.positionAtVisual(v2 + 1, mSelY2, true);
-        }
+        mStartHandle.positionAtVisual(mSelX1, mSelY1, true);
+        mEndHandle.positionAtVisual(mSelX2 + 1, mSelY2, true);
 
         setActionModeCallBacks();
         mShowStartTime = System.currentTimeMillis();
@@ -93,19 +82,8 @@ public class TextSelectionCursorController implements CursorController {
     public void render() {
         if (!isActive()) return;
 
-        if (mSelY1 == mSelY2) {
-            int v1 = logicalToVisual(mSelX1, mSelY1);
-            int v2 = logicalToVisual(mSelX2, mSelY2);
-            int vStart = Math.min(v1, v2);
-            int vEnd = Math.max(v1, v2);
-            mStartHandle.positionAtVisual(vStart, mSelY1, false);
-            mEndHandle.positionAtVisual(vEnd + 1, mSelY2, false);
-        } else {
-            int v1 = logicalToVisual(mSelX1, mSelY1);
-            int v2 = logicalToVisual(mSelX2, mSelY2);
-            mStartHandle.positionAtVisual(v1, mSelY1, false);
-            mEndHandle.positionAtVisual(v2 + 1, mSelY2, false);
-        }
+        mStartHandle.positionAtVisual(mSelX1, mSelY1, false);
+        mEndHandle.positionAtVisual(mSelX2 + 1, mSelY2, false);
 
         if (mActionMode != null) {
             mActionMode.invalidate();
@@ -114,19 +92,32 @@ public class TextSelectionCursorController implements CursorController {
 
     public void setInitialTextSelectionPosition(MotionEvent event) {
         int[] columnAndRow = terminalView.getColumnAndRow(event, true);
-        mSelX1 = mSelX2 = columnAndRow[0];
+        int logicalCol = columnAndRow[0];
         mSelY1 = mSelY2 = columnAndRow[1];
 
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
-        if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
+        int lStart = logicalCol;
+        int lEnd = logicalCol;
+        if (!" ".equals(screen.getSelectedText(lStart, mSelY1, lStart, mSelY1))) {
             // Selecting something other than whitespace. Expand to word.
-            while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
-                mSelX1--;
+            while (lStart > 0 && !"".equals(screen.getSelectedText(lStart - 1, mSelY1, lStart - 1, mSelY1))) {
+                lStart--;
             }
-            while (mSelX2 < terminalView.mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
-                mSelX2++;
+            while (lEnd < terminalView.mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(lEnd + 1, mSelY1, lEnd + 1, mSelY1))) {
+                lEnd++;
             }
         }
+
+        // Map word's logical span [lStart, lEnd] to visual column bounds [mSelX1, mSelX2]
+        int minV = Integer.MAX_VALUE;
+        int maxV = Integer.MIN_VALUE;
+        for (int l = lStart; l <= lEnd; l++) {
+            int v = logicalToVisual(l, mSelY1);
+            if (v < minV) minV = v;
+            if (v > maxV) maxV = v;
+        }
+        mSelX1 = (minV != Integer.MAX_VALUE) ? minV : lStart;
+        mSelX2 = (maxV != Integer.MIN_VALUE) ? maxV : lEnd;
     }
     
     public void setActionModeCallBacks() {
@@ -265,19 +256,9 @@ public class TextSelectionCursorController implements CursorController {
             }
 
             if (mSelY1 == mSelY2) {
-                int currentVRight = Math.max(logicalToVisual(mSelX1, mSelY1), logicalToVisual(mSelX2, mSelY2));
-                int newVLeft = Math.min(visualCol, currentVRight);
-                int minL = Integer.MAX_VALUE;
-                int maxL = Integer.MIN_VALUE;
-                for (int v = newVLeft; v <= currentVRight; v++) {
-                    int l = visualToLogical(v, mSelY1);
-                    if (l < minL) minL = l;
-                    if (l > maxL) maxL = l;
-                }
-                mSelX1 = (minL != Integer.MAX_VALUE) ? minL : 0;
-                mSelX2 = (maxL != Integer.MIN_VALUE) ? maxL : 0;
+                mSelX1 = Math.min(visualCol, mSelX2);
             } else {
-                mSelX1 = visualToLogical(visualCol, mSelY1);
+                mSelX1 = visualCol;
             }
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
@@ -311,19 +292,9 @@ public class TextSelectionCursorController implements CursorController {
             }
 
             if (mSelY1 == mSelY2) {
-                int currentVLeft = Math.min(logicalToVisual(mSelX1, mSelY1), logicalToVisual(mSelX2, mSelY2));
-                int newVRight = Math.max(visualCol, currentVLeft);
-                int minL = Integer.MAX_VALUE;
-                int maxL = Integer.MIN_VALUE;
-                for (int v = currentVLeft; v <= newVRight; v++) {
-                    int l = visualToLogical(v, mSelY2);
-                    if (l < minL) minL = l;
-                    if (l > maxL) maxL = l;
-                }
-                mSelX1 = (minL != Integer.MAX_VALUE) ? minL : 0;
-                mSelX2 = (maxL != Integer.MIN_VALUE) ? maxL : 0;
+                mSelX2 = Math.max(visualCol, mSelX1);
             } else {
-                mSelX2 = visualToLogical(visualCol, mSelY2);
+                mSelX2 = visualCol;
             }
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
@@ -416,7 +387,23 @@ public class TextSelectionCursorController implements CursorController {
 
     /** Get the currently selected text. */
     public String getSelectedText() {
-        return terminalView.mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2);
+        if (mSelY1 == mSelY2) {
+            int minL = Integer.MAX_VALUE;
+            int maxL = Integer.MIN_VALUE;
+            int startV = Math.min(mSelX1, mSelX2);
+            int endV = Math.max(mSelX1, mSelX2);
+            for (int v = startV; v <= endV; v++) {
+                int l = visualToLogical(v, mSelY1);
+                if (l < minL) minL = l;
+                if (l > maxL) maxL = l;
+            }
+            if (minL == Integer.MAX_VALUE) return "";
+            return terminalView.mEmulator.getSelectedText(minL, mSelY1, maxL, mSelY2);
+        } else {
+            int l1 = visualToLogical(mSelX1, mSelY1);
+            int l2 = visualToLogical(mSelX2, mSelY2);
+            return terminalView.mEmulator.getSelectedText(l1, mSelY1, l2, mSelY2);
+        }
     }
 
     /** Get the selected text stored before "MORE" button was pressed on the context menu. */

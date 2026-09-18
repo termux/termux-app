@@ -181,8 +181,8 @@ public class TerminalRendererBufferTest extends TestCase {
     }
 
     public void testBidiReordering_promptPreservedAtLeft() {
-        // "$ مرحبا" : Prompt '$' (idx 0), ' ' (idx 1), then Arabic 'م' 'ر' 'ح' 'ب' 'ا' (idx 2..6)
-        char[] chars = { '$', ' ', '\u0645', '\u0631', '\u062D', '\u0628', '\u0627' };
+        // Anchored prompt 'A' (idx 0), ' ' (idx 1), then Arabic 'م' 'ر' 'ح' 'ب' 'ا' (idx 2..6)
+        char[] chars = { 'A', ' ', '\u0645', '\u0631', '\u062D', '\u0628', '\u0627' };
         Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_LEFT_TO_RIGHT);
         assertFalse(bidi.isLeftToRight());
 
@@ -203,6 +203,38 @@ public class TerminalRendererBufferTest extends TestCase {
         assertEquals(4, (int) visualToLogical[4]);
         assertEquals(3, (int) visualToLogical[5]);
         assertEquals(2, (int) visualToLogical[6]);
+    }
+
+    public void testBidiReordering_promptArabicEnglish() {
+        // "$ مرحبا hello": Anchored prompt 'A', 'A' (idx 0..1), Arabic (idx 2..6), space (idx 7), English "hello" (idx 8..12)
+        char[] chars = { 'A', 'A', '\u0645', '\u0631', '\u062D', '\u0628', '\u0627', ' ', 'h', 'e', 'l', 'l', 'o' };
+        Bidi bidi = new Bidi(chars, 0, null, 0, chars.length, Bidi.DIRECTION_LEFT_TO_RIGHT);
+        assertFalse(bidi.isLeftToRight());
+
+        byte[] levels = new byte[chars.length];
+        Integer[] visualToLogical = new Integer[chars.length];
+        for (int i = 0; i < chars.length; i++) {
+            levels[i] = (byte) bidi.getLevelAt(i);
+            visualToLogical[i] = i;
+        }
+        Bidi.reorderVisually(levels, 0, visualToLogical, 0, chars.length);
+
+        // Prompt MUST remain at visual 0 and 1
+        assertEquals(0, (int) visualToLogical[0]);
+        assertEquals(1, (int) visualToLogical[1]);
+        // Arabic word is reversed at visual 2..6
+        assertEquals(6, (int) visualToLogical[2]);
+        assertEquals(5, (int) visualToLogical[3]);
+        assertEquals(4, (int) visualToLogical[4]);
+        assertEquals(3, (int) visualToLogical[5]);
+        assertEquals(2, (int) visualToLogical[6]);
+        // Space and English follow in visual LTR order: 7, 8, 9, 10, 11, 12
+        assertEquals(7, (int) visualToLogical[7]);
+        assertEquals(8, (int) visualToLogical[8]);
+        assertEquals(9, (int) visualToLogical[9]);
+        assertEquals(10, (int) visualToLogical[10]);
+        assertEquals(11, (int) visualToLogical[11]);
+        assertEquals(12, (int) visualToLogical[12]);
     }
 
     public void testBidiReordering_wideCharPreserved() {

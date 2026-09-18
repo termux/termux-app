@@ -306,16 +306,37 @@ public final class TerminalRenderer {
                 final float bottom = heightOffset;
                 final int defaultBg = palette[TextStyle.COLOR_INDEX_BACKGROUND];
 
+                int runForeColor = TextStyle.decodeForeColor(style);
+                final int effect = TextStyle.decodeEffect(style);
+                final boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
+                final boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
+                final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
+                final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
+                final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
+
+                if ((runForeColor & 0xff000000) != 0xff000000) {
+                    if (bold && runForeColor >= 0 && runForeColor < 8) runForeColor += 8;
+                    runForeColor = palette[runForeColor];
+                }
+
+                boolean hasSelectionInRun = false;
+                for (int c = startCol; c < endCol; c++) {
+                    if (visualCells[c].insideSelection) {
+                        hasSelectionInRun = true;
+                        break;
+                    }
+                }
+
                 for (int c = startCol; c < endCol; c++) {
                     BidiLayout.LogicalCell cell = visualCells[c];
                     int cellBg = TextStyle.decodeBackColor(cell.style);
                     if ((cellBg & 0xff000000) != 0xff000000) cellBg = palette[cellBg];
-                    if (cellBg != defaultBg) {
-                        mTextPaint.setColor(cellBg);
-                        canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
-                    }
                     if (cell.insideSelection) {
-                        mTextPaint.setColor(0x6033B5E5);
+                        // Original Termux reverse video: inverted cell background using foreground color
+                        mTextPaint.setColor(runForeColor);
+                        canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
+                    } else if (cellBg != defaultBg) {
+                        mTextPaint.setColor(cellBg);
                         canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
                     }
                     if (cell.insideCursor) {
@@ -341,18 +362,7 @@ public final class TerminalRenderer {
                 final float measuredWidth = mTextPaint.measureText(mRunCharBuffer, 0, used);
 
                 // 3. Setup text paint
-                int foreColor = TextStyle.decodeForeColor(style);
-                final int effect = TextStyle.decodeEffect(style);
-                final boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
-                final boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
-                final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
-                final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
-                final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
-
-                if ((foreColor & 0xff000000) != 0xff000000) {
-                    if (bold && foreColor >= 0 && foreColor < 8) foreColor += 8;
-                    foreColor = palette[foreColor];
-                }
+                int foreColor = runForeColor;
                 if (reverseVideo ^ (effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0) {
                     int backColor = TextStyle.decodeBackColor(style);
                     if ((backColor & 0xff000000) != 0xff000000) backColor = palette[backColor];
@@ -373,25 +383,62 @@ public final class TerminalRenderer {
 
                 // 4. Draw shaped text run
                 if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
-                    float left = startCol * mFontWidth;
-                    float mes = measuredWidth / mFontWidth;
-                    boolean savedMatrix = false;
-                    if (Math.abs(mes - runColumns) > 0.01 && mes > 0) {
-                        canvas.save();
-                        canvas.scale(runColumns / mes, 1.f);
-                        left *= mes / runColumns;
-                        savedMatrix = true;
-                    }
+                    if (!hasSelectionInRun) {
+                        float left = startCol * mFontWidth;
+                        float mes = measuredWidth / mFontWidth;
+                        boolean savedMatrix = false;
+                        if (Math.abs(mes - runColumns) > 0.01 && mes > 0) {
+                            canvas.save();
+                            canvas.scale(runColumns / mes, 1.f);
+                            left *= mes / runColumns;
+                            savedMatrix = true;
+                        }
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used,
-                                left, heightOffset - mFontLineSpacingAndAscent, true, mTextPaint);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used,
+                                    left, heightOffset - mFontLineSpacingAndAscent, true, mTextPaint);
+                        } else {
+                            canvas.drawText(mRunCharBuffer, 0, used,
+                                    left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
+                        }
+
+                        if (savedMatrix) canvas.restore();
                     } else {
-                        canvas.drawText(mRunCharBuffer, 0, used,
-                                left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
-                    }
+                        // Contiguous run with partial/full selection: use clipped segments so that HarfBuzz cursive shaping
+                        // remains unbroken across the whole word, while selected cells display inverted text (reverse video).
+                        int segStart = startCol;
+                        while (segStart < endCol) {
+                            boolean isSel = visualCells[segStart].insideSelection;
+                            int segEnd = segStart + 1;
+                            while (segEnd < endCol && visualCells[segEnd].insideSelection == isSel) {
+                                segEnd++;
+                            }
 
-                    if (savedMatrix) canvas.restore();
+                            int segTextColor = isSel ? defaultBg : foreColor;
+                            mTextPaint.setColor(segTextColor);
+
+                            canvas.save();
+                            canvas.clipRect(segStart * mFontWidth, top, segEnd * mFontWidth, bottom);
+
+                            float left = startCol * mFontWidth;
+                            float mes = measuredWidth / mFontWidth;
+                            if (Math.abs(mes - runColumns) > 0.01 && mes > 0) {
+                                canvas.scale(runColumns / mes, 1.f);
+                                left *= mes / runColumns;
+                            }
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used,
+                                        left, heightOffset - mFontLineSpacingAndAscent, true, mTextPaint);
+                            } else {
+                                canvas.drawText(mRunCharBuffer, 0, used,
+                                        left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
+                            }
+
+                            canvas.restore();
+                            segStart = segEnd;
+                        }
+                    }
                 }
             } finally {
                 mTextPaint.setTypeface(originalTypeface);

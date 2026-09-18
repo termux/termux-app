@@ -176,27 +176,35 @@ public final class BidiLayout {
 
         // Convert to Char array for Bidi (active portion only)
         char[] bidiChars = new char[activeLength];
+        boolean foundStrongRtl = false;
         for (int i = 0; i < activeLength; i++) {
             int cp = logicalCells[i].codePoint;
+            byte dir = Character.isSupplementaryCodePoint(cp)
+                    ? (byte) Character.getDirectionality(cp)
+                    : (byte) Character.getDirectionality((char) cp);
+            boolean isRtlChar = (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+                                 dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC);
+            if (isRtlChar) {
+                foundStrongRtl = true;
+            }
+
             if (cp == 0) {
                 // Continuation cell of a wide character or empty cell
                 if (i > 0 && logicalCells[i - 1].displayWidth == 2) {
                     bidiChars[i] = bidiChars[i - 1];
                 } else {
-                    bidiChars[i] = ' ';
+                    bidiChars[i] = foundStrongRtl ? ' ' : 'A';
                 }
-            } else if (Character.isSupplementaryCodePoint(cp)) {
-                byte dir = (byte) Character.getDirectionality(cp);
-                boolean isRtlChar = (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
-                                     dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC);
-                bidiChars[i] = isRtlChar ? '\u0627' : 'A';
+            } else if (isRtlChar) {
+                bidiChars[i] = (logicalCells[i].displayWidth == 2 || Character.isSupplementaryCodePoint(cp))
+                        ? '\u0627' : (char) cp;
             } else {
-                int w = logicalCells[i].displayWidth;
-                if (w == 2) {
-                    byte dir = (byte) Character.getDirectionality(cp);
-                    boolean isRtlChar = (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
-                                         dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC);
-                    bidiChars[i] = isRtlChar ? '\u0627' : 'A';
+                if (!foundStrongRtl && (dir != Character.DIRECTIONALITY_LEFT_TO_RIGHT)) {
+                    // Pre-RTL prompt symbols/neutrals (e.g. '$', '~', '#', '>', ' ') are anchored as strong LTR
+                    // so the prompt remains strictly at the visual left and is never absorbed into an RTL run.
+                    bidiChars[i] = 'A';
+                } else if (logicalCells[i].displayWidth == 2 || Character.isSupplementaryCodePoint(cp)) {
+                    bidiChars[i] = 'A';
                 } else {
                     bidiChars[i] = (char) cp;
                 }
@@ -257,16 +265,14 @@ public final class BidiLayout {
         if (row >= selectionY1 && row <= selectionY2) {
             hasSel = true;
             if (selectionY1 == selectionY2) {
-                int v1 = logicalToVisual[Math.min(columns - 1, Math.max(0, selectionX1))];
-                int v2 = logicalToVisual[Math.min(columns - 1, Math.max(0, selectionX2))];
-                vSelStart = Math.min(v1, v2);
-                vSelEnd = Math.max(v1, v2);
+                vSelStart = Math.min(selectionX1, selectionX2);
+                vSelEnd = Math.max(selectionX1, selectionX2);
             } else if (row == selectionY1) {
-                vSelStart = logicalToVisual[Math.min(columns - 1, Math.max(0, selectionX1))];
+                vSelStart = selectionX1;
                 vSelEnd = columns - 1;
             } else if (row == selectionY2) {
                 vSelStart = 0;
-                vSelEnd = logicalToVisual[Math.min(columns - 1, Math.max(0, selectionX2))];
+                vSelEnd = selectionX2;
             } else {
                 vSelStart = 0;
                 vSelEnd = columns - 1;
