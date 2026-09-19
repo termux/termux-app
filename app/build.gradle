@@ -10,6 +10,15 @@ ext {
     // by replacing $PREFIX since app code is dependant on the variant used to build the APK.
     // Currently supported values are: [ "apt-android-7" "apt-android-5" ]
     packageVariant = System.getenv("TERMUX_PACKAGE_VARIANT") ?: "apt-android-7" // Default: "apt-android-7"
+    // `apt-android-7` variant requires Android 7.0+ and `apt-android-5` variant requires
+    // Android 5.0-6.0. The `maxSdkVersion` is not enforced by Android itself, so an APK with the
+    // `apt-android-5` variant must not be installed on Android >= 7 since the Termux packages do
+    // not provide backward compatibility for it. `TermuxInstaller` also aborts bootstrap
+    // installation at runtime if the device SDK is incompatible with the APK variant.
+    bootstrapMinSdk = packageVariant == "apt-android-5" ? 21 : 24
+    bootstrapMinRelease = packageVariant == "apt-android-5" ? "5.0" : "7.0"
+    bootstrapMaxSdk = packageVariant == "apt-android-5" ? 23 : null
+    bootstrapMaxRelease = packageVariant == "apt-android-5" ? "6.0" : null
 }
 
 android {
@@ -41,13 +50,22 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion project.properties.minSdkVersion.toInteger()
+        minSdkVersion project.ext.bootstrapMinSdk
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
         versionCode 118
         versionName "0.118.0"
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
+
+        // Used by TermuxInstaller.checkIfMinOrMaxSdkVersionIsIncompatible() to abort bootstrap
+        // installation if the device SDK is not compatible with the APK bootstrap variant.
+        buildConfigField "Integer", "TERMUX_APP__BOOTSTRAP_MIN_SDK", project.ext.bootstrapMinSdk.toString()
+        buildConfigField "String", "TERMUX_APP__BOOTSTRAP_MIN_RELEASE",
+                project.ext.bootstrapMinRelease ? "\"" + project.ext.bootstrapMinRelease + "\"" : "null"
+        buildConfigField "Integer", "TERMUX_APP__BOOTSTRAP_MAX_SDK", project.ext.bootstrapMaxSdk.toString()
+        buildConfigField "String", "TERMUX_APP__BOOTSTRAP_MAX_RELEASE",
+                project.ext.bootstrapMaxRelease ? "\"" + project.ext.bootstrapMaxRelease + "\"" : "null"
 
         buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
 
