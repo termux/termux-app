@@ -35,7 +35,10 @@ import com.termux.terminal.TextStyle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 /** The {@link TerminalSessionClient} implementation that may require an {@link Activity} for its interface methods. */
 public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionClientBase {
@@ -47,6 +50,9 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     private SoundPool mBellSoundPool;
 
     private int mBellSoundId;
+
+    /** Sessions killed from the drawer, to be removed once they exit. */
+    private final Set<TerminalSession> mSessionsPendingRemoval = Collections.newSetFromMap(new WeakHashMap<>());
 
     private static final String LOG_TAG = "TermuxTerminalSessionActivityClient";
 
@@ -142,6 +148,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (service == null || service.wantsToStop()) {
             // The service wants to stop as soon as possible.
             mActivity.finishActivityIfNotFinishing();
+            return;
+        }
+
+        // Killed from the drawer: the removal was deferred until the process actually exited.
+        if (mSessionsPendingRemoval.remove(finishedSession)) {
+            removeFinishedSession(finishedSession);
             return;
         }
 
@@ -428,6 +440,26 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (service == null) return null;
 
         return service.getTerminalSessionForHandle(sessionHandle);
+    }
+
+    /**
+     * Kill a session and remove it once it has actually exited.
+     *
+     * {@link TerminalSession#finishIfRunning()} only sends SIGKILL; the process exits
+     * asynchronously and {@link TermuxSession#finish()} ignores a session that is still
+     * running, so removing it in the same breath silently does nothing. Remember the
+     * session instead and remove it from {@link #onSessionFinished(TerminalSession)}.
+     */
+    public void killAndRemoveSession(TerminalSession session) {
+        if (session == null) return;
+
+        if (!session.isRunning()) {
+            removeFinishedSession(session);
+            return;
+        }
+
+        mSessionsPendingRemoval.add(session);
+        session.finishIfRunning();
     }
 
     public void removeFinishedSession(TerminalSession finishedSession) {

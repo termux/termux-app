@@ -1,6 +1,7 @@
 package com.termux.app.terminal;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -102,8 +103,34 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         final TermuxSession selectedSession = getItem(position);
-        mActivity.getTermuxTerminalSessionClient().renameSession(selectedSession.getTerminalSession());
+        if (selectedSession == null) return true;
+        final TerminalSession terminalSession = selectedSession.getTerminalSession();
+        if (terminalSession == null) return true;
+
+        // Long pressing used to jump straight to renaming, leaving no way to close a session from
+        // the drawer at all. Offer both actions instead.
+        new AlertDialog.Builder(mActivity)
+            .setItems(new CharSequence[]{
+                mActivity.getString(R.string.action_rename_session),
+                mActivity.getString(R.string.action_kill_session)
+            }, (dialog, which) -> {
+                if (which == 0) {
+                    mActivity.getTermuxTerminalSessionClient().renameSession(terminalSession);
+                } else {
+                    confirmKillSession(terminalSession);
+                }
+            })
+            .show();
         return true;
+    }
+
+    private void confirmKillSession(TerminalSession terminalSession) {
+        new AlertDialog.Builder(mActivity)
+            .setMessage(R.string.title_confirm_kill_session)
+            .setPositiveButton(android.R.string.yes, (dialog, which) ->
+                mActivity.getTermuxTerminalSessionClient().killAndRemoveSession(terminalSession))
+            .setNegativeButton(android.R.string.no, null)
+            .show();
     }
 
 }

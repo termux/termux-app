@@ -79,6 +79,9 @@
     <string name="action_reset_terminal">Reset</string>
     <string name="msg_terminal_reset">Terminal reset</string>
 
+    <string name="action_rename_session">Rename session</string>
+    <string name="action_kill_session">Kill session</string>
+    <string name="title_confirm_kill_session">Really kill this session?</string>
     <string name="action_kill_process">Kill process (%d)</string>
     <string name="title_confirm_kill_process">Really kill this session?</string>
 
