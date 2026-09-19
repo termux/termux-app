@@ -30,6 +30,7 @@ import com.termux.R;
 import com.termux.app.api.file.FileReceiverActivity;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
+import com.termux.app.terminal.io.FullScreenWorkAround;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
 import com.termux.shared.activities.ReportActivity;
 import com.termux.shared.activity.ActivityUtils;
@@ -351,6 +352,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         Logger.logDebug(LOG_TAG, "onDestroy");
 
         if (mIsInvalidState) return;
+
+        // Remove the global layout listener of the fullscreen work around so that it does not keep
+        // running and holding references to the activity views after the activity has been destroyed.
+        FullScreenWorkAround.remove();
 
         if (mTermuxService != null) {
             // Do not leave service and session clients with references to activity.
