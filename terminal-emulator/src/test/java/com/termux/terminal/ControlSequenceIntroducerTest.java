@@ -24,7 +24,7 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
 
 	/** CSI Ps X  Erase Ps Character(s) (default = 1) (ECH). */
 	public void testCsiX() {
-		// See https://code.google.com/p/chromium/issues/detail?id=212712 where test was extraced from.
+		// See https://code.google.com/p/chromium/issues/detail?id=212712 where test was extracted from.
 		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[X").assertLinesAre("abcdefg ijkl ", "             ");
 		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[1X").assertLinesAre("abcdefg ijkl ", "             ");
 		withTerminalSized(13, 2).enterString("abcdefghijkl\b\b\b\b\b\033[2X").assertLinesAre("abcdefg  jkl ", "             ");
