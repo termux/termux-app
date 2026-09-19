@@ -76,6 +76,23 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SHOW_TERMINAL_TOOLBAR, value, false);
     }
 
+    public boolean shouldHideTerminalToolbarIfHardwareKeyboard() {
+        return SharedPreferenceUtils.getBoolean(
+            mSharedPreferences,
+            TERMUX_APP.KEY_HIDE_TERMINAL_TOOLBAR_IF_HARDWARE_KEYBOARD,
+            TERMUX_APP.DEFAULT_VALUE_HIDE_TERMINAL_TOOLBAR_IF_HARDWARE_KEYBOARD
+        );
+    }
+
+    public void setHideTerminalToolbarIfHardwareKeyboard(boolean value) {
+        SharedPreferenceUtils.setBoolean(
+            mSharedPreferences,
+            TERMUX_APP.KEY_HIDE_TERMINAL_TOOLBAR_IF_HARDWARE_KEYBOARD,
+            value,
+            false
+        );
+    }
+
     public boolean toogleShowTerminalToolbar() {
         boolean currentValue = shouldShowTerminalToolbar();
         setShowTerminalToolbar(!currentValue);
