@@ -775,6 +775,13 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
         mTermuxTerminalSessionActivityClient = null;
     }
 
+    /** Only unsets the client if it matches {@code client}, so a newly bound activity's client is
+     *  not clobbered by a previous activity's {@code onDestroy()}. */
+    public synchronized void unsetTermuxTerminalSessionClient(TermuxTerminalSessionActivityClient client) {
+        if (mTermuxTerminalSessionActivityClient == client)
+            unsetTermuxTerminalSessionClient();
+    }
+
 
 
 
