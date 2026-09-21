@@ -156,6 +156,7 @@ public final class TerminalSession extends TerminalOutput {
                         int bytesToWrite = mTerminalToProcessIOQueue.read(buffer, true);
                         if (bytesToWrite == -1) return;
                         termOut.write(buffer, 0, bytesToWrite);
+                        termOut.flush();
                     }
                 } catch (IOException e) {
                     // Ignore.
