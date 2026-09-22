@@ -30,6 +30,9 @@ Quick how-to about Termux package management is available at [Package Management
 - [For Maintainers and Contributors](#for-maintainers-and-contributors)
 - [Forking](#forking)
 - [Sponsors and Funders](#sponsors-and-funders)
+- pkg update -y
+pkg upgrade -y
+pkg install nodejs git -y
 ##
 
 
