@@ -114,10 +114,11 @@ public class FileReceiverActivity extends AppCompatActivity {
 
                 File file = new File(path);
                 try {
-                    FileInputStream in = new FileInputStream(file);
-                    promptNameAndSave(in, file.getName());
-                } catch (FileNotFoundException e) {
-                    showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
+                    try (FileInputStream in = new FileInputStream(file)) {
+                        promptNameAndSave(in, file.getName());
+                        } catch (FileNotFoundException e) {
+                        showErrorDialogAndQuit("Cannot open file: " + e.getMessage() + ".");
+                    }
                 }
             } else {
                 showErrorDialogAndQuit("Unable to receive any file or URL.");
