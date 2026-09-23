@@ -6,6 +6,7 @@ import android.database.MatrixCursor;
 import android.graphics.Point;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract.Root;
 import android.provider.DocumentsProvider;
@@ -187,6 +188,44 @@ public class TermuxDocumentsProvider extends DocumentsProvider {
         }
 
         return result;
+    }
+
+    @Override
+    public DocumentsContract.Path findDocumentPath(String parentDocumentId, String childDocumentId)
+        throws FileNotFoundException {
+        final File root = BASE_DIR;
+        final File child = getFileForDocId(childDocumentId);
+
+        try {
+            final String rootPath = root.getCanonicalPath();
+            final String childPath = child.getCanonicalPath();
+            if (!childPath.equals(rootPath) && !childPath.startsWith(rootPath + File.separator)) {
+                throw new FileNotFoundException("Document is outside Termux home: " + childDocumentId);
+            }
+
+            if (parentDocumentId != null) {
+                final File parent = getFileForDocId(parentDocumentId);
+                final String parentPath = parent.getCanonicalPath();
+                if (!childPath.equals(parentPath) && !childPath.startsWith(parentPath + File.separator)) {
+                    throw new FileNotFoundException("Document is not a child of " + parentDocumentId);
+                }
+            }
+
+            final LinkedList<String> path = new LinkedList<>();
+            File current = child;
+            while (!current.getCanonicalPath().equals(rootPath)) {
+                path.addFirst(getDocIdForFile(current));
+                current = current.getParentFile();
+                if (current == null) {
+                    throw new FileNotFoundException("Failed to resolve document path: " + childDocumentId);
+                }
+            }
+
+            path.addFirst(getDocIdForFile(root));
+            return new DocumentsContract.Path(getDocIdForFile(root), path);
+        } catch (IOException e) {
+            throw new FileNotFoundException("Failed to resolve document path: " + childDocumentId);
+        }
     }
 
     @Override
