@@ -188,6 +188,11 @@
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
                     no hardware keyboard is connected.</string>
 
+                <!-- Extra Keys Only If No Hardware -->
+                <string name="termux_extra_keys_only_if_no_hardware_title">Extra Keys Only If No Hardware</string>
+                <string name="termux_extra_keys_only_if_no_hardware_off">Extra keys will be shown regardless of hardware keyboard. (Default)</string>
+                <string name="termux_extra_keys_only_if_no_hardware_on">Extra keys will be hidden when hardware keyboard is connected.</string>
+
 
         <!-- Terminal View Preferences -->
         <string name="termux_terminal_view_preferences_title">Terminal View</string>
