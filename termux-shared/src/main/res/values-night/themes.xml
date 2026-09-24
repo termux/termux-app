@@ -9,17 +9,20 @@
     -->
     <style name="Theme.BaseActivity.DayNight.DarkActionBar" parent="Theme.MaterialComponents">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/red_400</item>
-        <item name="colorPrimaryVariant">@color/red_800</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorPrimary">@color/grey_900</item>
+        <item name="colorPrimaryVariant">@color/black</item>
+        <item name="colorOnPrimary">@color/white</item>
 
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/grey_400</item>
         <item name="colorSecondaryVariant">@color/grey_500</item>
         <item name="colorOnSecondary">@color/black</item>
 
+        <!-- Accent color for widgets (switches, checkboxes, etc.). -->
+        <item name="colorAccent">@color/red_400</item>
+
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/grey_900</item>
         <item name="colorPrimaryDark" tools:targetApi="l">?attr/colorPrimary</item>
 
         <!-- Text color. -->

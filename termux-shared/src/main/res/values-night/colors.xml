@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_markdown_code_inline">#1FFFFFFF</color>
+    <color name="background_markdown_code_block">#0FFFFFFF</color>
+</resources>
