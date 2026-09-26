@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,6 +167,11 @@ public final class ExtraKeysView extends GridLayout {
     protected List<String> mRepetitiveKeys;
 
 
+    /** Colour of the hairline grid drawn between keys. 0 means no grid. */
+    protected int mGridLineColor = 0;
+    /** Paint used to draw {@link #mGridLineColor}. */
+    private final android.graphics.Paint mGridLinePaint = new android.graphics.Paint();
+
     /** The text color for the extra keys button. Defaults to {@link #DEFAULT_BUTTON_TEXT_COLOR}. */
     protected int mButtonTextColor;
     /** The text color for the extra keys button when its active.
@@ -281,6 +287,38 @@ public final class ExtraKeysView extends GridLayout {
         mButtonActiveTextColor = buttonActiveTextColor;
         mButtonBackgroundColor = buttonBackgroundColor;
         mButtonActiveBackgroundColor = buttonActiveBackgroundColor;
+    }
+
+    /**
+     * Colour of the hairline grid drawn between the keys. Pass {@link android.graphics.Color#TRANSPARENT}
+     * to draw no grid at all.
+     */
+    public void setGridLineColor(int color) {
+        mGridLineColor = color;
+        invalidate();
+    }
+
+    @Override
+    protected void dispatchDraw(@NonNull android.graphics.Canvas canvas) {
+        super.dispatchDraw(canvas);
+        if (mGridLineColor == 0) return;
+
+        mGridLinePaint.setColor(mGridLineColor);
+        int width = getWidth();
+        int height = getHeight();
+
+        for (int i = 0, n = getChildCount(); i < n; i++) {
+            View child = getChildAt(i);
+            if (child.getVisibility() == GONE) continue;
+
+            // Vertical hairline on the key's right edge, skipped at the view's own right edge.
+            if (child.getRight() < width)
+                canvas.drawRect(child.getRight() - 1, child.getTop(), child.getRight(), child.getBottom(), mGridLinePaint);
+
+            // Horizontal hairline under the key, skipped on the bottom row.
+            if (child.getBottom() < height)
+                canvas.drawRect(child.getLeft(), child.getBottom() - 1, child.getRight(), child.getBottom(), mGridLinePaint);
+        }
     }
 
 
@@ -413,6 +451,13 @@ public final class ExtraKeysView extends GridLayout {
                 button.setTextColor(mButtonTextColor);
                 button.setAllCaps(mButtonTextAllCaps);
                 button.setPadding(0, 0, 0, 0);
+                // Scale the label with the row height so that shrinking the toolbar via the
+                // `terminal-toolbar-height` property makes the text smaller too, instead of leaving
+                // oversized labels crammed into a thin row.
+                if (heightPx > 0) {
+                    float textSizePx = heightPx * 0.38f;
+                    button.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSizePx);
+                }
 
                 button.setOnClickListener(view -> {
                     performExtraKeyButtonHapticFeedback(view, buttonInfo, button);

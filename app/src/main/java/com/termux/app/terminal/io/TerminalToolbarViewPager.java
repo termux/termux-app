@@ -1,117 +1,112 @@
 package com.termux.app.terminal.io;
 
-import android.view.LayoutInflater;
+import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-
-import androidx.annotation.NonNull;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import android.widget.LinearLayout;
 
 import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.termux.extrakeys.ExtraKeysView;
 import com.termux.terminal.TerminalSession;
 
+/**
+ * Terminal toolbar setup.
+ *
+ * <p>Historically the toolbar was a two page {@link androidx.viewpager.widget.ViewPager}: page 0
+ * held the extra keys and page 1 the text input. Switching pages required a horizontal swipe, but
+ * the text input consumed horizontal touches for cursor movement, so returning to the extra keys
+ * meant first scrolling the caret all the way back to the start of the text. With a long line that
+ * is painful.
+ *
+ * <p>Both views are now stacked in a vertical {@link LinearLayout} and visible at the same time:
+ * the text input row sits directly above the extra keys, next to the terminal. The text input row
+ * can be hidden and shown with the {@code TEXTBAR} extra key.
+ */
 public class TerminalToolbarViewPager {
 
-    public static class PageAdapter extends PagerAdapter {
-
-        final TermuxActivity mActivity;
-        String mSavedTextInput;
-
-        public PageAdapter(TermuxActivity activity, String savedTextInput) {
-            this.mActivity = activity;
-            this.mSavedTextInput = savedTextInput;
-        }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-            return view == object;
-        }
-
-        @NonNull
-        @Override
-        public Object instantiateItem(@NonNull ViewGroup collection, int position) {
-            LayoutInflater inflater = LayoutInflater.from(mActivity);
-            View layout;
-            if (position == 0) {
-                layout = inflater.inflate(R.layout.view_terminal_toolbar_extra_keys, collection, false);
-                ExtraKeysView extraKeysView = (ExtraKeysView) layout;
-                extraKeysView.setExtraKeysViewClient(mActivity.getTermuxTerminalExtraKeys());
-                extraKeysView.setButtonTextAllCaps(mActivity.getProperties().shouldExtraKeysTextBeAllCaps());
-                mActivity.setExtraKeysView(extraKeysView);
-                extraKeysView.reload(mActivity.getTermuxTerminalExtraKeys().getExtraKeysInfo(),
-                    mActivity.getTerminalToolbarDefaultHeight());
-
-                // apply extra keys fix if enabled in prefs
-                if (mActivity.getProperties().isUsingFullScreen() && mActivity.getProperties().isUsingFullScreenWorkAround()) {
-                    FullScreenWorkAround.apply(mActivity);
-                }
-
-            } else {
-                layout = inflater.inflate(R.layout.view_terminal_toolbar_text_input, collection, false);
-                final EditText editText = layout.findViewById(R.id.terminal_toolbar_text_input);
-
-                if (mSavedTextInput != null) {
-                    editText.setText(mSavedTextInput);
-                    mSavedTextInput = null;
-                }
-
-                editText.setOnEditorActionListener((v, actionId, event) -> {
-                    TerminalSession session = mActivity.getCurrentSession();
-                    if (session != null) {
-                        if (session.isRunning()) {
-                            String textToSend = editText.getText().toString();
-                            if (textToSend.length() == 0) textToSend = "\r";
-                            session.write(textToSend);
-                        } else {
-                            mActivity.getTermuxTerminalSessionClient().removeFinishedSession(session);
-                        }
-                        editText.setText("");
-                    }
-                    return true;
-                });
-            }
-            collection.addView(layout);
-            return layout;
-        }
-
-        @Override
-        public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
-            collection.removeView((View) view);
-        }
-
+    /** Wire up the extra keys view and the text input row of the toolbar. */
+    public static void setup(TermuxActivity activity, String savedTextInput) {
+        setupExtraKeys(activity);
+        setupTextInput(activity, savedTextInput);
     }
 
+    private static void setupExtraKeys(TermuxActivity activity) {
+        ExtraKeysView extraKeysView = activity.findViewById(R.id.terminal_toolbar_extra_keys);
+        if (extraKeysView == null) return;
 
+        extraKeysView.setExtraKeysViewClient(activity.getTermuxTerminalExtraKeys());
+        extraKeysView.setButtonTextAllCaps(activity.getProperties().shouldExtraKeysTextBeAllCaps());
+        activity.setExtraKeysView(extraKeysView);
+        extraKeysView.reload(activity.getTermuxTerminalExtraKeys().getExtraKeysInfo(),
+            activity.getTerminalToolbarRowHeight());
 
-    public static class OnPageChangeListener extends ViewPager.SimpleOnPageChangeListener {
-
-        final TermuxActivity mActivity;
-        final ViewPager mTerminalToolbarViewPager;
-
-        public OnPageChangeListener(TermuxActivity activity, ViewPager viewPager) {
-            this.mActivity = activity;
-            this.mTerminalToolbarViewPager = viewPager;
+        // apply extra keys fix if enabled in prefs
+        if (activity.getProperties().isUsingFullScreen() && activity.getProperties().isUsingFullScreenWorkAround()) {
+            FullScreenWorkAround.apply(activity);
         }
+    }
 
-        @Override
-        public void onPageSelected(int position) {
-            if (position == 0) {
-                mActivity.getTerminalView().requestFocus();
-            } else {
-                final EditText editText = mTerminalToolbarViewPager.findViewById(R.id.terminal_toolbar_text_input);
-                if (editText != null) editText.requestFocus();
+    private static void setupTextInput(TermuxActivity activity, String savedTextInput) {
+        final EditText editText = activity.findViewById(R.id.terminal_toolbar_text_input);
+        if (editText == null) return;
+
+        if (savedTextInput != null)
+            editText.setText(savedTextInput);
+
+        // The field wraps onto several lines for long input, but Enter sends rather than inserting
+        // a newline: that is what the terminal below expects, and it keeps the row free of a send
+        // button competing for horizontal space.
+        editText.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                sendTextInput(activity, editText);
+                return true;
             }
-        }
+            return false;
+        });
 
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            sendTextInput(activity, editText);
+            return true;
+        });
+    }
+
+    private static void sendTextInput(TermuxActivity activity, EditText editText) {
+        TerminalSession session = activity.getCurrentSession();
+        if (session == null) return;
+
+        if (session.isRunning()) {
+            String textToSend = editText.getText().toString();
+            if (textToSend.isEmpty()) textToSend = "\r";
+            session.write(textToSend);
+        } else {
+            activity.getTermuxTerminalSessionClient().removeFinishedSession(session);
+        }
+        editText.setText("");
+    }
+
+    /**
+     * Show or hide the text input row. Returns true if it is visible afterwards.
+     */
+    public static boolean toggleTextInput(TermuxActivity activity) {
+        View row = activity.findViewById(R.id.terminal_toolbar_text_input_row);
+        if (row == null) return false;
+
+        boolean showNow = row.getVisibility() != View.VISIBLE;
+        row.setVisibility(showNow ? View.VISIBLE : View.GONE);
+
+        if (showNow) {
+            View editText = activity.findViewById(R.id.terminal_toolbar_text_input);
+            if (editText != null) editText.requestFocus();
+        } else {
+            if (activity.getTerminalView() != null) activity.getTerminalView().requestFocus();
+        }
+        return showNow;
+    }
+
+    public static boolean isTextInputVisible(TermuxActivity activity) {
+        View row = activity.findViewById(R.id.terminal_toolbar_text_input_row);
+        return row != null && row.getVisibility() == View.VISIBLE;
     }
 
 }

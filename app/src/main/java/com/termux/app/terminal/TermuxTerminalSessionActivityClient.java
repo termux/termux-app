@@ -521,7 +521,11 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         if (!mActivity.isVisible()) return;
         TerminalSession session = mActivity.getCurrentSession();
         if (session != null && session.getEmulator() != null) {
-            mActivity.getWindow().getDecorView().setBackgroundColor(session.getEmulator().mColors.mCurrentColors[TextStyle.COLOR_INDEX_BACKGROUND]);
+            int[] colors = session.getEmulator().mColors.mCurrentColors;
+            int background = colors[TextStyle.COLOR_INDEX_BACKGROUND];
+            mActivity.getWindow().getDecorView().setBackgroundColor(background);
+            // Keep the toolbar in step with the scheme instead of leaving it hardcoded black.
+            mActivity.applyTerminalColorsToToolbar(background, colors[TextStyle.COLOR_INDEX_FOREGROUND]);
         }
     }
 

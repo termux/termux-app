@@ -96,6 +96,9 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
         } else if ("PASTE".equals(key)) {
             if(mTermuxTerminalSessionActivityClient != null)
                 mTermuxTerminalSessionActivityClient.onPasteTextFromClipboard(null);
+        } else if ("TEXTBAR".equals(key)) {
+            // Show/hide the toolbar text input row sitting above the extra keys.
+            mActivity.toggleTerminalToolbarTextInput();
         }  else if ("SCROLL".equals(key)) {
             TerminalView terminalView = mTermuxTerminalViewClient.getActivity().getTerminalView();
             if (terminalView != null && terminalView.mEmulator != null)

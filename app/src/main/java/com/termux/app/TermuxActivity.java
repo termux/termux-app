@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -511,11 +512,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         mTermuxTerminalExtraKeys = new TermuxTerminalExtraKeys(this, mTerminalView,
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        final View terminalToolbarContainer = getTerminalToolbarContainer();
+        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarContainer.setVisibility(View.VISIBLE);
 
-        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
-        mTerminalToolbarDefaultHeight = layoutParams.height;
+        // The default height is that of a single extra keys row, taken from the layout.
+        View extraKeysView = findViewById(R.id.terminal_toolbar_extra_keys);
+        mTerminalToolbarDefaultHeight = extraKeysView.getLayoutParams().height;
 
         setTerminalToolbarHeight();
 
@@ -523,28 +525,27 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         if (savedInstanceState != null)
             savedTextInput = savedInstanceState.getString(ARG_TERMINAL_TOOLBAR_TEXT_INPUT);
 
-        terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
-        terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+        TerminalToolbarViewPager.setup(this, savedTextInput);
     }
 
     private void setTerminalToolbarHeight() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final View extraKeysView = findViewById(R.id.terminal_toolbar_extra_keys);
+        if (extraKeysView == null) return;
 
-        ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = extraKeysView.getLayoutParams();
         layoutParams.height = Math.round(mTerminalToolbarDefaultHeight *
             (mTermuxTerminalExtraKeys.getExtraKeysInfo() == null ? 0 : mTermuxTerminalExtraKeys.getExtraKeysInfo().getMatrix().length) *
             mProperties.getTerminalToolbarHeightScaleFactor());
-        terminalToolbarViewPager.setLayoutParams(layoutParams);
+        extraKeysView.setLayoutParams(layoutParams);
     }
 
     public void toggleTerminalToolbar() {
-        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (terminalToolbarViewPager == null) return;
+        final View terminalToolbarContainer = getTerminalToolbarContainer();
+        if (terminalToolbarContainer == null) return;
 
         final boolean showNow = mPreferences.toogleShowTerminalToolbar();
         Logger.showToast(this, (showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar)), true);
-        terminalToolbarViewPager.setVisibility(showNow ? View.VISIBLE : View.GONE);
+        terminalToolbarContainer.setVisibility(showNow ? View.VISIBLE : View.GONE);
         if (showNow && isTerminalToolbarTextInputViewSelected()) {
             // Focus the text input view if just revealed.
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
@@ -838,20 +839,77 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     }
 
 
-    public ViewPager getTerminalToolbarViewPager() {
-        return (ViewPager) findViewById(R.id.terminal_toolbar_view_pager);
+    public View getTerminalToolbarContainer() {
+        return findViewById(R.id.terminal_toolbar_container);
     }
 
     public float getTerminalToolbarDefaultHeight() {
         return mTerminalToolbarDefaultHeight;
     }
 
+    /**
+     * The height of a single extra keys row after the `terminal-toolbar-height` property is applied.
+     * Button labels are sized from this so that a thinner toolbar also gets smaller text.
+     */
+    public float getTerminalToolbarRowHeight() {
+        return mTerminalToolbarDefaultHeight * mProperties.getTerminalToolbarHeightScaleFactor();
+    }
+
     public boolean isTerminalViewSelected() {
-        return getTerminalToolbarViewPager().getCurrentItem() == 0;
+        return !isTerminalToolbarTextInputViewSelected();
     }
 
     public boolean isTerminalToolbarTextInputViewSelected() {
-        return getTerminalToolbarViewPager().getCurrentItem() == 1;
+        return TerminalToolbarViewPager.isTextInputVisible(this);
+    }
+
+    /** Show or hide the toolbar text input row. Bound to the {@code TEXTBAR} extra key. */
+    public void toggleTerminalToolbarTextInput() {
+        TerminalToolbarViewPager.toggleTextInput(this);
+    }
+
+    /**
+     * Repaint the toolbar with the terminal's own colour scheme so that the extra keys and the text
+     * input do not stay black when a light scheme is selected in Termux:Styling.
+     *
+     * @param backgroundColor the scheme's background colour.
+     * @param foregroundColor the scheme's foreground colour.
+     */
+    public void applyTerminalColorsToToolbar(int backgroundColor, int foregroundColor) {
+        View container = getTerminalToolbarContainer();
+        if (container != null) container.setBackgroundColor(backgroundColor);
+
+        View inputRow = findViewById(R.id.terminal_toolbar_text_input_row);
+        if (inputRow != null) inputRow.setBackgroundColor(backgroundColor);
+
+        int hairline = blendColors(foregroundColor, backgroundColor, 0.22f);
+        View separator = findViewById(R.id.terminal_toolbar_separator);
+        if (separator != null) separator.setBackgroundColor(hairline);
+
+        View separatorBottom = findViewById(R.id.terminal_toolbar_separator_bottom);
+        if (separatorBottom != null) separatorBottom.setBackgroundColor(hairline);
+
+        EditText textInput = findViewById(R.id.terminal_toolbar_text_input);
+        if (textInput != null) {
+            textInput.setTextColor(foregroundColor);
+            textInput.setHintTextColor(blendColors(foregroundColor, backgroundColor, 0.45f));
+        }
+
+        if (mExtraKeysView != null && mTermuxTerminalExtraKeys != null) {
+            mExtraKeysView.setButtonColors(foregroundColor, foregroundColor,
+                Color.TRANSPARENT, blendColors(foregroundColor, backgroundColor, 0.30f));
+            mExtraKeysView.setGridLineColor(hairline);
+            mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo(), getTerminalToolbarRowHeight());
+        }
+    }
+
+    /** Mix {@code ratio} of {@code fg} into {@code bg}. */
+    private static int blendColors(int fg, int bg, float ratio) {
+        float inverse = 1f - ratio;
+        return Color.argb(255,
+            Math.round(Color.red(fg) * ratio + Color.red(bg) * inverse),
+            Math.round(Color.green(fg) * ratio + Color.green(bg) * inverse),
+            Math.round(Color.blue(fg) * ratio + Color.blue(bg) * inverse));
     }
 
 
@@ -971,7 +1029,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
             if (mExtraKeysView != null) {
                 mExtraKeysView.setButtonTextAllCaps(mProperties.shouldExtraKeysTextBeAllCaps());
-                mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo(), mTerminalToolbarDefaultHeight);
+                mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo(), getTerminalToolbarRowHeight());
             }
 
             // Update NightMode.APP_NIGHT_MODE
