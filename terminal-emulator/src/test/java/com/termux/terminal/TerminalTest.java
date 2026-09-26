@@ -65,6 +65,29 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals("\033[<0;10;10m", mOutput.getOutputAndClear());
 	}
 
+	/** DECSET 1003 (any-event tracking). Touch has no hover, so it behaves as 1002. */
+	public void testMouseAnyEventTracking() throws Exception {
+		withTerminalSized(10, 10);
+		assertFalse(mTerminal.isMouseTrackingActive());
+		enterString("\033[?1003h");
+		assertTrue(mTerminal.isMouseTrackingActive());
+
+		enterString("\033[?1006h");
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON, 3, 4, true);
+		assertEquals("\033[<0;3;4M", mOutput.getOutputAndClear());
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, 5, 6, true);
+		assertEquals("\033[<32;5;6M", mOutput.getOutputAndClear());
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_WHEELUP_BUTTON, 5, 6, true);
+		assertEquals("\033[<64;5;6M", mOutput.getOutputAndClear());
+
+		// The mouse modes are mutually exclusive.
+		enterString("\033[?1000h");
+		mTerminal.sendMouseEvent(TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, 5, 6, true);
+		assertEquals("", mOutput.getOutputAndClear());
+		enterString("\033[?1003h\033[?1003l");
+		assertFalse(mTerminal.isMouseTrackingActive());
+	}
+
 	public void testNormalization() throws UnsupportedEncodingException {
 		// int lowerCaseN = 0x006E;
 		// int combiningTilde = 0x0303;
