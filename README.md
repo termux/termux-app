@@ -288,3 +288,12 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 
 [<img alt="Cloudflare" width="25%" src="site/assets/sponsors/cloudflare.png" />](https://www.cloudflare.com)  
 *[Cloudflare](https://www.cloudflare.com) ([1](https://packages-cf.termux.dev))*
+
+&nbsp;
+
+[<img alt="StarDesk" width="25%" src="site/assets/sponsors/stardesk.png" />](https://stardesk.onelink.me/p0R7/u97w2748)  
+*[**Leave your desk. Keep your workflow going.**
+With StarDesk, a free remote desktop, you can
+one-tap access your Windows or macOS terminal
+from iOS and Android. Run commands, check logs,
+and make quick changes from wherever you are.](https://stardesk.onelink.me/p0R7/u97w2748) ([1](https://play.google.com/store/apps/details?id=com.stardesk&referrer=utm_source%3Dgithub%26utm_medium%3Dreadme%26utm_campaign%3Dtermux))*
