@@ -39,6 +39,7 @@ nav:
   - Install: install.md
   - Phone + PC workflow: workflow.md
   - AI helper: ai.md
+  - OpenJDK 17: openjdk.md
   - Troubleshooting: troubleshooting.md
   - About / License: about.md
 

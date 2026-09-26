@@ -118,6 +118,9 @@ See `ROADMAP.md`.
   GitHub Search requires a `q=` query. Not caused by InVxTermux seeding.
   Check `gh extension list`; fix or remove the extension/script that calls
   search without `q`.
+- `openjdk-17` stuck / `java` dlopen / **Bad system call** — use Termux
+  `openjdk-17` only (`td-jdk-setup` pulls `libandroid-shmem` + recommends).
+  Not bundled in the APK (~96 MiB deb/arch). `jdk-doctor` + `docs/openjdk.md`.
 
 ## 2. Useful Commands
 

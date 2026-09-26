@@ -137,6 +137,14 @@ https://github.com/involvex/termux-app
 - `tasks/td-ai` exits early when `/global/health` is already healthy
 - Optional `stop-ai` widget companion
 
+### 12e. OpenJDK 17 helper (done — on-demand, not APK-bundled)
+
+- `td-jdk-setup` — `pkg install` OpenJDK 17 with explicit Depends + Recommends
+  (`libandroid-shmem`, `openjdk-17-x`, …) and `dpkg --configure -a` recovery
+- `jdk-doctor` — PATH, JVM tree, pkg status
+- Docs: [openjdk.md](docs/openjdk.md) — why embedding ~100 MiB/arch in the APK
+  is deferred; mirrors `opencode-setup` on-demand model
+
 ### 13. InVx Terminal Widget module (done)
 
 - `:termux-terminal-widget` — gardockt Termux Terminal Widget adapted for
