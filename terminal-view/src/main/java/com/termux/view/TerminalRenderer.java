@@ -122,16 +122,22 @@ public final class TerminalRenderer {
                     currentCharIndex += charsForCodePoint;
                     continue;
                 }
-                final int codePointWcWidth = WcWidth.width(codePoint);
+                final int codePointWcWidth = WcWidth.width(line, currentCharIndex, charsUsedInLine);
                 final boolean insideCursor = (cursorX == column || (codePointWcWidth == 2 && cursorX == column + 1));
                 final boolean insideSelection = column >= selx1 && column <= selx2;
+
+                // If this code point is only wide because a following VARIATION SELECTOR-16
+                // requests an emoji-style rendering (see WcWidth#isEmojiVariationSequenceBase),
+                // include that selector in the measured span so the natural (wide) glyph width is
+                // detected, rather than the narrow width of the base character alone.
+                final int charsForMeasurement = (codePointWcWidth == 2 && WcWidth.width(codePoint) == 1) ? charsForCodePoint + 1 : charsForCodePoint;
 
                 // Check if the measured text width for this code point is not the same as that expected by wcwidth().
                 // This could happen for some fonts which are not truly monospace, or for more exotic characters such as
                 // smileys which android font renders as wide.
                 // If this is detected, we draw this code point scaled to match what wcwidth() expects.
-                final float measuredCodePointWidth = (codePoint < asciiMeasures.length) ? asciiMeasures[codePoint] : mTextPaint.measureText(line,
-                    currentCharIndex, charsForCodePoint);
+                final float measuredCodePointWidth = (codePoint < asciiMeasures.length && charsForMeasurement == charsForCodePoint) ? asciiMeasures[codePoint] : mTextPaint.measureText(line,
+                    currentCharIndex, charsForMeasurement);
                 final boolean fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
 
                 if (style != lastRunStyle || insideCursor != lastRunInsideCursor || insideSelection != lastRunInsideSelection || fontWidthMismatch || lastRunFontWidthMismatch) {
@@ -160,7 +166,7 @@ public final class TerminalRenderer {
                 measuredWidthForRun += measuredCodePointWidth;
                 column += codePointWcWidth;
                 currentCharIndex += charsForCodePoint;
-                while (currentCharIndex < charsUsedInLine && WcWidth.width(line, currentCharIndex) <= 0) {
+                while (currentCharIndex < charsUsedInLine && WcWidth.width(line, currentCharIndex, charsUsedInLine) <= 0) {
                     // Eat combining chars so that they are treated as part of the last non-combining code point,
                     // instead of e.g. being considered inside the cursor in the next run.
                     currentCharIndex += Character.isHighSurrogate(line[currentCharIndex]) ? 2 : 1;

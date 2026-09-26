@@ -437,6 +437,17 @@ public final class TerminalEmulator {
     private final byte[] mUtf8InputBuffer = new byte[4];
     private int mLastEmittedCodePoint = -1;
 
+    /**
+     * The code point, row and column of the last emitted character if it renders narrow by
+     * default but would become a double-width emoji glyph if immediately followed by
+     * {@link WcWidth#VARIATION_SELECTOR_16}, or -1/-1/-1 if the last emitted character was not
+     * such a candidate. Used so that {@link #emitCodePoint(int)} can widen the cursor advance
+     * to match the extra column {@link TerminalRow#setChar(int, int, long)} allocates for it.
+     */
+    private int mVariationSelectorWideningCandidateCodePoint = -1;
+    private int mVariationSelectorWideningCandidateRow = -1;
+    private int mVariationSelectorWideningCandidateColumn = -1;
+
     public final TerminalColors mColors = new TerminalColors();
 
     private static final String LOG_TAG = "TerminalEmulator";
@@ -3425,12 +3436,33 @@ public final class TerminalEmulator {
         // so was mCursorCol changed after the offsetDueToCombiningChar conditional by another thread?
         // TODO: Check if there are thread synchronization issues with mCursorCol and mCursorRow, possibly causing others bugs too.
         if (column < 0) column = 0;
+
+        // A variation selector-16 combining onto the immediately preceding narrow-by-default
+        // emoji base character (see WcWidth#isEmojiVariationSequenceBase) makes
+        // TerminalRow#setChar widen that column to two cells instead of leaving it a same-width
+        // combining mark. Advance the cursor by the same extra column here so it stays in sync
+        // with where the row buffer actually placed the following text.
+        final boolean wideningWithVariationSelector = codePoint == WcWidth.VARIATION_SELECTOR_16
+            && mVariationSelectorWideningCandidateCodePoint != -1
+            && mVariationSelectorWideningCandidateRow == mCursorRow
+            && mVariationSelectorWideningCandidateColumn == column
+            && column < mRightMargin - 1;
+
         mScreen.setChar(column, mCursorRow, codePoint, getStyle());
 
         if (autoWrap && displayWidth > 0)
             mAboutToAutoWrap = (mCursorCol == mRightMargin - displayWidth);
 
-        mCursorCol = Math.min(mCursorCol + displayWidth, mRightMargin - 1);
+        final int cursorAdvanceWidth = wideningWithVariationSelector ? 1 : displayWidth;
+        mCursorCol = Math.min(mCursorCol + cursorAdvanceWidth, mRightMargin - 1);
+
+        if (displayWidth == 1 && WcWidth.isEmojiVariationSequenceBase(codePoint)) {
+            mVariationSelectorWideningCandidateCodePoint = codePoint;
+            mVariationSelectorWideningCandidateRow = mCursorRow;
+            mVariationSelectorWideningCandidateColumn = column;
+        } else {
+            mVariationSelectorWideningCandidateCodePoint = -1;
+        }
     }
 
     private void setCursorRow(int row) {

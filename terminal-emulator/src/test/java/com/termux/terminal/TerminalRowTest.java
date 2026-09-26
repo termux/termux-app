@@ -429,4 +429,45 @@ public class TerminalRowTest extends TestCase {
 		// assertEquals(' ', line.mText[line.findStartOfColumn(COLUMNS - 1)]);
 	}
 
+	/**
+	 * https://github.com/termux/termux-app/issues/5251 - a character that is narrow by default
+	 * (Emoji_Presentation=No) but immediately followed by U+FE0F VARIATION SELECTOR-16 requests
+	 * an emoji-style rendering, which should widen its column to two cells instead of squeezing
+	 * a double-width glyph into a single narrow one.
+	 */
+	public void testEmojiVariationSelectorWidensColumn() {
+		final int HEART = 0x2764; // HEAVY BLACK HEART, narrow by default.
+
+		row.setChar(0, 'a', 0);
+		row.setChar(1, HEART, 0);
+		assertLineStartsWith('a', HEART, ' ', ' ');
+		assertColumnCharIndicesStartsWith(0, 1, 2, 3, 4);
+		assertEquals(1, WcWidth.width(row.mText, row.findStartOfColumn(1), row.getSpaceUsed()));
+
+		// Simulates TerminalEmulator combining VARIATION_SELECTOR_16 onto the heart's own column.
+		row.setChar(1, WcWidth.VARIATION_SELECTOR_16, 0);
+		assertLineStartsWith('a', HEART, WcWidth.VARIATION_SELECTOR_16, ' ');
+		// Column 1 now spans both java chars of the pair; column 2 is its second half (same start
+		// index as column 1); column 3 is the first genuinely free column afterwards.
+		assertColumnCharIndicesStartsWith(0, 1, 1, 3, 4);
+		assertEquals(2, WcWidth.width(row.mText, row.findStartOfColumn(1), row.getSpaceUsed()));
+
+		// Writing past the widened emoji must not corrupt it.
+		row.setChar(3, 'b', 0);
+		assertLineStartsWith('a', HEART, WcWidth.VARIATION_SELECTOR_16, 'b');
+	}
+
+	/** Same as {@link #testEmojiVariationSelectorWidensColumn()} but with no room to grow into an extra column. */
+	public void testEmojiVariationSelectorAtLastColumnDoesNotWiden() {
+		final int HEART = 0x2764;
+
+		row.setChar(COLUMNS - 1, HEART, 0);
+		assertEquals(HEART, row.mText[row.findStartOfColumn(COLUMNS - 1)]);
+
+		// Must not throw or corrupt the row; simply left as an unwidened combining mark.
+		row.setChar(COLUMNS - 1, WcWidth.VARIATION_SELECTOR_16, 0);
+		assertEquals(HEART, row.mText[row.findStartOfColumn(COLUMNS - 1)]);
+		assertEquals(1, WcWidth.width(row.mText, row.findStartOfColumn(COLUMNS - 1), row.getSpaceUsed()));
+	}
+
 }

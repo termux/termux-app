@@ -490,6 +490,55 @@ public final class WcWidth {
     };
 
 
+    // Code points with Emoji=Yes but Emoji_Presentation=No, i.e. those that render as narrow
+    // text glyphs by default but have a valid emoji-style rendering when immediately followed
+    // by U+FE0F VARIATION SELECTOR-16 (e.g. U+2764 HEAVY BLACK HEART -> "❤️").
+    // Derived from the Emoji minus Emoji_Presentation ranges in:
+    // https://unicode.org/Public/15.0.0/ucd/emoji/emoji-data.txt
+    private static final int[][] EMOJI_VARIATION_SEQUENCE_BASE = {
+        {0x00023, 0x00023}, {0x0002a, 0x0002a}, {0x00030, 0x00039}, {0x000a9, 0x000a9},
+        {0x000ae, 0x000ae}, {0x0203c, 0x0203c}, {0x02049, 0x02049}, {0x02122, 0x02122},
+        {0x02139, 0x02139}, {0x02194, 0x02199}, {0x021a9, 0x021aa}, {0x02328, 0x02328},
+        {0x023cf, 0x023cf}, {0x023ed, 0x023ee}, {0x023ef, 0x023ef}, {0x023f1, 0x023f2},
+        {0x023f8, 0x023fa}, {0x024c2, 0x024c2}, {0x025aa, 0x025ab}, {0x025b6, 0x025b6},
+        {0x025c0, 0x025c0}, {0x025fb, 0x025fc}, {0x02600, 0x02601}, {0x02602, 0x02603},
+        {0x02604, 0x02604}, {0x0260e, 0x0260e}, {0x02611, 0x02611}, {0x02618, 0x02618},
+        {0x0261d, 0x0261d}, {0x02620, 0x02620}, {0x02622, 0x02623}, {0x02626, 0x02626},
+        {0x0262a, 0x0262a}, {0x0262e, 0x0262e}, {0x0262f, 0x0262f}, {0x02638, 0x02639},
+        {0x0263a, 0x0263a}, {0x02640, 0x02640}, {0x02642, 0x02642}, {0x0265f, 0x0265f},
+        {0x02660, 0x02660}, {0x02663, 0x02663}, {0x02665, 0x02666}, {0x02668, 0x02668},
+        {0x0267b, 0x0267b}, {0x0267e, 0x0267e}, {0x02692, 0x02692}, {0x02694, 0x02694},
+        {0x02695, 0x02695}, {0x02696, 0x02697}, {0x02699, 0x02699}, {0x0269b, 0x0269c},
+        {0x026a0, 0x026a0}, {0x026a7, 0x026a7}, {0x026b0, 0x026b1}, {0x026c8, 0x026c8},
+        {0x026cf, 0x026cf}, {0x026d1, 0x026d1}, {0x026d3, 0x026d3}, {0x026e9, 0x026e9},
+        {0x026f0, 0x026f1}, {0x026f4, 0x026f4}, {0x026f7, 0x026f9}, {0x02702, 0x02702},
+        {0x02708, 0x02709}, {0x0270c, 0x0270c}, {0x0270d, 0x0270d}, {0x0270f, 0x0270f},
+        {0x02712, 0x02712}, {0x02714, 0x02714}, {0x02716, 0x02716}, {0x0271d, 0x0271d},
+        {0x02721, 0x02721}, {0x02733, 0x02734}, {0x02744, 0x02744}, {0x02747, 0x02747},
+        {0x02763, 0x02763}, {0x02764, 0x02764}, {0x027a1, 0x027a1}, {0x02934, 0x02935},
+        {0x02b05, 0x02b07}, {0x03030, 0x03030}, {0x0303d, 0x0303d}, {0x03297, 0x03297},
+        {0x03299, 0x03299}, {0x1f170, 0x1f171}, {0x1f17e, 0x1f17f}, {0x1f202, 0x1f202},
+        {0x1f237, 0x1f237}, {0x1f321, 0x1f321}, {0x1f324, 0x1f32c}, {0x1f336, 0x1f336},
+        {0x1f37d, 0x1f37d}, {0x1f396, 0x1f397}, {0x1f399, 0x1f39b}, {0x1f39e, 0x1f39f},
+        {0x1f3cb, 0x1f3ce}, {0x1f3d4, 0x1f3df}, {0x1f3f3, 0x1f3f3}, {0x1f3f5, 0x1f3f5},
+        {0x1f3f7, 0x1f3f7}, {0x1f43f, 0x1f43f}, {0x1f441, 0x1f441}, {0x1f4fd, 0x1f4fd},
+        {0x1f549, 0x1f54a}, {0x1f56f, 0x1f570}, {0x1f573, 0x1f579}, {0x1f587, 0x1f587},
+        {0x1f58a, 0x1f58d}, {0x1f590, 0x1f590}, {0x1f5a5, 0x1f5a5}, {0x1f5a8, 0x1f5a8},
+        {0x1f5b1, 0x1f5b2}, {0x1f5bc, 0x1f5bc}, {0x1f5c2, 0x1f5c4}, {0x1f5d1, 0x1f5d3},
+        {0x1f5dc, 0x1f5de}, {0x1f5e1, 0x1f5e1}, {0x1f5e3, 0x1f5e3}, {0x1f5e8, 0x1f5e8},
+        {0x1f5ef, 0x1f5ef}, {0x1f5f3, 0x1f5f3}, {0x1f5fa, 0x1f5fa}, {0x1f6cb, 0x1f6cb},
+        {0x1f6cd, 0x1f6cf}, {0x1f6e0, 0x1f6e5}, {0x1f6e9, 0x1f6e9}, {0x1f6f0, 0x1f6f0},
+        {0x1f6f3, 0x1f6f3},
+    };
+
+    /** U+FE0F VARIATION SELECTOR-16, which requests an emoji-style rendering of the preceding character. */
+    public static final char VARIATION_SELECTOR_16 = 0xFE0F;
+
+    /** Whether a code point renders narrow by default but has a wide emoji-style rendering when followed by {@link #VARIATION_SELECTOR_16}. */
+    public static boolean isEmojiVariationSequenceBase(int codePoint) {
+        return intable(EMOJI_VARIATION_SEQUENCE_BASE, codePoint);
+    }
+
     private static boolean intable(int[][] table, int c) {
         // First quick check f|| Latin1 etc. characters.
         if (c < table[0][0]) return false;
@@ -534,8 +583,26 @@ public final class WcWidth {
 
     /** The width at an index position in a java char array. */
     public static int width(char[] chars, int index) {
+        return width(chars, index, chars.length);
+    }
+
+    /**
+     * The width at an index position in a java char array, only looking ahead of {@code index}
+     * up to the exclusive {@code limit} (typically the number of java chars actually in use, as
+     * opposed to the backing array's full capacity) when checking for a following
+     * {@link #VARIATION_SELECTOR_16}.
+     */
+    public static int width(char[] chars, int index, int limit) {
         char c = chars[index];
-        return Character.isHighSurrogate(c) ? width(Character.toCodePoint(c, chars[index + 1])) : width(c);
+        int codePoint = Character.isHighSurrogate(c) ? Character.toCodePoint(c, chars[index + 1]) : c;
+        int width = width(codePoint);
+        if (width == 1 && isEmojiVariationSequenceBase(codePoint)) {
+            int afterCodePointIndex = index + Character.charCount(codePoint);
+            if (afterCodePointIndex < limit && chars[afterCodePointIndex] == VARIATION_SELECTOR_16) {
+                return 2;
+            }
+        }
+        return width;
     }
 
     /**

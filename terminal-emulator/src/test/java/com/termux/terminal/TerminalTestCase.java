@@ -155,6 +155,7 @@ public abstract class TerminalTestCase extends TestCase {
 			for (int j = 0; j < usedChars; j++) {
 				char c = text[j];
 				int codePoint;
+				int startOfCodePointIndex = j;
 				if (Character.isHighSurrogate(c)) {
 					char lowSurrogate = text[++j];
 					assertTrue("High surrogate without following low surrogate", Character.isLowSurrogate(lowSurrogate));
@@ -164,7 +165,9 @@ public abstract class TerminalTestCase extends TestCase {
 					codePoint = c;
 				}
 				assertFalse("Screen should never contain unassigned characters", Character.getType(codePoint) == Character.UNASSIGNED);
-				int width = WcWidth.width(codePoint);
+				// Use the lookahead-aware width (not WcWidth.width(codePoint)) since a narrow-by-default
+				// emoji base character immediately followed by VARIATION_SELECTOR_16 is double-width, e.g. "❤️".
+				int width = WcWidth.width(text, startOfCodePointIndex, usedChars);
 				assertFalse("The first column should not start with combining character", currentColumn == 0 && width < 0);
 				if (width > 0) currentColumn += width;
 			}

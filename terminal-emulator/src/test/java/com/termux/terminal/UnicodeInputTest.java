@@ -118,6 +118,21 @@ public class UnicodeInputTest extends TerminalTestCase {
 		withTerminalSized(3, 2).enterString("abc\033[3D枝").assertLinesAre("枝c", "   ");
 	}
 
+	public void testEmojiVariationSelectorWidening() throws Exception {
+		// https://github.com/termux/termux-app/issues/5251 - U+2764 HEAVY BLACK HEART is narrow
+		// by default, but should occupy two columns like other emoji once immediately followed
+		// by U+FE0F VARIATION SELECTOR-16 requesting an emoji-style rendering ("❤️").
+		withTerminalSized(5, 2).enterString("a❤️b").assertLinesAre("a❤️b ", "     ").assertCursorAt(0, 4);
+
+		// A code point that is already double-width on its own (e.g. an East Asian wide
+		// character, U+679D here) is unaffected by a following variation selector.
+		withTerminalSized(5, 2).enterString("枝️b").assertLinesAre("枝️b  ", "     ");
+
+		// No room to widen into an extra column: the selector is simply dropped rather than
+		// corrupting the last column.
+		withTerminalSized(3, 2).enterString("ab❤️").assertLinesAre("ab❤", "   ");
+	}
+
 	public void testOverlongUtf8Encoding() throws Exception {
 		// U+0020 should be encoded as 0x20, 0xc0 0xa0 is an overlong encoding
 		// so should be replaced with the replacement char U+FFFD.

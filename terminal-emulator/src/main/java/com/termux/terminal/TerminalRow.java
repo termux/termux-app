@@ -100,8 +100,8 @@ public final class TerminalRow {
             int newCharIndex = currentCharIndex;
             char c = mText[newCharIndex++]; // cci=1, cci=2
             boolean isHigh = Character.isHighSurrogate(c);
-            int codePoint = isHigh ? Character.toCodePoint(c, mText[newCharIndex++]) : c;
-            int wcwidth = WcWidth.width(codePoint); // 1, 2
+            if (isHigh) newCharIndex++;
+            int wcwidth = WcWidth.width(mText, currentCharIndex, mSpaceUsed); // 1, 2
             if (wcwidth > 0) {
                 currentColumn += wcwidth;
                 if (currentColumn == column) {
@@ -131,9 +131,10 @@ public final class TerminalRow {
 
     private boolean wideDisplayCharacterStartingAt(int column) {
         for (int currentCharIndex = 0, currentColumn = 0; currentCharIndex < mSpaceUsed; ) {
+            int startOfCharIndex = currentCharIndex;
             char c = mText[currentCharIndex++];
-            int codePoint = Character.isHighSurrogate(c) ? Character.toCodePoint(c, mText[currentCharIndex++]) : c;
-            int wcwidth = WcWidth.width(codePoint);
+            if (Character.isHighSurrogate(c)) currentCharIndex++;
+            int wcwidth = WcWidth.width(mText, startOfCharIndex, mSpaceUsed);
             if (wcwidth > 0) {
                 if (currentColumn == column && wcwidth == 2) return true;
                 currentColumn += wcwidth;
@@ -190,8 +191,36 @@ public final class TerminalRow {
         }
 
         char[] text = mText;
+
+        // A variation selector-16 combining onto a narrow-by-default emoji base character (e.g.
+        // "❤️", HEAVY BLACK HEART + VARIATION SELECTOR-16) requests an emoji-style rendering
+        // that is double-width, unlike a plain combining accent. Widen the column for it instead
+        // of leaving it as a same-width combining mark, so the emoji glyph isn't squeezed into a
+        // single narrow cell.
+        final boolean isVariationSelectorForNarrowEmojiBase = newIsCombining
+            && codePoint == WcWidth.VARIATION_SELECTOR_16
+            && WcWidth.width(text, findStartOfColumn(columnToSet), mSpaceUsed) == 1
+            && WcWidth.isEmojiVariationSequenceBase(codePointAt(text, findStartOfColumn(columnToSet)));
+
+        if (isVariationSelectorForNarrowEmojiBase && columnToSet >= mColumns - 1) {
+            // No room to grow into an extra column (the base character sits in the last column).
+            // Drop the selector instead of storing it adjacent to the base character: leaving it
+            // in place would make later width lookups see the pair and report width 2 for a
+            // column that was never actually widened, corrupting the row's column bookkeeping.
+            return;
+        }
+        final boolean wideningWithVariationSelector = isVariationSelectorForNarrowEmojiBase;
+
+        if (wideningWithVariationSelector && wideDisplayCharacterStartingAt(columnToSet + 1)) {
+            // Clear the wide character that would otherwise be partially overwritten when this
+            // column grows from one to two cells, exactly as done above for non-combining chars.
+            setChar(columnToSet + 1, ' ', style);
+            text = mText; // setChar() above may have reallocated the backing array.
+        }
+
         final int oldStartOfColumnIndex = findStartOfColumn(columnToSet);
-        final int oldCodePointDisplayWidth = WcWidth.width(text, oldStartOfColumnIndex);
+        final int oldCodePointDisplayWidth = WcWidth.width(text, oldStartOfColumnIndex, mSpaceUsed);
+        final int effectiveNewCodePointDisplayWidth = wideningWithVariationSelector ? 2 : newCodePointDisplayWidth;
 
         // Get the number of elements in the mText array this column uses now
         int oldCharactersUsedForColumn;
@@ -245,7 +274,7 @@ public final class TerminalRow {
         //noinspection ResultOfMethodCallIgnored - since we already now how many java chars is used.
         Character.toChars(codePoint, text, oldStartOfColumnIndex + (newIsCombining ? oldCharactersUsedForColumn : 0));
 
-        if (oldCodePointDisplayWidth == 2 && newCodePointDisplayWidth == 1) {
+        if (oldCodePointDisplayWidth == 2 && effectiveNewCodePointDisplayWidth == 1) {
             // Replace second half of wide char with a space. Which mean that we actually add a ' ' java character.
             if (mSpaceUsed + 1 > text.length) {
                 char[] newText = new char[text.length + mColumns];
@@ -258,7 +287,7 @@ public final class TerminalRow {
             text[newNextColumnIndex] = ' ';
 
             ++mSpaceUsed;
-        } else if (oldCodePointDisplayWidth == 1 && newCodePointDisplayWidth == 2) {
+        } else if (oldCodePointDisplayWidth == 1 && effectiveNewCodePointDisplayWidth == 2) {
             if (columnToSet == mColumns - 1) {
                 throw new IllegalArgumentException("Cannot put wide character in last column");
             } else if (columnToSet == mColumns - 2) {
@@ -275,6 +304,11 @@ public final class TerminalRow {
                 mSpaceUsed -= nextLen;
             }
         }
+    }
+
+    private static int codePointAt(char[] text, int index) {
+        char c = text[index];
+        return Character.isHighSurrogate(c) ? Character.toCodePoint(c, text[index + 1]) : c;
     }
 
     boolean isBlank() {
