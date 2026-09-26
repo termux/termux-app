@@ -150,7 +150,7 @@ public class TermuxFileUtils {
      * @param label The optional label for the directory file. This can optionally be {@code null}.
      * @param filePath The {@code path} for file to validate or create. Symlinks will not be followed.
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
-     *                                 should be created if its missing.
+     *                                 should be created if it's missing.
      * @param setPermissions The {@code boolean} that decides if permissions are to be
      *                              automatically set defined by {@code permissionsToCheck}.
      * @param setMissingPermissionsOnly The {@code boolean} that decides if only missing permissions
@@ -248,7 +248,7 @@ public class TermuxFileUtils {
      *
      * @param context The {@link Context} for operations.
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
-     *                                 should be created if its missing.
+     *                                 should be created if it's missing.
      * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
      *                              automatically set.
      * @return Returns the {@code error} if path is not a directory file, failed to create it,
@@ -278,7 +278,7 @@ public class TermuxFileUtils {
      * not been installed or the bootstrap setup has not been run or if it was deleted by the user.
      *
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
-     *                                 should be created if its missing.
+     *                                 should be created if it's missing.
      * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
      *                              automatically set.
      * @return Returns the {@code error} if path is not a directory file, failed to create it,
@@ -296,7 +296,7 @@ public class TermuxFileUtils {
      * {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS} permissions.
      *
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
-     *                                 should be created if its missing.
+     *                                 should be created if it's missing.
      * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
      *                              automatically set.
      * @return Returns the {@code error} if path is not a directory file, failed to create it,
@@ -314,7 +314,7 @@ public class TermuxFileUtils {
      * {@link FileUtils#APP_WORKING_DIRECTORY_PERMISSIONS} permissions.
      *
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
-     *                                 should be created if its missing.
+     *                                 should be created if it's missing.
      * @param setMissingPermissions The {@code boolean} that decides if permissions are to be
      *                              automatically set.
      * @return Returns the {@code error} if path is not a directory file, failed to create it,

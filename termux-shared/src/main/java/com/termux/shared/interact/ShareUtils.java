@@ -120,7 +120,7 @@ public class ShareUtils {
 
     /**
      * Wrapper for {@link #getTextFromClipboard(Context, boolean)} that returns primary text {@link String}
-     * if its set and not empty.
+     * if it's set and not empty.
      */
     @Nullable
     public static String getTextStringFromClipboardIfSet(Context context, boolean coerceToText) {

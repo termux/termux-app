@@ -230,8 +230,8 @@ public class PermissionUtils {
 
     /**
      * Check if legacy or manage external storage permissions has been granted. If
-     * {@link #isLegacyExternalStoragePossible(Context)} returns {@code true}, them it will be
-     * checked if app has has been granted {@link Manifest.permission#READ_EXTERNAL_STORAGE} and
+     * {@link #isLegacyExternalStoragePossible(Context)} returns {@code true}, then it will be
+     * checked if app has been granted {@link Manifest.permission#READ_EXTERNAL_STORAGE} and
      * {@link Manifest.permission#WRITE_EXTERNAL_STORAGE} permissions, otherwise it will be checked
      * if app has been granted the {@link Manifest.permission#MANAGE_EXTERNAL_STORAGE} permission.
      *

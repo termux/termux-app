@@ -202,7 +202,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             if (!KeyboardUtils.areDisableSoftKeyboardFlagsSet(mActivity))
                 KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
             else
-                Logger.logVerbose(LOG_TAG, "Not showing soft keyboard onSingleTapUp since its disabled");
+                Logger.logVerbose(LOG_TAG, "Not showing soft keyboard onSingleTapUp since it's disabled");
         }
     }
 
@@ -571,7 +571,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         // Requesting terminal view focus is necessary regardless of if soft keyboard is to be
         // disabled or hidden at startup, otherwise if hardware keyboard is attached and user
         // starts typing on hardware keyboard without tapping on the terminal first, then a colour
-        // tint will be added to the terminal as highlight for the focussed view. Test with a light
+        // tint will be added to the terminal as highlight for the focused view. Test with a light
         // theme. For android 8.+, the "defaultFocusHighlightEnabled" attribute is also set to false
         // in TerminalView layout to fix the issue.
 

@@ -77,7 +77,7 @@ public abstract class TermuxSharedProperties {
      *
      * @param key The key to read.
      * @param def The default value.
-     * @param cached If {@code true}, then the value is returned from the the {@link Properties} in-memory cache.
+     * @param cached If {@code true}, then the value is returned from the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is returned from it against the key.
      * @return Returns the {@link String} object. This will be {@code null} if key is not found.
@@ -91,7 +91,7 @@ public abstract class TermuxSharedProperties {
      * the {@link #mPropertiesFile} file.
      *
      * @param key The key to read.
-     * @param cached If {@code true}, then the value is checked from the the {@link Properties} in-memory cache.
+     * @param cached If {@code true}, then the value is checked from the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is checked from it.
      * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
@@ -109,7 +109,7 @@ public abstract class TermuxSharedProperties {
      * the {@link #mPropertiesFile} file.
      *
      * @param key The key to read.
-     * @param cached If {@code true}, then the value is checked from the the {@link Properties} in-memory cache.
+     * @param cached If {@code true}, then the value is checked from the {@link Properties} in-memory cache.
      *               Otherwise the {@link Properties} object is read directly from the file
      *               and value is checked from it.
      * @param logErrorOnInvalidValue If {@code true}, then an error will be logged if key value
@@ -337,7 +337,7 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
+     * Returns the int for the value if it's not null and is between
      * {@link TermuxPropertyConstants#IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT_MAX},
      * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT}.
@@ -355,7 +355,7 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
+     * Returns the int for the value if it's not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX},
      * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE}.
@@ -385,7 +385,7 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
+     * Returns the int for the value if it's not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_HORIZONTAL_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_HORIZONTAL_MAX},
      * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_MARGIN_HORIZONTAL}.
@@ -403,7 +403,7 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
+     * Returns the int for the value if it's not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_VERTICAL_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_MARGIN_VERTICAL_MAX},
      * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_MARGIN_VERTICAL}.
@@ -421,7 +421,7 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
+     * Returns the int for the value if it's not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TRANSCRIPT_ROWS_MAX},
      * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TRANSCRIPT_ROWS}.
@@ -439,7 +439,7 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the int for the value if its not null and is between
+     * Returns the int for the value if it's not null and is between
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MIN} and
      * {@link TermuxPropertyConstants#IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR_MAX},
      * otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_TOOLBAR_HEIGHT_SCALE_FACTOR}.

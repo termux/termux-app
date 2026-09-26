@@ -469,7 +469,7 @@ public class FileUtils {
      * @param parentDirPath The optional {@code parent directory path} to restrict operations to.
      *                      This can optionally be {@code null}. It is not canonicalized and only normalized.
      * @param createDirectoryIfMissing The {@code boolean} that decides if directory file
-     *                                 should be created if its missing.
+     *                                 should be created if it's missing.
      * @param permissionsToCheck The 3 character string that contains the "r", "w", "x" or "-" in-order.
      * @param setPermissions The {@code boolean} that decides if permissions are to be
      *                              automatically set defined by {@code permissionsToCheck}.
@@ -728,7 +728,7 @@ public class FileUtils {
      * {@link #createSymlinkFile(String, String, String, boolean, boolean, boolean)}.
      *
      * Dangling symlinks will be allowed.
-     * Symlink destination will be overwritten if it already exists but only if its a symlink.
+     * Symlink destination will be overwritten if it already exists but only if it's a symlink.
      *
      * @param targetFilePath The {@code path} TO which the symlink file will be created.
      * @param destFilePath The {@code path} AT which the symlink file will be created.
@@ -747,7 +747,7 @@ public class FileUtils {
      * {@link #createSymlinkFile(String, String, String, boolean, boolean, boolean)}.
      *
      * Dangling symlinks will be allowed.
-     * Symlink destination will be overwritten if it already exists but only if its a symlink.
+     * Symlink destination will be overwritten if it already exists but only if it's a symlink.
      *
      * @param label The optional label for the symlink file. This can optionally be {@code null}.
      * @param targetFilePath The {@code path} TO which the symlink file will be created.
@@ -847,7 +847,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its a regular
+     * If destination file already exists, then it will be overwritten, but only if it's a regular
      * file, otherwise an error will be returned.
      *
      * @param label The optional label for file to copy. This can optionally be {@code null}.
@@ -869,7 +869,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its a regular
+     * If destination file already exists, then it will be overwritten, but only if it's a regular
      * file, otherwise an error will be returned.
      *
      * @param label The optional label for file to move. This can optionally be {@code null}.
@@ -891,7 +891,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its a directory
+     * If destination file already exists, then it will be overwritten, but only if it's a directory
      * file, otherwise an error will be returned.
      *
      * @param label The optional label for file to copy. This can optionally be {@code null}.
@@ -913,7 +913,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its a directory
+     * If destination file already exists, then it will be overwritten, but only if it's a directory
      * file, otherwise an error will be returned.
      *
      * @param label The optional label for file to move. This can optionally be {@code null}.
@@ -935,7 +935,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its a symlink
+     * If destination file already exists, then it will be overwritten, but only if it's a symlink
      * file, otherwise an error will be returned.
      *
      * @param label The optional label for file to copy. This can optionally be {@code null}.
@@ -957,7 +957,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its a symlink
+     * If destination file already exists, then it will be overwritten, but only if it's a symlink
      * file, otherwise an error will be returned.
      *
      * @param label The optional label for file to move. This can optionally be {@code null}.
@@ -979,7 +979,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its the same file
+     * If destination file already exists, then it will be overwritten, but only if it's the same file
      * type as the source, otherwise an error will be returned.
      *
      * @param label The optional label for file to copy. This can optionally be {@code null}.
@@ -1001,7 +1001,7 @@ public class FileUtils {
      * This function is a wrapper for
      * {@link #copyOrMoveFile(String, String, String, boolean, boolean, int, boolean, boolean)}.
      *
-     * If destination file already exists, then it will be overwritten, but only if its the same file
+     * If destination file already exists, then it will be overwritten, but only if it's the same file
      * type as the source, otherwise an error will be returned.
      *
      * @param label The optional label for file to move. This can optionally be {@code null}.
@@ -1690,8 +1690,8 @@ public class FileUtils {
         } catch (Exception e) {
             return FileUtilsErrno.ERRNO_WRITING_TEXT_TO_FILE_FAILED_WITH_EXCEPTION.getError(e, label + "file", filePath, e.getMessage());
         } finally {
-            closeCloseable(fileOutputStream);
             closeCloseable(bufferedWriter);
+            closeCloseable(fileOutputStream);
         }
 
         return null;
@@ -1729,8 +1729,8 @@ public class FileUtils {
         } catch (Exception e) {
             return FileUtilsErrno.ERRNO_WRITING_SERIALIZABLE_OBJECT_TO_FILE_FAILED_WITH_EXCEPTION.getError(e, label + "file", filePath, e.getMessage());
         } finally {
-            closeCloseable(fileOutputStream);
             closeCloseable(objectOutputStream);
+            closeCloseable(fileOutputStream);
         }
 
         return null;

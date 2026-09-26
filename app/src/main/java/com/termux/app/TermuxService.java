@@ -251,7 +251,7 @@ public final class TermuxService extends Service implements AppShell.AppShellCli
      * creators for plugin commands but we still try to process whatever results can be processed
      * despite the unreliable behaviour of onDestroy().
      *
-     * Note that if don't kill the processes started by plugins which **expect** the result back
+     * Note that if we don't kill the processes started by plugins which **expect** the result back
      * and notify their creators that they have been killed, then they may get stuck waiting for
      * the results forever like in case of commands started by Termux:Tasker or RUN_COMMAND intent,
      * since once TermuxService has been killed, no result will be sent back. They may still get

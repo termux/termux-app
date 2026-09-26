@@ -243,12 +243,10 @@ public class DataUtils {
     /** Get size of a serializable object. */
     public static long getSerializedSize(Serializable object) {
         if (object == null) return 0;
-        try {
-            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream);
+        try (ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream)) {
             objectOutputStream.writeObject(object);
             objectOutputStream.flush();
-            objectOutputStream.close();
             return byteOutputStream.toByteArray().length;
         } catch (Exception e) {
             return -1;

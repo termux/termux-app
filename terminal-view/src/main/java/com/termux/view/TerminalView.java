@@ -1210,7 +1210,7 @@ public final class TerminalView extends View {
      * for changes to take effect if not disabling.
      *
      * @param blinkRate The value to set.
-     * @return Returns {@code true} if setting blinker rate was successfully set, otherwise [@code false}.
+     * @return Returns {@code true} if setting blinker rate was successfully set, otherwise {@code false}.
      */
     public synchronized boolean setTerminalCursorBlinkerRate(int blinkRate) {
         boolean result;

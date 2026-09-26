@@ -573,7 +573,7 @@ public class PackageUtils {
              * Todo: We may need AndroidManifest queries entries if package is installed but with a different signature on android 11
              * https://developer.android.com/training/package-visibility
              * Need a device that allows (manual) installation of apk with mismatched signature of
-             * sharedUserId apps to test. Currently, if its done, PackageManager just doesn't load
+             * sharedUserId apps to test. Currently, if it's done, PackageManager just doesn't load
              * the package and removes its apk automatically if its installed as a user app instead of system app
              * W/PackageManager: Failed to parse /path/to/com.termux.tasker.apk: Signature mismatch for shared user: SharedUserSetting{xxxxxxx com.termux/10xxx}
              */
@@ -602,11 +602,11 @@ public class PackageUtils {
     }
 
     /**
-     * Check if the current user is the primary user. This is done by checking if the the serial
+     * Check if the current user is the primary user. This is done by checking if the serial
      * number for the current user equals 0.
      *
      * @param context The {@link Context} for operations.
-     * @return Returns {@code true} if the current user is the primary user, otherwise [@code false}.
+     * @return Returns {@code true} if the current user is the primary user, otherwise {@code false}.
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static boolean isCurrentUserThePrimaryUser(@NonNull Context context) {

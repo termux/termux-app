@@ -94,8 +94,8 @@ public final class ExtraKeysView extends GridLayout {
 
         /**
          * This is called by {@link ExtraKeysView} when a button is clicked so that the client
-         * can perform any hepatic feedback. This is only called in the {@link MaterialButton.OnClickListener}
-         * and not for every repeat. Its also called for {@link #mSpecialButtons}.
+         * can perform any haptic feedback. This is only called in the {@link MaterialButton.OnClickListener}
+         * and not for every repeat. It's also called for {@link #mSpecialButtons}.
          *
          * @param view The view that was clicked.
          * @param buttonInfo The {@link ExtraKeyButton} for the button that was clicked.
@@ -158,7 +158,7 @@ public final class ExtraKeysView extends GridLayout {
 
 
     /**
-     * The list of keys for which auto repeat of key should be triggered if its extra keys button
+     * The list of keys for which auto repeat of key should be triggered if it's extra keys button
      * is long pressed. This is done by calling {@link IExtraKeysView#onExtraKeyButtonClick(View, ExtraKeyButton, MaterialButton)}
      * every {@link #mLongPressRepeatDelay} seconds after {@link #mLongPressTimeout} has passed.
      * The default keys are defined by {@link ExtraKeysConstants#PRIMARY_REPETITIVE_KEYS}.
@@ -168,12 +168,12 @@ public final class ExtraKeysView extends GridLayout {
 
     /** The text color for the extra keys button. Defaults to {@link #DEFAULT_BUTTON_TEXT_COLOR}. */
     protected int mButtonTextColor;
-    /** The text color for the extra keys button when its active.
+    /** The text color for the extra keys button when it's active.
      * Defaults to {@link #DEFAULT_BUTTON_ACTIVE_TEXT_COLOR}. */
     protected int mButtonActiveTextColor;
     /** The background color for the extra keys button. Defaults to {@link #DEFAULT_BUTTON_BACKGROUND_COLOR}. */
     protected int mButtonBackgroundColor;
-    /** The background color for the extra keys button when its active. Defaults to
+    /** The background color for the extra keys button when it's active. Defaults to
      * {@link #DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR}. */
     protected int mButtonActiveBackgroundColor;
 

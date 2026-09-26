@@ -247,7 +247,7 @@ public final class AppShell {
 
     /**
      * Kill this {@link AppShell} by sending a {@link OsConstants#SIGILL} to its {@link #mProcess}
-     * if its still executing.
+     * if it's still executing.
      *
      * @param context The {@link Context} for operations.
      * @param processResult If set to {@code true}, then the {@link #processAppShellResult(AppShell, ExecutionCommand)}
@@ -319,7 +319,7 @@ public final class AppShell {
             appShell.mAppShellClient.onAppShellExited(appShell);
         } else {
             // If a callback is not set and execution command didn't fail, then we set success state now
-            // Otherwise, the callback host can set it himself when its done with the appShell
+            // Otherwise, the callback host can set it himself when it's done with the appShell
             if (!executionCommand.isStateFailed())
                 executionCommand.setState(ExecutionCommand.ExecutionState.SUCCESS);
         }

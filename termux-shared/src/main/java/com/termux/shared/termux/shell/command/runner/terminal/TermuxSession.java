@@ -69,7 +69,7 @@ public class TermuxSession {
      *                        available in the {@link TermuxSessionClient#onTermuxSessionExited(TermuxSession)}
      *                        callback will be set to the {@link TerminalSession} transcript. The session
      *                        transcript will contain both stdout and stderr combined, basically
-     *                        anything sent to the the pseudo terminal /dev/pts, including PS1 prefixes.
+     *                        anything sent to the pseudo terminal /dev/pts, including PS1 prefixes.
      *                        Set this to {@code true} only if the session transcript is required,
      *                        since this requires extra processing to get it.
      * @return Returns the {@link TermuxSession}. This will be {@code null} if failed to start the execution command.
@@ -104,9 +104,9 @@ public class TermuxSession {
 
             if (executionCommand.executable == null) {
                 // Fall back to system shell as last resort:
-                // Do not start a login shell since ~/.profile may cause startup failure if its invalid.
-                // /system/bin/sh is provided by mksh (not toybox) and does load .mkshrc but for android its set
-                // to /system/etc/mkshrc even though its default is ~/.mkshrc.
+                // Do not start a login shell since ~/.profile may cause startup failure if it's invalid.
+                // /system/bin/sh is provided by mksh (not toybox) and does load .mkshrc but for android it's set
+                // to /system/etc/mkshrc even though it's default is ~/.mkshrc.
                 // So /system/etc/mkshrc must still be valid for failsafe session to start properly.
                 // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:external/mksh/src/main.c;l=663
                 // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r3:external/mksh/src/main.c;l=41
@@ -203,7 +203,7 @@ public class TermuxSession {
 
     /**
      * Kill this {@link TermuxSession} by sending a {@link OsConstants#SIGILL} to its {@link #mTerminalSession}
-     * if its still executing.
+     * if it's still executing.
      *
      * @param context The {@link Context} for operations.
      * @param processResult If set to {@code true}, then the {@link #processTermuxSessionResult(TermuxSession, ExecutionCommand)}
@@ -266,7 +266,7 @@ public class TermuxSession {
             termuxSession.mTermuxSessionClient.onTermuxSessionExited(termuxSession);
         } else {
             // If a callback is not set and execution command didn't fail, then we set success state now
-            // Otherwise, the callback host can set it himself when its done with the termuxSession
+            // Otherwise, the callback host can set it himself when it's done with the termuxSession
             if (!executionCommand.isStateFailed())
                 executionCommand.setState(ExecutionCommand.ExecutionState.SUCCESS);
         }

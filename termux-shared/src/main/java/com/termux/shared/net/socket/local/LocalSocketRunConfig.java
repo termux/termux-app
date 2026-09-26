@@ -25,7 +25,7 @@ public class LocalSocketRunConfig implements Serializable {
      * socket will fail if the server starter app process does not have write and search (execute)
      * permission on the directory in which the socket is created. The client process must have write
      * permission on the socket to connect to it. Other app will not be able to connect to socket
-     * if its created in private app data directory.
+     * if it's created in private app data directory.
      *
      * For an abstract namespace socket, the first byte must be a null `\0` character. Note that on
      * Android 9+, if server app is using `targetSdkVersion` `28`, then other apps will not be able

@@ -109,7 +109,7 @@ public final class TerminalColorScheme {
      * If the "cursor" color is not set by user, we need to decide on the appropriate color that will
      * be visible on the current terminal background. White will not be visible on light backgrounds
      * and black won't be visible on dark backgrounds. So we find the perceived brightness of the
-     * background color and if its below the threshold (too dark), we use white cursor and if its
+     * background color and if it's below the threshold (too dark), we use white cursor and if it's
      * above (too bright), we use black cursor.
      */
     public void setCursorColorForBackground() {

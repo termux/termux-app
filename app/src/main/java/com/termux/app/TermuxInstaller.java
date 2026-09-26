@@ -50,7 +50,7 @@ import static com.termux.shared.termux.TermuxConstants.TERMUX_STAGING_PREFIX_DIR
  * <p/>
  * (4) The zip file is loaded from a shared library.
  * <p/>
- * (5) The zip, containing entries relative to the $PREFIX, is is downloaded and extracted by a zip input stream
+ * (5) The zip, containing entries relative to the $PREFIX, is downloaded and extracted by a zip input stream
  * continuously encountering zip file entries:
  * <p/>
  * (5.1) If the zip entry encountered is SYMLINKS.txt, go through it and remember all symlinks to setup.
@@ -102,7 +102,7 @@ final class TermuxInstaller {
             return;
         }
 
-        // If prefix directory exists, even if its a symlink to a valid directory and symlink is not broken/dangling
+        // If prefix directory exists, even if it's a symlink to a valid directory and symlink is not broken/dangling
         if (FileUtils.directoryFileExists(TERMUX_PREFIX_DIR_PATH, true)) {
             if (TermuxFileUtils.isTermuxPrefixDirectoryEmpty()) {
                 Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" exists but is empty or only contains specific unimportant files.");

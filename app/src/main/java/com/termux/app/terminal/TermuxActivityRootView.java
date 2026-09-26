@@ -30,7 +30,7 @@ import com.termux.shared.view.ViewUtils;
  * instead of the default `InputType.TYPE_NULL` for termux, some keyboards may still show suggestions.
  * Gboard does too, but only when text is copied and clipboard suggestions **and** number keys row
  * toggles are enabled in its settings. When number keys row toggle is not enabled, Gboard will still
- * show the row but will switch it with suggestions if needed. If its enabled, then number keys row
+ * show the row but will switch it with suggestions if needed. If it's enabled, then number keys row
  * is always shown and suggestions are shown in an additional row on top of it. This additional row is likely
  * part of the candidates view returned by the keyboard app in {@link InputMethodService#onCreateCandidatesView()}.
  *
@@ -40,7 +40,7 @@ import com.termux.shared.view.ViewUtils;
  * up the view or because Gboard does not include the candidate's view height in the height reported
  * to android that should be used, hence causing an overlap.
  *
- * Gboard logs the following entry to `logcat` when its opened with or without the suggestions bar showing:
+ * Gboard logs the following entry to `logcat` when it's opened with or without the suggestions bar showing:
  * I/KeyboardViewUtil: KeyboardViewUtil.calculateMaxKeyboardBodyHeight():62 leave 500 height for app when screen height:2392, header height:176 and isFullscreenMode:false, so the max keyboard body height is:1716
  * where `keyboard_height = screen_height - height_for_app - header_height` (62 is a hardcoded value in Gboard source code and may be a version number)
  * So this may in fact be due to Gboard but https://stackoverflow.com/questions/57567272 suggests
@@ -55,7 +55,7 @@ import com.termux.shared.view.ViewUtils;
  * activity theme. When {@link TermuxActivity} {@link ViewTreeObserver.OnGlobalLayoutListener} is
  * called when any of the sub view layouts change,  like keyboard opening/closing keyboard,
  * extra keys/input view switched, etc, we check if the bottom space view is visible or not.
- * If its not, then we add a margin to the bottom of the root view, so that the keyboard does not
+ * If it's not, then we add a margin to the bottom of the root view, so that the keyboard does not
  * overlap the extra keys/terminal, since the margin will push up the view. By default the margin
  * added is equal to the height of the hidden part of extra keys/terminal. For Gboard's case, the
  * hidden part equals the `header_height`. The updates to margins may cause a jitter in some cases
@@ -188,7 +188,7 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                 // cases when view has been redrawn with new margin because bottom space view was
                 // hidden by keyboard and then view was redrawn again due to layout change (like
                 // keyboard symbol view is switched to), android will add margin below its new position
-                // if its greater than 0, which was already above the keyboard creating x2x margin.
+                // if it's greater than 0, which was already above the keyboard creating x2x margin.
                 // Adding time check since moving split screen divider in landscape causes jitter
                 // and prevents some infinite loops
                 if ((System.currentTimeMillis() - lastMarginBottomTime) > 40) {

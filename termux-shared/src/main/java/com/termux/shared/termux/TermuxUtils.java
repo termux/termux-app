@@ -184,7 +184,7 @@ public class TermuxUtils {
      * Check if Termux app is installed and accessible. This can only be used by apps that share
      * `sharedUserId` with the Termux app.
      *
-     * This is done by checking if first checking if app is installed and enabled and then if
+     * This is done by first checking if app is installed and enabled and then if
      * {@code currentPackageContext} can be used to get the {@link Context} of the app with
      * {@link TermuxConstants#TERMUX_PACKAGE_NAME} and then if
      * {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH} exists and has
@@ -242,7 +242,7 @@ public class TermuxUtils {
      * Get a field value from a class of the Termux app APK installed on the device.
      * This can only be used by apps that share `sharedUserId` with the Termux app.
      *
-     * This is done by getting first getting termux app package context and then getting in class
+     * This is done by first getting termux app package context and then getting in class
      * loader (instead of current app's) that contains termux app class info, and then using that to
      * load the required class and then getting required field from it.
      *
@@ -425,7 +425,7 @@ public class TermuxUtils {
      *
      * @param currentPackageContext The context of current package.
      * @param returnTermuxPackageInfoToo If set to {@code true}, then will return info of the
-     * {@link TermuxConstants#TERMUX_PACKAGE_NAME} package as well if its different from current package.
+     * {@link TermuxConstants#TERMUX_PACKAGE_NAME} package as well if it's different from current package.
      * @return Returns the markdown {@link String}.
      */
     public static String getAppInfoMarkdownString(final Context currentPackageContext, final boolean returnTermuxPackageInfoToo) {

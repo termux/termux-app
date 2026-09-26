@@ -59,7 +59,7 @@ public class ShellEnvironmentUtils {
      * If the {@link ShellEnvironmentVariable#escaped} is set to {@code true}, then
      * {@link ShellEnvironmentVariable#value} will be considered to be a literal value that has
      * already been escaped by the caller, otherwise all the `"`\$` in the value will be escaped
-     * with `a backslash `\`, like `\"`. Note that if `$` is escaped and if its part of variable,
+     * with `a backslash `\`, like `\"`. Note that if `$` is escaped and if it's part of variable,
      * then variable expansion will not happen if `.env` file is sourced.
      *
      * The `\` at the end of a value line means line continuation. Value can contain newline characters.

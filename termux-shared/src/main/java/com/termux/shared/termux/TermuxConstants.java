@@ -952,7 +952,7 @@ public final class TermuxConstants {
 
             /** Intent action to make termux reload its termux session styling */
             public static final String ACTION_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
-            /** Intent {@code String} extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent. This has been deperecated. */
+            /** Intent {@code String} extra for what to reload for the TERMUX_ACTIVITY.ACTION_RELOAD_STYLE intent. This has been deprecated. */
             @Deprecated
             public static final String EXTRA_RELOAD_STYLE = TermuxConstants.TERMUX_PACKAGE_NAME + ".app.reload_style"; // Default: "com.termux.app.reload_style"
 
@@ -1056,14 +1056,14 @@ public final class TermuxConstants {
 
             /**
              * The value for {@link #EXTRA_SESSION_ACTION} extra that will set the new session as
-             * the current session and will start {@link TERMUX_ACTIVITY} if its not running to bring
+             * the current session and will start {@link TERMUX_ACTIVITY} if it's not running to bring
              * the new session to foreground.
              */
             public static final int VALUE_EXTRA_SESSION_ACTION_SWITCH_TO_NEW_SESSION_AND_OPEN_ACTIVITY = 0;
 
             /**
              * The value for {@link #EXTRA_SESSION_ACTION} extra that will keep any existing session
-             * as the current session and will start {@link TERMUX_ACTIVITY} if its not running to
+             * as the current session and will start {@link TERMUX_ACTIVITY} if it's not running to
              * bring the existing session to foreground. The new session will be added to the left
              * sidebar in the sessions list.
              */
@@ -1071,7 +1071,7 @@ public final class TermuxConstants {
 
             /**
              * The value for {@link #EXTRA_SESSION_ACTION} extra that will set the new session as
-             * the current session but will not start {@link TERMUX_ACTIVITY} if its not running
+             * the current session but will not start {@link TERMUX_ACTIVITY} if it's not running
              * and session(s) will be seen in Termux notification and can be clicked to bring new
              * session to foreground. If the {@link TERMUX_ACTIVITY} is already running, then this
              * will behave like {@link #VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY}.
@@ -1080,7 +1080,7 @@ public final class TermuxConstants {
 
             /**
              * The value for {@link #EXTRA_SESSION_ACTION} extra that will keep any existing session
-             * as the current session but will not start {@link TERMUX_ACTIVITY} if its not running
+             * as the current session but will not start {@link TERMUX_ACTIVITY} if it's not running
              * and session(s) will be seen in Termux notification and can be clicked to bring
              * existing session to foreground. If the {@link TERMUX_ACTIVITY} is already running,
              * then this will behave like {@link #VALUE_EXTRA_SESSION_ACTION_KEEP_CURRENT_SESSION_AND_OPEN_ACTIVITY}.

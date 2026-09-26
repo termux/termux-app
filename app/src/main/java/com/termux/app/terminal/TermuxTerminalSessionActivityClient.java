@@ -67,7 +67,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
      */
     public void onStart() {
         // The service has connected, but data may have changed since we were last in the foreground.
-        // Get the session stored in shared preferences stored by {@link #onStop} if its valid,
+        // Get the session stored in shared preferences stored by {@link #onStop} if it's valid,
         // otherwise get the last session currently running.
         if (mActivity.getTermuxService() != null) {
             setCurrentSession(getCurrentStoredSessionOrLast());
@@ -148,7 +148,7 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         int index = service.getIndexOfSession(finishedSession);
 
         // For plugin commands that expect the result back, we should immediately close the session
-        // and send the result back instead of waiting fo the user to press enter.
+        // and send the result back instead of waiting for the user to press enter.
         // The plugin can handle/show errors itself.
         boolean isPluginExecutionCommandWithPendingResult = false;
         TermuxSession termuxSession = service.getTermuxSession(index);

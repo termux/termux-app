@@ -58,7 +58,7 @@ public interface ILocalSocketManager {
      * This is called if a {@link LocalServerSocket} connects to the server which has the
      * the server app's user id or root user id. It is the responsibility of the interface
      * implementation to close the client socket with a call to
-     * {@link LocalClientSocket#closeClientSocket(boolean)} once its done processing.
+     * {@link LocalClientSocket#closeClientSocket(boolean)} once it's done processing.
      *
      * The {@link LocalClientSocket#getPeerCred()} can be used to get the {@link PeerCred} object
      * containing info for the connected client/peer.

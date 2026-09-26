@@ -28,7 +28,7 @@ public class TextIOInfo implements Serializable {
      * `java.io.InvalidClassException: <class_name>; local class incompatible`
      *
      * The `@Keep` annotation is necessary to prevent the field from being removed by proguard when
-     * app is compiled, even if its kept during library compilation.
+     * app is compiled, even if it's kept during library compilation.
      *
      * **See Also:**
      * - https://docs.oracle.com/javase/8/docs/platform/serialization/spec/version.html#a6678

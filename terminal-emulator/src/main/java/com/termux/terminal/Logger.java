@@ -63,13 +63,10 @@ public class Logger {
 
         String stackTraceString = null;
 
-        try {
-            StringWriter errors = new StringWriter();
-            PrintWriter pw = new PrintWriter(errors);
+        try (StringWriter errors = new StringWriter();
+             PrintWriter pw = new PrintWriter(errors)) {
             throwable.printStackTrace(pw);
-            pw.close();
             stackTraceString = errors.toString();
-            errors.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

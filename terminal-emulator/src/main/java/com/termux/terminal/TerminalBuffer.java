@@ -499,8 +499,8 @@ public final class TerminalBuffer {
     }
 
     /**
-     * Block set characters. All characters must be within the bounds of the screen, or else and
-     * InvalidParemeterException will be thrown. Typically this is called with a "val" argument of 32 to clear a block
+     * Block set characters. All characters must be within the bounds of the screen, or else an
+     * IllegalArgumentException will be thrown. Typically this is called with a "val" argument of 32 to clear a block
      * of characters.
      */
     public void blockSet(int sx, int sy, int w, int h, int val, long style) {

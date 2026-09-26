@@ -79,14 +79,14 @@ public class TermuxAmSocketServer {
         // Start termux-am-socket server if enabled by user
         boolean enabled = false;
         if (TermuxAppSharedProperties.getProperties().shouldRunTermuxAmSocketServer()) {
-            Logger.logDebug(LOG_TAG, "Starting " + TITLE + " socket server since its enabled");
+            Logger.logDebug(LOG_TAG, "Starting " + TITLE + " socket server since it's enabled");
             start(context);
             if (termuxAmSocketServer != null && termuxAmSocketServer.isRunning()) {
                 enabled = true;
                 Logger.logDebug(LOG_TAG, TITLE + " socket server successfully started");
             }
         } else {
-            Logger.logDebug(LOG_TAG, "Not starting " + TITLE + " socket server since its not enabled");
+            Logger.logDebug(LOG_TAG, "Not starting " + TITLE + " socket server since it's not enabled");
         }
 
         // Once termux-app has started, the server state must not be changed since the variable is

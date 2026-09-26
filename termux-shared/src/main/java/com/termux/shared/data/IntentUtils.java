@@ -14,7 +14,7 @@ public class IntentUtils {
 
 
     /**
-     * Get a {@link String} extra from an {@link Intent} if its not {@code null} or empty.
+     * Get a {@link String} extra from an {@link Intent} if it's not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
      * @param key The {@link String} key name.
@@ -31,7 +31,7 @@ public class IntentUtils {
     }
 
     /**
-     * Get a {@link String} extra from an {@link Intent} if its not {@code null} or empty.
+     * Get a {@link String} extra from an {@link Intent} if it's not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
      * @param key The {@link String} key name.
@@ -50,7 +50,7 @@ public class IntentUtils {
     }
 
     /**
-     * Get an {@link Integer} from an {@link Intent} stored as a {@link String} extra if its not
+     * Get an {@link Integer} from an {@link Intent} stored as a {@link String} extra if it's not
      * {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
@@ -75,7 +75,7 @@ public class IntentUtils {
 
 
     /**
-     * Get a {@link String[]} extra from an {@link Intent} if its not {@code null} or empty.
+     * Get a {@link String[]} extra from an {@link Intent} if it's not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
      * @param key The {@link String} key name.
@@ -92,7 +92,7 @@ public class IntentUtils {
     }
 
     /**
-     * Get a {@link String[]} extra from an {@link Intent} if its not {@code null} or empty.
+     * Get a {@link String[]} extra from an {@link Intent} if it's not {@code null} or empty.
      *
      * @param intent The {@link Intent} to get the extra from.
      * @param key The {@link String} key name.

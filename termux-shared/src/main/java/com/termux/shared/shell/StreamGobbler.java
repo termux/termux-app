@@ -131,7 +131,7 @@ public class StreamGobbler extends Thread {
      * possible to prevent a deadlock from occurring, or Process.waitFor() never
      * returning (as the buffer is full, pausing the native process)</p>
      * Do not use this for concurrent reading for STDOUT and STDERR for the same StringBuilder since
-     * its not synchronized.
+     * it's not synchronized.
      *
      * @param shell Name of the shell
      * @param inputStream InputStream to read from

@@ -407,7 +407,7 @@ public class ReportActivity extends AppCompatActivity {
                 Logger.logErrorExtended(LOG_TAG, error.toString());
             }
         } else {
-            Logger.logError(LOG_TAG, "Not deleting " + ReportInfo.class.getSimpleName() + " serialized object file at path \"" + reportInfoFilePath + "\" since its not under \"" + reportInfoDirectoryPath + "\"");
+            Logger.logError(LOG_TAG, "Not deleting " + ReportInfo.class.getSimpleName() + " serialized object file at path \"" + reportInfoFilePath + "\" since it's not under \"" + reportInfoDirectoryPath + "\"");
         }
     }
 

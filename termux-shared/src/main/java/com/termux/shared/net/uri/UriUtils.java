@@ -36,7 +36,7 @@ public class UriUtils {
 
     /**
      * Get the file basename from a {@link Uri}. The file basename is anything after last forward
-     * slash "/" in the path, or the path itself if its not found.
+     * slash "/" in the path, or the path itself if it's not found.
      *
      * @param uri The {@link Uri} to get basename from.
      * @param withFragment If the {@link Uri} fragment should be included in basename.
