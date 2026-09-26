@@ -71,7 +71,7 @@ public class Logger {
             stackTraceString = errors.toString();
             errors.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            android.util.Log.w("termux-app", e);
         }
 
         return stackTraceString;
