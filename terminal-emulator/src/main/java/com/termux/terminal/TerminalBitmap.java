@@ -10,6 +10,9 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import java.util.Properties;
 
 /**
@@ -125,6 +128,45 @@ public class TerminalBitmap {
         }
     }
 
+    private static Bitmap decodeByteArray(byte[] image, int x,  int length) throws Throwable{
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        return decodeByteArray(image, 0, length, options);
+    }
+
+    private static Bitmap decodeByteArray(byte[] image, int x,  int length, BitmapFactory.Options options) throws Throwable{
+        if (length >= 8 && image[0] == 0x49 && image[1] == 0x49 && image[2] == 0x2A && image [3] == 0x00) {
+            // Decode TIFF, since Bitmap Factory does not.
+            ByteBuffer buffer = ByteBuffer.wrap(image);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            int ifdOffset = buffer.getInt(4);
+            int numTags = buffer.getShort(ifdOffset);
+            int compression = 1;
+            int bytesPP = 3;
+            int pixelsOffset = 8;
+            for (int i = 0; i < numTags; i++) {
+                int Id = buffer.getShort(ifdOffset + 2 + 12 * i);
+                switch(Id) {
+                    case 0x100: options.outWidth = buffer.getInt(ifdOffset + 2 + 12 * i + 8); break;
+                    case 0x101: options.outHeight = buffer.getInt(ifdOffset + 2 + 12 * i + 8); break;
+                    case 0x103: compression = buffer.getShort(ifdOffset + 2 + 12 * i + 8); break;
+                    case 0x111: pixelsOffset = buffer.getInt(ifdOffset + 2 + 12 * i + 8); break;
+                    case 0x115: bytesPP = buffer.getShort(ifdOffset + 2 + 12 * i + 8); break;
+                }
+            }
+            if (options.inJustDecodeBounds) {
+                return null;
+            }
+            if (compression != 1) {
+                 throw new UnsupportedOperationException("Only uncompresses TIFF supported compression=" + compression + " w,h=" + options.outWidth+","+options.outHeight );
+            }
+            Bitmap bitmap = Bitmap.createBitmap(options.outWidth, options.outHeight, Bitmap.Config.ARGB_8888);
+            buffer.position(pixelsOffset);
+            bitmap.copyPixelsFromBuffer(buffer);
+            return bitmap;
+        }
+        return BitmapFactory.decodeByteArray(image, 0, length, options);
+    }
+
 
 
     protected final TerminalSessionClient mClient;
@@ -205,7 +247,7 @@ public class TerminalBitmap {
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
                 try {
-                    BitmapFactory.decodeByteArray(image, 0, image.length, options);
+                    decodeByteArray(image, 0, image.length, options);
                 } catch (Throwable t) {
                     if (t instanceof OutOfMemoryError) System.gc();
                     Logger.logWarn(terminalBuffer.getClient(), LOG_TAG,
@@ -249,9 +291,9 @@ public class TerminalBitmap {
                         // Subsample the original image to get a smaller image to save memory.
                         BitmapFactory.Options scaleOptions = new BitmapFactory.Options();
                         scaleOptions.inSampleSize = scaleFactor;
-                        newBitmap = BitmapFactory.decodeByteArray(image, 0, image.length, scaleOptions);
+                        newBitmap = decodeByteArray(image, 0, image.length, scaleOptions);
                     } else {
-                        newBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+                        newBitmap = decodeByteArray(image, 0, image.length);
                     }
                 } catch (Throwable t) {
                     if (t instanceof OutOfMemoryError) System.gc();
@@ -299,7 +341,7 @@ public class TerminalBitmap {
             } else {
                 // Create bitmap from image.
                 try {
-                    newBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+                    newBitmap = decodeByteArray(image, 0, image.length);
                 } catch (Throwable t) {
                     if (t instanceof OutOfMemoryError) System.gc();
                     Logger.logError(terminalBuffer.getClient(), LOG_TAG,
