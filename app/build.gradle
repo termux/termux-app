@@ -36,6 +36,9 @@ android {
         implementation "io.noties.markwon:recycler:$markwonVersion"
         implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
 
+        // PhotoView for image preview with pinch-to-zoom and pan support
+        implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+
         implementation project(":terminal-view")
         implementation project(":termux-shared")
     }

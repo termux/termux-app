@@ -28,6 +28,9 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
     /** Environment variable for the termux {@link TermuxConstants#TERMUX_PREFIX_DIR_PATH}. */
     public static final String ENV_PREFIX = "PREFIX";
 
+    /** Environment variable for the Termux SSH ControlMaster control directory path. */
+    public static final String ENV_TERMUX_SSH_CONTROL_MASTER = "TERMUX_SSH_CONTROL_MASTER";
+
     public TermuxShellEnvironment() {
         super();
         shellCommandShellEnvironment = new TermuxShellCommandShellEnvironment();
@@ -77,6 +80,7 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
 
         environment.put(ENV_HOME, TermuxConstants.TERMUX_HOME_DIR_PATH);
         environment.put(ENV_PREFIX, TermuxConstants.TERMUX_PREFIX_DIR_PATH);
+        environment.put(ENV_TERMUX_SSH_CONTROL_MASTER, TermuxConstants.TERMUX_SSH_CONTROL_DIR_PATH);
 
         // If failsafe is not enabled, then we keep default PATH and TMPDIR so that system binaries can be used
         if (!isFailSafe) {

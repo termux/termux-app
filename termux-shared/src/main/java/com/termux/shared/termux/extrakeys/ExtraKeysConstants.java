@@ -94,6 +94,7 @@ public class ExtraKeysConstants {
             put("KEYBOARD", "⌨"); // U+2328 ⌨ KEYBOARD not well known but easy to understand
             put("PASTE", "⎘"); // U+2398
             put("SCROLL", "⇳"); // U+21F3
+            put("F", "📁"); // U+1F4C1 📁 FILE FOLDER for SSH file manager access
         }};
 
         public static final ExtraKeyDisplayMap LESS_KNOWN_CHARACTERS_DISPLAY = new ExtraKeyDisplayMap() {{

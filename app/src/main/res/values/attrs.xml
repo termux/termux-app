@@ -1,5 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Termux Activity custom attributes -->
     <attr name="termuxActivityDrawerBackground" format="reference" />
     <attr name="termuxActivityDrawerImageTint" format="reference" />
+
+    <!-- Morandi Theme custom attributes for Remote File Browser -->
+    <!-- Breadcrumb navigation colors -->
+    <attr name="breadcrumbBackground" format="reference|color" />
+    <attr name="breadcrumbText" format="reference|color" />
+    <attr name="breadcrumbCurrent" format="reference|color" />
+    <attr name="breadcrumbSeparator" format="reference|color" />
+
+    <!-- File browser item colors -->
+    <attr name="directoryNameColor" format="reference|color" />
+    <attr name="directoryIconColor" format="reference|color" />
+    <attr name="fileNameColor" format="reference|color" />
+    <attr name="fileIconColor" format="reference|color" />
+    <attr name="fileSizeColor" format="reference|color" />
+    <attr name="symlinkNameColor" format="reference|color" />
+    <attr name="hiddenFileNameColor" format="reference|color" />
+
+    <!-- Selection and interaction colors -->
+    <attr name="selectedBackgroundColor" format="reference|color" />
+    <attr name="pressedBackgroundColor" format="reference|color" />
+
+    <!-- Divider and border colors -->
+    <attr name="dividerColor" format="reference|color" />
+    <attr name="borderColor" format="reference|color" />
+
+    <!-- Status colors -->
+    <attr name="errorColor" format="reference|color" />
+    <attr name="errorBackgroundColor" format="reference|color" />
+    <attr name="warningColor" format="reference|color" />
+    <attr name="warningBackgroundColor" format="reference|color" />
+    <attr name="successColor" format="reference|color" />
+    <attr name="successBackgroundColor" format="reference|color" />
 </resources>

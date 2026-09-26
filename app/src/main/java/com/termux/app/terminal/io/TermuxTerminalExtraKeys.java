@@ -1,6 +1,7 @@
 package com.termux.app.terminal.io;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.view.Gravity;
 import android.view.View;
 
@@ -8,6 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.termux.app.TermuxActivity;
+import com.termux.app.activities.RemoteFileBrowserActivity;
+import com.termux.app.ssh.SSHConnectionInfo;
+import com.termux.app.ssh.SSHControlMasterInstaller;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.shared.logger.Logger;
@@ -17,6 +21,8 @@ import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.termux.settings.properties.TermuxSharedProperties;
 import com.termux.shared.termux.terminal.io.TerminalExtraKeys;
 import com.termux.view.TerminalView;
+
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -100,6 +106,26 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
             TerminalView terminalView = mTermuxTerminalViewClient.getActivity().getTerminalView();
             if (terminalView != null && terminalView.mEmulator != null)
                 terminalView.mEmulator.toggleAutoScrollDisabled();
+        } else if ("F".equals(key)) {
+            // F button: Launch RemoteFileBrowserActivity if SSH connection active
+            Logger.logDebug(LOG_TAG, "F button clicked");
+            // Trigger SSH wrapper installation for users who installed openssh after first launch
+            SSHControlMasterInstaller.install(mActivity);
+            List<SSHConnectionInfo> connections = SSHControlMasterInstaller.getActiveConnections();
+            Logger.logDebug(LOG_TAG, "Active SSH connections: " + connections.size());
+
+            if (connections.isEmpty()) {
+                Logger.showToast(mActivity, "无活跃 SSH 连接", false);
+            } else {
+                // Launch RemoteFileBrowserActivity with first active connection
+                SSHConnectionInfo conn = connections.get(0);
+                Logger.logDebug(LOG_TAG, "Launching RemoteFileBrowserActivity for: " + conn.toString());
+
+                Intent intent = new Intent(mActivity, RemoteFileBrowserActivity.class);
+                intent.putExtra(RemoteFileBrowserActivity.EXTRA_CONNECTION_INFO, conn);
+                intent.putExtra(RemoteFileBrowserActivity.EXTRA_INITIAL_PATH, "/");
+                mActivity.startActivity(intent);
+            }
         } else {
             super.onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, fnDown);
         }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Save action -->
+    <item
+        android:id="@+id/menu_save"
+        android:title="@string/action_save"
+        android:icon="@drawable/ic_new_session"
+        android:orderInCategory="1"
+        app:showAsAction="always" />
+
+    <!-- Search action -->
+    <item
+        android:id="@+id/menu_search"
+        android:title="@string/action_search"
+        android:orderInCategory="2"
+        app:showAsAction="ifRoom" />
+
+    <!-- Replace action -->
+    <item
+        android:id="@+id/menu_replace"
+        android:title="@string/action_replace"
+        android:orderInCategory="3"
+        app:showAsAction="ifRoom" />
+
+</menu>

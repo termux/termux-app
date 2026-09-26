@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Remote File Browser -->
+    <string name="title_remote_file_browser">远程文件浏览器</string>
+    <string name="action_refresh">刷新</string>
+    <string name="back_to_parent_directory">返回上级目录</string>
+    <string name="file_type_icon">文件类型图标</string>
+    <string name="empty_directory">空目录</string>
+    <string name="error_listing_directory">列出目录内容失败</string>
+    <string name="error_not_connected">未连接到 SSH 服务器</string>
+    <string name="directory_size">-</string>
+
+    <!-- Remote File Context Menu -->
+    <string name="action_rename">重命名</string>
+    <string name="action_delete">删除</string>
+    <string name="action_copy">复制</string>
+    <string name="action_move">移动</string>
+    <string name="action_new_folder">新建文件夹</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="message_confirm_delete_file">删除文件 "%s"？</string>
+    <string name="message_confirm_delete_directory">删除目录 "%s" 及其所有内容？</string>
+    <string name="message_confirm_delete_symlink_directory">删除符号链接 "%s"？\n\n仅删除链接本身。目标目录及其内容将保持不变。</string>
+    <string name="title_rename_file">重命名文件</string>
+    <string name="title_rename_directory">重命名目录</string>
+    <string name="title_new_folder">新建文件夹</string>
+    <string name="hint_folder_name">文件夹名称</string>
+    <string name="error_rename_failed">重命名失败</string>
+    <string name="error_delete_failed">删除失败</string>
+    <string name="error_mkdir_failed">创建文件夹失败</string>
+    <string name="success_file_deleted">文件已删除</string>
+    <string name="success_directory_deleted">目录已删除</string>
+    <string name="success_file_renamed">文件已重命名</string>
+    <string name="success_directory_renamed">目录已重命名</string>
+    <string name="success_folder_created">文件夹已创建</string>
+
+    <!-- File Transfer -->
+    <string name="action_upload">上传</string>
+    <string name="action_download">下载</string>
+    <string name="title_uploading">正在上传…</string>
+    <string name="title_downloading">正在下载…</string>
+    <string name="transfer_progress">%1$d / %2$d 字节</string>
+    <string name="success_file_uploaded">文件上传成功</string>
+    <string name="success_file_downloaded">文件下载成功</string>
+    <string name="error_upload_failed">上传失败</string>
+    <string name="error_download_failed">下载失败</string>
+    <string name="error_transfer_connection">连接不可用</string>
+    <string name="error_transfer_timeout">连接超时</string>
+
+    <!-- Code Editor -->
+    <string name="title_code_editor">代码编辑器</string>
+    <string name="action_save">保存</string>
+    <string name="action_search">搜索</string>
+    <string name="action_replace">替换</string>
+    <string name="title_unsaved_changes">未保存的更改</string>
+    <string name="message_unsaved_changes">放弃未保存的更改？</string>
+    <string name="action_discard">放弃</string>
+    <string name="success_file_saved">文件已保存</string>
+    <string name="error_file_load_failed">加载文件失败</string>
+    <string name="error_file_save_failed">保存文件失败</string>
+    <string name="hint_search">搜索</string>
+    <string name="hint_replace">替换为</string>
+
+    <!-- Image Preview -->
+    <string name="title_image_preview">图片预览</string>
+    <string name="error_image_load_failed">加载图片失败</string>
+    <string name="error_image_not_supported">文件不是支持的图片格式</string>
+
+</resources>

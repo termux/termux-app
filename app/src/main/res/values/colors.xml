@@ -1,3 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Morandi Color Palette - Low saturation, soft grey-toned colors for visual comfort -->
+    <!-- Named after Giorgio Morandi, Italian painter known for subtle, muted color tones -->
+
+    <!-- Core Morandi Colors (15 base colors) -->
+    <color name="morandi_sage_green">#8A9A5B</color>      <!-- Grey-green, natural and calming -->
+    <color name="morandi_dusty_rose">#D4A5A5</color>     <!-- Grey-pink, soft and elegant -->
+    <color name="morandi_muted_blue">#5D8AA8</color>     <!-- Grey-blue, serene and trustworthy -->
+    <color name="morandi_warm_grey">#9E9E9E</color>      <!-- Warm neutral grey -->
+    <color name="morandi_charcoal">#555555</color>       <!-- Dark grey for text and contrast -->
+    <color name="morandi_cream">#F2EFE4</color>          <!-- Soft off-white, warm background -->
+    <color name="morandi_stone">#A9A9A9</color>          <!-- Medium grey, neutral and stable -->
+    <color name="morandi_taupe">#8B7765</color>          <!-- Grey-brown, earthy and grounded -->
+    <color name="morandi_mist">#C4B7CB</color>           <!-- Grey-purple, ethereal and light -->
+    <color name="morandi_clay">#B5A642</color>           <!-- Grey-yellow, warm earth tone -->
+    <color name="morandi_pebble">#9C8B7A</color>         <!-- Grey-brown, soft and natural -->
+    <color name="morandi_sand">#C2B280</color>           <!-- Warm beige, light and airy -->
+    <color name="morandi_ash">#7A7A7A</color>            <!-- Cool grey, neutral mid-tone -->
+    <color name="morandi_moss">#7A9A7A</color>           <!-- Grey-green, subtle nature tone -->
+    <color name="morandi_haze">#8B8589</color>           <!-- Grey-purple, muted and soft -->
+
+    <!-- Derived colors for specific use cases -->
+    <color name="morandi_sage_green_light">#A8B87B</color>   <!-- Lighter variant for backgrounds -->
+    <color name="morandi_sage_green_dark">#6A7A3B</color>    <!-- Darker variant for accents -->
+    <color name="morandi_dusty_rose_light">#E4B5B5</color>   <!-- Lighter variant -->
+    <color name="morandi_muted_blue_light">#7D9AB8</color>   <!-- Lighter variant -->
+    <color name="morandi_muted_blue_dark">#3D6A88</color>    <!-- Darker variant -->
 </resources>

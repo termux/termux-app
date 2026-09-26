@@ -37,4 +37,135 @@
         <item name="extraKeysButtonActiveBackgroundColor">@color/grey_500</item>
     </style>
 
+    <!-- Morandi Theme for Remote File Browser Activities (Dark Mode Overrides) -->
+    <!-- This inherits from Theme.RemoteFileBrowser.DayNight.NoActionBar defined in values/themes.xml -->
+    <!-- Only override attributes that need different values in dark mode -->
+    <style name="Theme.RemoteFileBrowser.DayNight.NoActionBar" parent="Theme.TermuxApp.DayNight.NoActionBar">
+        <!-- Primary brand color - Morandi Sage Green (lighter variant for dark mode) -->
+        <item name="colorPrimary">@color/morandi_primary</item>
+        <item name="colorPrimaryVariant">@color/morandi_primary_variant</item>
+
+        <!-- Secondary brand color - Morandi Muted Blue -->
+        <item name="colorSecondary">@color/morandi_secondary</item>
+        <item name="colorSecondaryVariant">@color/morandi_secondary_variant</item>
+
+        <!-- Background colors (dark variants from night/colors_remote_file_browser.xml) -->
+        <item name="android:windowBackground">@color/morandi_background</item>
+        <item name="android:colorBackground">@color/morandi_background</item>
+
+        <!-- Status and navigation bars (dark variants) -->
+        <item name="android:statusBarColor">@color/morandi_status_bar</item>
+        <item name="android:navigationBarColor">@color/morandi_navigation_bar</item>
+
+        <!-- Window attributes -->
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+
+        <!-- Action bar / toolbar colors (dark variants) -->
+        <item name="android:actionBarStyle">@style/MorandiActionBar.Dark</item>
+        <item name="actionBarStyle">@style/MorandiActionBar.Dark</item>
+
+        <!-- Contextual action mode colors -->
+        <item name="actionModeBackground">@color/morandi_primary_variant</item>
+        <item name="actionModeCloseDrawable">@color/morandi_cream</item>
+
+        <!-- Custom theme attributes for file browser components -->
+        <item name="breadcrumbBackground">@color/morandi_breadcrumb_background</item>
+        <item name="breadcrumbText">@color/morandi_breadcrumb_text</item>
+        <item name="breadcrumbCurrent">@color/morandi_breadcrumb_current</item>
+        <item name="breadcrumbSeparator">@color/morandi_breadcrumb_separator</item>
+
+        <item name="directoryNameColor">@color/morandi_directory_name</item>
+        <item name="directoryIconColor">@color/morandi_directory_icon</item>
+        <item name="fileNameColor">@color/morandi_file_name</item>
+        <item name="fileIconColor">@color/morandi_file_icon</item>
+        <item name="fileSizeColor">@color/morandi_file_size</item>
+        <item name="symlinkNameColor">@color/morandi_symlink_name</item>
+        <item name="hiddenFileNameColor">@color/morandi_hidden_file_name</item>
+
+        <item name="selectedBackgroundColor">@color/morandi_selected_background</item>
+        <item name="pressedBackgroundColor">@color/morandi_pressed_background</item>
+
+        <item name="dividerColor">@color/morandi_divider</item>
+        <item name="borderColor">@color/morandi_border</item>
+
+        <item name="errorColor">@color/morandi_error</item>
+        <item name="errorBackgroundColor">@color/morandi_error_background</item>
+        <item name="warningColor">@color/morandi_warning</item>
+        <item name="warningBackgroundColor">@color/morandi_warning_background</item>
+        <item name="successColor">@color/morandi_success</item>
+        <item name="successBackgroundColor">@color/morandi_success_background</item>
+
+        <!-- FAB colors -->
+        <item name="floatingActionButtonStyle">@style/MorandiFab.Dark</item>
+    </style>
+
+    <!-- Morandi Action Bar Style (Dark) -->
+    <style name="MorandiActionBar.Dark" parent="Widget.AppCompat.ActionBar">
+        <item name="background">@color/morandi_toolbar_background</item>
+        <item name="titleTextStyle">@style/MorandiActionBarTitle.Dark</item>
+        <item name="subtitleTextStyle">@style/MorandiActionBarSubtitle.Dark</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="MorandiActionBarTitle.Dark" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/morandi_toolbar_text</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="MorandiActionBarSubtitle.Dark" parent="TextAppearance.AppCompat.Widget.ActionBar.Subtitle">
+        <item name="android:textColor">@color/morandi_text_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- Morandi FAB Style (Dark) -->
+    <style name="MorandiFab.Dark" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="backgroundTint">@color/morandi_fab_background</item>
+        <item name="tint">@color/morandi_fab_icon</item>
+        <item name="rippleColor">@color/morandi_sage_green_light</item>
+        <item name="elevation">6dp</item>
+    </style>
+
+    <!-- Morandi Toolbar Style (Dark, for Toolbar widget) -->
+    <style name="MorandiToolbar.Dark" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/morandi_toolbar_background</item>
+        <item name="titleTextColor">@color/morandi_toolbar_text</item>
+        <item name="subtitleTextColor">@color/morandi_text_secondary</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <!-- Morandi Card View Style (Dark) -->
+    <style name="MorandiCardView.Dark" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/morandi_surface</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="strokeColor">@color/morandi_border_light</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Morandi Button Styles (Dark) -->
+    <style name="MorandiButtonPrimary.Dark" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/morandi_primary</item>
+        <item name="android:textColor">@color/morandi_cream</item>
+        <item name="rippleColor">@color/morandi_sage_green_light</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <style name="MorandiButtonSecondary.Dark" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/morandi_primary</item>
+        <item name="android:textColor">@color/morandi_primary</item>
+        <item name="rippleColor">@color/morandi_sage_green</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <!-- Morandi Text Input Style (Dark) -->
+    <style name="MorandiTextInput.Dark" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@color/morandi_surface_variant</item>
+        <item name="boxStrokeColor">@color/morandi_primary</item>
+        <item name="hintTextColor">@color/morandi_text_hint</item>
+        <item name="android:textColorHint">@color/morandi_text_hint</item>
+    </style>
+
 </resources>

@@ -834,6 +834,15 @@ public final class TermuxConstants {
     public static final File TERMUX_TASKER_SCRIPTS_DIR = new File(TERMUX_TASKER_SCRIPTS_DIR_PATH);
 
 
+    /** Termux app SSH ControlMaster directory path for storing control sockets */
+    public static final String TERMUX_SSH_CONTROL_DIR_PATH = TERMUX_HOME_DIR_PATH + "/.ssh/control"; // Default: "/data/data/com.termux/files/home/.ssh/control"
+    /** Termux app SSH ControlMaster directory for storing control sockets */
+    public static final File TERMUX_SSH_CONTROL_DIR = new File(TERMUX_SSH_CONTROL_DIR_PATH);
+
+    /** Termux app SSH ControlMaster socket naming pattern: %r@%h:%p (user@host:port) */
+    public static final String TERMUX_SSH_CONTROL_SOCKET_PATTERN = "%r@%h:%p"; // Default: "%r@%h:%p"
+
+
 
 
 

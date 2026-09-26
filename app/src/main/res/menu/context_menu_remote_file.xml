@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_download"
+        android:title="@string/action_download" />
+    <item
+        android:id="@+id/menu_rename"
+        android:title="@string/action_rename" />
+    <item
+        android:id="@+id/menu_delete"
+        android:title="@string/action_delete" />
+    <item
+        android:id="@+id/menu_copy"
+        android:title="@string/action_copy" />
+    <item
+        android:id="@+id/menu_move"
+        android:title="@string/action_move" />
+    <item
+        android:id="@+id/menu_new_folder"
+        android:title="@string/action_new_folder" />
+</menu>
