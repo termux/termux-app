@@ -49,6 +49,10 @@ public final class TerminalRow {
     final long[] mStyle;
     /** If this row might contain chars with width != 1, used for deactivating fast path */
     boolean mHasNonOneWidthOrSurrogateChars;
+    /** Cached visual layout object. Type is Object to decouple terminal emulator from view module. */
+    public Object mCachedBidiLayout;
+    public int[] mLogicalToVisual;
+    public int[] mVisualToLogical;
     /** If this row has a {@link TerminalBitmap}. Used for performance only. */
     public boolean mHasTerminalBitmap;
 
@@ -148,6 +152,9 @@ public final class TerminalRow {
         Arrays.fill(mStyle, style);
         mSpaceUsed = mColumns;
         mHasNonOneWidthOrSurrogateChars = false;
+        mCachedBidiLayout = null; // Invalidate cache
+        mLogicalToVisual = null;
+        mVisualToLogical = null;
         mHasTerminalBitmap = false;
     }
 
@@ -156,6 +163,9 @@ public final class TerminalRow {
         if (columnToSet  < 0 || columnToSet >= mStyle.length)
             throw new IllegalArgumentException("TerminalRow.setChar(): columnToSet=" + columnToSet + ", codePoint=" + codePoint + ", style=" + style);
 
+        mCachedBidiLayout = null; // Invalidate cache
+        mLogicalToVisual = null;
+        mVisualToLogical = null;
         mStyle[columnToSet] = style;
 
         if (!mHasTerminalBitmap && TextStyle.isTerminalBitmap(style)) {

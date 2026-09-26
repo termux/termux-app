@@ -16,9 +16,18 @@ import com.termux.terminal.TextStyle;
 import com.termux.terminal.WcWidth;
 
 /**
- * Renderer of a {@link TerminalEmulator} into a {@link Canvas}.
- * <p/>
- * Saves font metrics, so needs to be recreated each time the typeface or font size changes.
+ * Renders a {@link TerminalEmulator} into a {@link Canvas}.
+ *
+ * <p>Caches font metrics; must be recreated whenever the typeface or font size changes.
+ *
+ * <p>Rendering proceeds row by row. Within each row, cells with identical style, directionality,
+ * and width-fit are batched into a single <em>run</em> and drawn in one {@link Canvas#drawTextRun}
+ * call. RTL runs are reordered into logical order before drawing so that the platform shaping
+ * engine can apply correct cursive joining.
+ *
+ * <p>Width measurement uses a pre-computed lookup table ({@link #asciiMeasures}) for plain ASCII
+ * cells to avoid calling {@link Paint#measureText} on every cell every frame. The expensive
+ * measurement path is taken only for non-ASCII, RTL, or combining-character cells.
  */
 public final class TerminalRenderer {
 
@@ -26,16 +35,31 @@ public final class TerminalRenderer {
     final Typeface mTypeface;
     private final Paint mTextPaint = new Paint();
 
-    /** The width of a single mono spaced character obtained by {@link Paint#measureText(String)} on a single 'X'. */
+    /** Width of a single monospaced character, measured as {@code measureText("X")}. */
     final float mFontWidth;
-    /** The {@link Paint#getFontSpacing()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png */
+
+    /** {@link Paint#getFontSpacing()} rounded up to the nearest pixel. */
     final int mFontLineSpacing;
-    /** The {@link Paint#ascent()}. See http://www.fampennings.nl/maarten/android/08numgrid/font.png */
+
+    /** {@link Paint#ascent()} rounded up to the nearest pixel. */
     private final int mFontAscent;
-    /** The {@link #mFontLineSpacing} + {@link #mFontAscent}. */
+
+    /** {@link #mFontLineSpacing} + {@link #mFontAscent}. */
     final int mFontLineSpacingAndAscent;
 
+    /**
+     * Pre-computed advance widths for the first 127 ASCII codepoints.
+     * Indexed directly by codepoint value; avoids per-cell {@link Paint#measureText} overhead
+     * for the common case of standard terminal output.
+     */
     private final float[] asciiMeasures = new float[127];
+
+    /** Reusable buffer for measuring non-ASCII/combining cells without GC allocations. */
+    private final char[] mCellMeasureBuffer = new char[64];
+    /** Reusable cell array for batching runs without allocation. */
+    private BidiLayout.LogicalCell[] mRunCells = new BidiLayout.LogicalCell[256];
+    /** Reusable char buffer for encoding runs into drawTextRun. */
+    private char[] mRunCharBuffer = new char[1024];
 
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
@@ -57,7 +81,7 @@ public final class TerminalRenderer {
         }
     }
 
-    /** Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection. */
+    /** Renders the terminal into {@code canvas}, starting at {@code topRow} with an optional selection range. */
     public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
                              int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
         final boolean reverseVideo = mEmulator.isReverseVideo();
@@ -77,111 +101,388 @@ public final class TerminalRenderer {
         for (int row = topRow; row < endRow; row++) {
             heightOffset += mFontLineSpacing;
 
-            final int cursorX = (row == cursorRow && cursorVisible) ? cursorCol : -1;
-            int selx1 = -1, selx2 = -1;
-            if (row >= selectionY1 && row <= selectionY2) {
-                if (row == selectionY1) selx1 = selectionX1;
-                selx2 = (row == selectionY2) ? selectionX2 : mEmulator.mColumns;
-            }
-
             TerminalRow lineObject = screen.allocateFullLineIfNecessary(screen.externalToInternalRow(row));
-            final char[] line = lineObject.mText;
-            final int charsUsedInLine = lineObject.getSpaceUsed();
+            BidiLayout layout = BidiLayout.build(lineObject, columns, cursorCol,
+                    row == cursorRow && cursorVisible, selectionY1, selectionY2, selectionX1, selectionX2, row, true);
+            BidiLayout.LogicalCell[] visualCells = layout.visualCells;
 
             long lastRunStyle = 0;
             boolean lastRunInsideCursor = false;
             boolean lastRunInsideSelection = false;
+            boolean lastRunIsRtl = false;
             int lastRunStartColumn = -1;
-            int lastRunStartIndex = 0;
             boolean lastRunFontWidthMismatch = false;
-            int currentCharIndex = 0;
-            float measuredWidthForRun = 0.f;
 
-            for (int column = 0; column < columns; ) {
-                final char charAtIndex = line[currentCharIndex];
-                final boolean charIsHighsurrogate = Character.isHighSurrogate(charAtIndex);
-                final int charsForCodePoint = charIsHighsurrogate ? 2 : 1;
-                final int codePoint = charIsHighsurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
-                final long style = lineObject.getStyle(column);
-                if (TextStyle.isTerminalBitmap(style)) {
-                    Bitmap bitmap = mEmulator.getScreen().getSixelBitmap(style);
+            for (int vCol = 0; vCol < columns; ) {
+                BidiLayout.LogicalCell cell = visualCells[vCol];
+                // Sixel bitmap cell: draw directly and reset run tracking (ported from master).
+                if (TextStyle.isTerminalBitmap(cell.style)) {
+                    Bitmap bitmap = screen.getSixelBitmap(cell.style);
                     if (bitmap != null) {
-                        float left = column * mFontWidth;
+                        float left = vCol * mFontWidth;
                         float top = heightOffset - mFontLineSpacing;
-                        Rect bitmapSrcRect = mEmulator.getScreen().getSixelRect(style);
+                        Rect bitmapSrcRect = screen.getSixelRect(cell.style);
                         RectF bitmapDestRect = new RectF(left, top, left + mFontWidth, top + mFontLineSpacing);
                         canvas.drawBitmap(bitmap, bitmapSrcRect, bitmapDestRect, null);
                     }
-                    column += 1;
-                    measuredWidthForRun = 0.f;
+                    vCol += 1;
                     lastRunStyle = 0;
                     lastRunInsideCursor = false;
-                    lastRunStartColumn = column + 1;
-                    lastRunStartIndex = currentCharIndex;
+                    lastRunStartColumn = vCol;
                     lastRunFontWidthMismatch = false;
-                    currentCharIndex += charsForCodePoint;
                     continue;
                 }
-                final int codePointWcWidth = WcWidth.width(codePoint);
-                final boolean insideCursor = (cursorX == column || (codePointWcWidth == 2 && cursorX == column + 1));
-                final boolean insideSelection = column >= selx1 && column <= selx2;
+                if (cell.displayWidth == 0 && cell.codePoint == 0) {
+                    vCol++;
+                    continue;
+                }
 
-                // Check if the measured text width for this code point is not the same as that expected by wcwidth().
-                // This could happen for some fonts which are not truly monospace, or for more exotic characters such as
-                // smileys which android font renders as wide.
-                // If this is detected, we draw this code point scaled to match what wcwidth() expects.
-                final float measuredCodePointWidth = (codePoint < asciiMeasures.length) ? asciiMeasures[codePoint] : mTextPaint.measureText(line,
-                    currentCharIndex, charsForCodePoint);
-                final boolean fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
+                final boolean insideCursor = cell.insideCursor;
+                final boolean insideSelection = cell.insideSelection;
+                final long style = cell.style;
+                final int codePoint = cell.codePoint;
+                final int codePointWcWidth = cell.displayWidth;
+                final boolean isRtl = cell.isRtl;
 
-                if (style != lastRunStyle || insideCursor != lastRunInsideCursor || insideSelection != lastRunInsideSelection || fontWidthMismatch || lastRunFontWidthMismatch) {
-                    if (column == 0 || column == lastRunStartColumn) {
-                        // Skip first column as there is nothing to draw, just record the current style.
+                // Measure the advance width of this cell. ASCII cells without combining characters
+                // use the pre-computed lookup table; all other cells call measureText into reusable buffer.
+                // Note: for RTL cells, fontWidthMismatch is always false by definition, so we skip measurement entirely.
+                final boolean fontWidthMismatch;
+                if (isRtl || codePointWcWidth <= 0) {
+                    fontWidthMismatch = false;
+                } else {
+                    final float measuredCodePointWidth;
+                    if (codePoint == 0) {
+                        measuredCodePointWidth = 0f;
+                    } else if (codePoint < asciiMeasures.length && cell.combiningChars == null) {
+                        measuredCodePointWidth = asciiMeasures[codePoint];
                     } else {
-                        final int columnWidthSinceLastRun = column - lastRunStartColumn;
-                        final int charsSinceLastRun = currentCharIndex - lastRunStartIndex;
-                        int cursorColor = lastRunInsideCursor ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
-                        boolean invertCursorTextColor = false;
-                        if (lastRunInsideCursor && cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK) {
-                            invertCursorTextColor = true;
+                        int len = Character.toChars(codePoint, mCellMeasureBuffer, 0);
+                        if (cell.combiningChars != null) {
+                            for (int i = 0; i < cell.combiningCount; i++)
+                                len += Character.toChars(cell.combiningChars[i], mCellMeasureBuffer, len);
                         }
-                        drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun,
-                            lastRunStartIndex, charsSinceLastRun, measuredWidthForRun,
-                            cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
+                        measuredCodePointWidth = mTextPaint.measureText(mCellMeasureBuffer, 0, len);
                     }
-                    measuredWidthForRun = 0.f;
+                    fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
+                }
+
+                final boolean splitRun;
+                if (isRtl && lastRunIsRtl) {
+                    // Cursive Arabic/RTL text requires unbroken text runs for HarfBuzz to connect glyphs.
+                    // Do not split RTL runs on cursor or selection transitions.
+                    splitRun = (style != lastRunStyle);
+                } else {
+                    splitRun = (style != lastRunStyle
+                            || insideCursor != lastRunInsideCursor
+                            || insideSelection != lastRunInsideSelection
+                            || isRtl != lastRunIsRtl
+                            || fontWidthMismatch
+                            || lastRunFontWidthMismatch);
+                }
+
+                if (splitRun) {
+                    if (vCol != 0) {
+                        flushRun(canvas, mEmulator, visualCells, palette, heightOffset,
+                                lastRunStartColumn, vCol, lastRunStyle,
+                                lastRunInsideCursor, lastRunInsideSelection,
+                                lastRunIsRtl, lastRunFontWidthMismatch,
+                                cursorShape, reverseVideo);
+                    }
                     lastRunStyle = style;
                     lastRunInsideCursor = insideCursor;
                     lastRunInsideSelection = insideSelection;
-                    lastRunStartColumn = column;
-                    lastRunStartIndex = currentCharIndex;
+                    lastRunIsRtl = isRtl;
+                    lastRunStartColumn = vCol;
                     lastRunFontWidthMismatch = fontWidthMismatch;
                 }
-                measuredWidthForRun += measuredCodePointWidth;
-                column += codePointWcWidth;
-                currentCharIndex += charsForCodePoint;
-                while (currentCharIndex < charsUsedInLine && WcWidth.width(line, currentCharIndex) <= 0) {
-                    // Eat combining chars so that they are treated as part of the last non-combining code point,
-                    // instead of e.g. being considered inside the cursor in the next run.
-                    currentCharIndex += Character.isHighSurrogate(line[currentCharIndex]) ? 2 : 1;
-                }
+
+                vCol += codePointWcWidth;
             }
 
-            final int columnWidthSinceLastRun = columns - lastRunStartColumn;
-            final int charsSinceLastRun = currentCharIndex - lastRunStartIndex;
-            int cursorColor = lastRunInsideCursor ? mEmulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
-            boolean invertCursorTextColor = false;
-            if (lastRunInsideCursor && cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK) {
-                invertCursorTextColor = true;
+            if (columns > lastRunStartColumn) {
+                flushRun(canvas, mEmulator, visualCells, palette, heightOffset,
+                        lastRunStartColumn, columns, lastRunStyle,
+                        lastRunInsideCursor, lastRunInsideSelection,
+                        lastRunIsRtl, lastRunFontWidthMismatch,
+                        cursorShape, reverseVideo);
             }
-            drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
-                measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
         }
     }
 
-    private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y, int startColumn, int runWidthColumns,
-                             int startCharIndex, int runWidthChars, float mes, int cursor, int cursorStyle,
-                             long textStyle, boolean reverseVideo) {
+    /**
+     * Collects cells in the column range [{@code startCol}, {@code endCol}), builds a UTF-16
+     * character buffer, measures the run width, and delegates to {@link #drawTextRun}.
+     *
+     * <p>RTL runs are insertion-sorted into logical (left-to-right) column order before encoding
+     * so that {@link Canvas#drawTextRun} receives characters in the order the shaping engine
+     * expects for correct bidirectional cursive rendering.
+     *
+     * <p>The character buffer is sized precisely by summing {@link Character#charCount} over every
+     * base codepoint and each of its combining characters, so supplementary-plane codepoints that
+     * require a surrogate pair are always accommodated without overflow.
+     */
+    private void flushRun(Canvas canvas,
+                          TerminalEmulator emulator,
+                          BidiLayout.LogicalCell[] visualCells,
+                          int[] palette,
+                          float heightOffset,
+                          int startCol, int endCol,
+                          long style,
+                          boolean insideCursor, boolean insideSelection,
+                          boolean isRtl, boolean fontWidthMismatch,
+                          int cursorShape, boolean reverseVideo) {
+
+        final int runColumns = endCol - startCol;
+        final int cursorColor = insideCursor
+                ? emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR] : 0;
+        final boolean invertCursorTextColor =
+                insideCursor && cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK;
+
+        if (runColumns > mRunCells.length) {
+            mRunCells = new BidiLayout.LogicalCell[Math.max(runColumns, mRunCells.length * 2)];
+        }
+
+        // Collect non-empty cells.
+        int count = 0;
+        for (int c = startCol; c < endCol; c++) {
+            BidiLayout.LogicalCell rc = visualCells[c];
+            if (rc.displayWidth == 0 && rc.codePoint == 0) continue;
+            mRunCells[count++] = rc;
+        }
+
+        // Reorder RTL cells into logical column order for the shaping engine.
+        if (isRtl) {
+            for (int i = 1; i < count; i++) {
+                BidiLayout.LogicalCell key = mRunCells[i];
+                int j = i - 1;
+                while (j >= 0 && mRunCells[j].originalColumn > key.originalColumn) {
+                    mRunCells[j + 1] = mRunCells[j];
+                    j--;
+                }
+                mRunCells[j + 1] = key;
+            }
+        }
+
+        // Compute exact buffer capacity: each codepoint (base or combining) may need 2 chars.
+        int capacity = 0;
+        for (int i = 0; i < count; i++) {
+            BidiLayout.LogicalCell rc = mRunCells[i];
+            if (rc.codePoint == 0) {
+                capacity += 1;
+            } else {
+                capacity += Character.charCount(rc.codePoint);
+                if (rc.combiningChars != null) {
+                    for (int k = 0; k < rc.combiningCount; k++)
+                        capacity += Character.charCount(rc.combiningChars[k]);
+                }
+            }
+        }
+
+        if (capacity > mRunCharBuffer.length) {
+            mRunCharBuffer = new char[Math.max(capacity, mRunCharBuffer.length * 2)];
+        }
+
+        int used = 0;
+        for (int i = 0; i < count; i++) {
+            BidiLayout.LogicalCell rc = mRunCells[i];
+            if (rc.codePoint != 0) {
+                used += Character.toChars(rc.codePoint, mRunCharBuffer, used);
+                if (rc.combiningChars != null) {
+                    for (int k = 0; k < rc.combiningCount; k++)
+                        used += Character.toChars(rc.combiningChars[k], mRunCharBuffer, used);
+                }
+            } else if (rc.displayWidth > 0) {
+                mRunCharBuffer[used++] = ' ';
+            }
+        }
+
+        if (isRtl) {
+            final Typeface originalTypeface = mTextPaint.getTypeface();
+            mTextPaint.setTypeface(Typeface.DEFAULT);
+            try {
+                // 1. Draw cell backgrounds, selection highlights, and cursor in unscaled grid coordinates
+                final float top = heightOffset - mFontLineSpacingAndAscent + mFontAscent;
+                final float bottom = heightOffset;
+                final int defaultBg = palette[TextStyle.COLOR_INDEX_BACKGROUND];
+
+                int runForeColor = TextStyle.decodeForeColor(style);
+                final int effect = TextStyle.decodeEffect(style);
+                final boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
+                final boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
+                final boolean italic = (effect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0;
+                final boolean strikeThrough = (effect & TextStyle.CHARACTER_ATTRIBUTE_STRIKETHROUGH) != 0;
+                final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
+
+                if ((runForeColor & 0xff000000) != 0xff000000) {
+                    if (bold && runForeColor >= 0 && runForeColor < 8) runForeColor += 8;
+                    runForeColor = palette[runForeColor];
+                }
+
+                boolean hasSelectionInRun = false;
+                for (int c = startCol; c < endCol; c++) {
+                    if (visualCells[c].insideSelection) {
+                        hasSelectionInRun = true;
+                        break;
+                    }
+                }
+
+                for (int c = startCol; c < endCol; c++) {
+                    BidiLayout.LogicalCell cell = visualCells[c];
+                    int cellBg = TextStyle.decodeBackColor(cell.style);
+                    if ((cellBg & 0xff000000) != 0xff000000) cellBg = palette[cellBg];
+                    if (cell.insideSelection) {
+                        // Original Termux reverse video: inverted cell background using foreground color
+                        mTextPaint.setColor(runForeColor);
+                        canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
+                    } else if (cellBg != defaultBg) {
+                        mTextPaint.setColor(cellBg);
+                        canvas.drawRect(c * mFontWidth, top, (c + 1) * mFontWidth, bottom, mTextPaint);
+                    }
+                    if (cell.insideCursor) {
+                        int cColor = emulator.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
+                        float cLeft = c * mFontWidth;
+                        float cRight = (c + 1) * mFontWidth;
+                        float cursorH = mFontLineSpacingAndAscent - mFontAscent;
+                        if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
+                            mTextPaint.setColor(cColor);
+                            canvas.drawRect(cLeft, bottom - cursorH / 4.f, cRight, bottom, mTextPaint);
+                        } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
+                            mTextPaint.setColor(cColor);
+                            canvas.drawRect(cLeft, bottom - cursorH, cLeft + mFontWidth / 4.f, bottom, mTextPaint);
+                        } else {
+                            // Block cursor: draw semi-transparent overlay so shaped Arabic letters remain visible
+                            mTextPaint.setColor((cColor & 0x00FFFFFF) | 0x80000000);
+                            canvas.drawRect(cLeft, bottom - cursorH, cRight, bottom, mTextPaint);
+                        }
+                    }
+                }
+
+                // 2. Measure advance width of the contiguous Arabic run
+                final float measuredWidth = mTextPaint.measureText(mRunCharBuffer, 0, used);
+
+                // 3. Setup text paint
+                int foreColor = runForeColor;
+                if (reverseVideo ^ (effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0) {
+                    int backColor = TextStyle.decodeBackColor(style);
+                    if ((backColor & 0xff000000) != 0xff000000) backColor = palette[backColor];
+                    foreColor = backColor;
+                }
+                if (dim) {
+                    int red   = (0xFF & (foreColor >> 16)) * 2 / 3;
+                    int green = (0xFF & (foreColor >>  8)) * 2 / 3;
+                    int blue  = (0xFF &  foreColor)        * 2 / 3;
+                    foreColor = 0xFF000000 | (red << 16) | (green << 8) | blue;
+                }
+
+                mTextPaint.setFakeBoldText(bold);
+                mTextPaint.setUnderlineText(underline);
+                mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
+                mTextPaint.setStrikeThruText(strikeThrough);
+                mTextPaint.setColor(foreColor);
+
+                // 4. Draw shaped text run
+                if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
+                    if (!hasSelectionInRun) {
+                        float left = startCol * mFontWidth;
+                        float mes = measuredWidth / mFontWidth;
+                        boolean savedMatrix = false;
+                        if (Math.abs(mes - runColumns) > 0.01 && mes > 0) {
+                            canvas.save();
+                            canvas.scale(runColumns / mes, 1.f);
+                            left *= mes / runColumns;
+                            savedMatrix = true;
+                        }
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used,
+                                    left, heightOffset - mFontLineSpacingAndAscent, true, mTextPaint);
+                        } else {
+                            canvas.drawText(mRunCharBuffer, 0, used,
+                                    left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
+                        }
+
+                        if (savedMatrix) canvas.restore();
+                    } else {
+                        // Contiguous run with partial/full selection: use clipped segments so that HarfBuzz cursive shaping
+                        // remains unbroken across the whole word, while selected cells display inverted text (reverse video).
+                        int segStart = startCol;
+                        while (segStart < endCol) {
+                            boolean isSel = visualCells[segStart].insideSelection;
+                            int segEnd = segStart + 1;
+                            while (segEnd < endCol && visualCells[segEnd].insideSelection == isSel) {
+                                segEnd++;
+                            }
+
+                            int segTextColor = isSel ? defaultBg : foreColor;
+                            mTextPaint.setColor(segTextColor);
+
+                            canvas.save();
+                            canvas.clipRect(segStart * mFontWidth, top, segEnd * mFontWidth, bottom);
+
+                            float left = startCol * mFontWidth;
+                            float mes = measuredWidth / mFontWidth;
+                            if (Math.abs(mes - runColumns) > 0.01 && mes > 0) {
+                                canvas.scale(runColumns / mes, 1.f);
+                                left *= mes / runColumns;
+                            }
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used,
+                                        left, heightOffset - mFontLineSpacingAndAscent, true, mTextPaint);
+                            } else {
+                                canvas.drawText(mRunCharBuffer, 0, used,
+                                        left, heightOffset - mFontLineSpacingAndAscent, mTextPaint);
+                            }
+
+                            canvas.restore();
+                            segStart = segEnd;
+                        }
+                    }
+                }
+            } finally {
+                mTextPaint.setTypeface(originalTypeface);
+            }
+            return;
+        }
+
+        // LTR run processing
+        try {
+            // Determine the run's rendered advance width.
+            final float measuredWidth;
+            if (fontWidthMismatch) {
+                float total = 0f;
+                for (int i = 0; i < count; i++) {
+                    BidiLayout.LogicalCell rc = mRunCells[i];
+                    if (rc.codePoint != 0) {
+                        int tl = Character.toChars(rc.codePoint, mCellMeasureBuffer, 0);
+                        if (rc.combiningChars != null) {
+                            for (int k = 0; k < rc.combiningCount; k++)
+                                tl += Character.toChars(rc.combiningChars[k], mCellMeasureBuffer, tl);
+                        }
+                        total += mTextPaint.measureText(mCellMeasureBuffer, 0, tl);
+                    } else {
+                        total += mFontWidth;
+                    }
+                }
+                measuredWidth = total;
+            } else {
+                measuredWidth = runColumns * mFontWidth;
+            }
+
+            drawTextRun(canvas, mRunCharBuffer, palette, heightOffset,
+                    startCol, runColumns, 0, used, measuredWidth,
+                    cursorColor, cursorShape, style,
+                    reverseVideo || invertCursorTextColor || insideSelection, false);
+        } finally {
+        }
+    }
+
+    private void drawTextRun(Canvas canvas, char[] text, int[] palette, float y,
+                             int startColumn, int runWidthColumns,
+                             int startCharIndex, int runWidthChars,
+                             float mes, int cursor, int cursorStyle,
+                             long textStyle, boolean reverseVideo, boolean isRtl) {
         int foreColor = TextStyle.decodeForeColor(textStyle);
         final int effect = TextStyle.decodeEffect(textStyle);
         int backColor = TextStyle.decodeBackColor(textStyle);
@@ -192,17 +493,16 @@ public final class TerminalRenderer {
         final boolean dim = (effect & TextStyle.CHARACTER_ATTRIBUTE_DIM) != 0;
 
         if ((foreColor & 0xff000000) != 0xff000000) {
-            // Let bold have bright colors if applicable (one of the first 8):
+            // Bold text in the first 8 palette entries maps to the bright variant.
             if (bold && foreColor >= 0 && foreColor < 8) foreColor += 8;
             foreColor = palette[foreColor];
         }
-
         if ((backColor & 0xff000000) != 0xff000000) {
             backColor = palette[backColor];
         }
 
-        // Reverse video here if _one and only one_ of the reverse flags are set:
-        final boolean reverseVideoHere = reverseVideo ^ (effect & (TextStyle.CHARACTER_ATTRIBUTE_INVERSE)) != 0;
+        // Reverse video is active when exactly one of the global and per-cell flags is set.
+        final boolean reverseVideoHere = reverseVideo ^ (effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0;
         if (reverseVideoHere) {
             int tmp = foreColor;
             foreColor = backColor;
@@ -212,6 +512,8 @@ public final class TerminalRenderer {
         float left = startColumn * mFontWidth;
         float right = left + runWidthColumns * mFontWidth;
 
+        // Scale the canvas horizontally if the font's advance differs from the cell grid width,
+        // keeping the text centred within its allocated columns.
         mes = mes / mFontWidth;
         boolean savedMatrix = false;
         if (Math.abs(mes - runWidthColumns) > 0.01) {
@@ -223,7 +525,6 @@ public final class TerminalRenderer {
         }
 
         if (backColor != palette[TextStyle.COLOR_INDEX_BACKGROUND]) {
-            // Only draw non-default background.
             mTextPaint.setColor(backColor);
             canvas.drawRect(left, y - mFontLineSpacingAndAscent + mFontAscent, right, y, mTextPaint);
         }
@@ -238,15 +539,12 @@ public final class TerminalRenderer {
 
         if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
             if (dim) {
-                int red = (0xFF & (foreColor >> 16));
-                int green = (0xFF & (foreColor >> 8));
-                int blue = (0xFF & foreColor);
-                // Dim color handling used by libvte which in turn took it from xterm
-                // (https://bug735245.bugzilla-attachments.gnome.org/attachment.cgi?id=284267):
-                red = red * 2 / 3;
-                green = green * 2 / 3;
-                blue = blue * 2 / 3;
-                foreColor = 0xFF000000 + (red << 16) + (green << 8) + blue;
+                // Dim colour algorithm from libvte / xterm:
+                // https://bug735245.bugzilla-attachments.gnome.org/attachment.cgi?id=284267
+                int red   = (0xFF & (foreColor >> 16)) * 2 / 3;
+                int green = (0xFF & (foreColor >>  8)) * 2 / 3;
+                int blue  = (0xFF &  foreColor)        * 2 / 3;
+                foreColor = 0xFF000000 | (red << 16) | (green << 8) | blue;
             }
 
             mTextPaint.setFakeBoldText(bold);
@@ -257,8 +555,12 @@ public final class TerminalRenderer {
 
             // The text alignment is the default Paint.Align.LEFT.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                canvas.drawTextRun(text, startCharIndex, runWidthChars, startCharIndex, runWidthChars, left, y - mFontLineSpacingAndAscent, false, mTextPaint);
+                canvas.drawTextRun(text, startCharIndex, runWidthChars,
+                        startCharIndex, runWidthChars,
+                        left, y - mFontLineSpacingAndAscent, isRtl, mTextPaint);
             } else {
+                // isRtl is effectively false pre-M here: RTL shaping requires drawTextRun (API 23);
+                // on API 21-22 RTL text renders unshaped, same as pre-PR behavior.
                 canvas.drawText(text, startCharIndex, runWidthChars, left, y - mFontLineSpacingAndAscent, mTextPaint);
             }
         }
@@ -272,5 +574,47 @@ public final class TerminalRenderer {
 
     public int getFontLineSpacing() {
         return mFontLineSpacing;
+    }
+
+    public int translateVisualToLogicalColumn(TerminalEmulator mEmulator, int visualCol, int row) {
+        if (visualCol < 0) return 0;
+        if (visualCol >= mEmulator.mColumns) return mEmulator.mColumns;
+
+        TerminalBuffer screen = mEmulator.getScreen();
+        if (row < -screen.getActiveTranscriptRows() || row >= mEmulator.mRows) return visualCol;
+
+        int internalRow = screen.externalToInternalRow(row);
+        if (internalRow < 0 || internalRow >= screen.getActiveRows()) return visualCol;
+
+        TerminalRow rowObject = screen.allocateFullLineIfNecessary(internalRow);
+        if (rowObject == null) return visualCol;
+
+        if (rowObject.mVisualToLogical != null && rowObject.mVisualToLogical.length == mEmulator.mColumns) {
+            return rowObject.mVisualToLogical[visualCol];
+        }
+
+        BidiLayout layout = BidiLayout.build(rowObject, mEmulator.mColumns, -1, false, -1, -1, -1, -1, -1, false);
+        return layout.visualToLogical[visualCol];
+    }
+
+    public int translateLogicalToVisualColumn(TerminalEmulator mEmulator, int logicalCol, int row) {
+        if (logicalCol < 0) return 0;
+        if (logicalCol >= mEmulator.mColumns) return mEmulator.mColumns;
+
+        TerminalBuffer screen = mEmulator.getScreen();
+        if (row < -screen.getActiveTranscriptRows() || row >= mEmulator.mRows) return logicalCol;
+
+        int internalRow = screen.externalToInternalRow(row);
+        if (internalRow < 0 || internalRow >= screen.getActiveRows()) return logicalCol;
+
+        TerminalRow rowObject = screen.allocateFullLineIfNecessary(internalRow);
+        if (rowObject == null) return logicalCol;
+
+        if (rowObject.mLogicalToVisual != null && rowObject.mLogicalToVisual.length == mEmulator.mColumns) {
+            return rowObject.mLogicalToVisual[logicalCol];
+        }
+
+        BidiLayout layout = BidiLayout.build(rowObject, mEmulator.mColumns, -1, false, -1, -1, -1, -1, -1, false);
+        return layout.logicalToVisual[logicalCol];
     }
 }
