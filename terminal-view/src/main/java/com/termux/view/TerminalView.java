@@ -14,6 +14,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ActionMode;
@@ -32,6 +33,7 @@ import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Scroller;
 
 import androidx.annotation.Nullable;
@@ -85,6 +87,25 @@ public final class TerminalView extends View {
 
     /** If non-zero, this is the last unicode code point received if that was a combining character. */
     int mCombiningAccent;
+
+    /**
+     * The current IME composing text (e.g. partially composed CJK) shown as a preview at the
+     * terminal cursor while the user is composing with an InputMethodEditor (IME). Null/empty when
+     * nothing is being composed. The terminal only renders text that is committed and echoed back
+     * by the program running in the pty, so without this preview the in-progress composition (e.g.
+     * ㄱ → 가 → 간) would not be visible at all until commit. See the {@code setComposingText()} override
+     * in {@link #onCreateInputConnection(EditorInfo)}.
+     */
+    private CharSequence mComposingText;
+
+    /**
+     * The currently active {@link BaseInputConnection} (created in {@link #onCreateInputConnection}),
+     * used to access the local {@link Editable} when finalizing in-progress IME composing text after
+     * a non-composing key — such as a control/navigation key from the hardware keyboard or the
+     * Termux extra-keys bar — is pressed. Those keys bypass the IME, so without this the composing
+     * text would never be committed and the preview would follow the cursor around after it moves.
+     */
+    private BaseInputConnection mInputConnection;
 
     /**
      * The current AutoFill type returned for {@link View#getAutofillType()} by {@link #getAutofillType()}.
@@ -293,6 +314,7 @@ public final class TerminalView extends View {
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
+        mComposingText = null;
 
         // The emulator's cached value will be read in `updateSize()` when emulator is set.
         setTopRow(0, false);
@@ -312,7 +334,12 @@ public final class TerminalView extends View {
         // initially started with the alternate view or if activity is returned to from another app
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
-            if (mClient.shouldEnforceCharBasedInput()) {
+            if (mClient.shouldEnableImeComposing()) {
+                // General text input so the IME composes (setComposingText), e.g. CJK,
+                // with NO_SUGGESTIONS to suppress autocomplete where the IME respects it.
+                // VISIBLE_PASSWORD would suppress suggestions but disables composing (fatal for CJK).
+                outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+            } else if (mClient.shouldEnforceCharBasedInput()) {
                 // Some keyboards seems do not reset the internal state on TYPE_NULL.
                 // Affects mostly Samsung stock keyboards.
                 // https://github.com/termux/termux-app/issues/686
@@ -340,14 +367,31 @@ public final class TerminalView extends View {
         // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
 
-        return new BaseInputConnection(this, true) {
+        BaseInputConnection connection = new BaseInputConnection(this, true) {
+
+            @Override
+            public boolean setComposingText(CharSequence text, int newCursorPosition) {
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
+                    mClient.logInfo(LOG_TAG, "IME: setComposingText(\"" + text + "\", " + newCursorPosition + ")");
+                }
+                super.setComposingText(text, newCursorPosition);
+                // Show the in-progress composition (e.g. a CJK syllable being built) as a preview
+                // at the terminal cursor. The terminal only renders committed-and-echoed text, so
+                // without this the composing characters would never be visible until commit.
+                setComposingTextPreview(text);
+                return true;
+            }
 
             @Override
             public boolean finishComposingText() {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
+                boolean hadComposing = mComposingText != null;
                 super.finishComposingText();
 
-                sendTextToTerminal(getEditable());
+                setComposingTextPreview(null);
+                if (hadComposing) {
+                    sendTextToTerminal(getEditable());
+                }
                 getEditable().clear();
                 return true;
             }
@@ -361,6 +405,7 @@ public final class TerminalView extends View {
 
                 if (mEmulator == null) return true;
 
+                setComposingTextPreview(null);
                 Editable content = getEditable();
                 sendTextToTerminal(content);
                 content.clear();
@@ -376,6 +421,25 @@ public final class TerminalView extends View {
                 KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
                 for (int i = 0; i < leftLength; i++) sendKeyEvent(deleteKey);
                 return super.deleteSurroundingText(leftLength, rightLength);
+            }
+
+            @Override
+            public boolean setSelection(int start, int end) {
+                if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
+                    mClient.logInfo(LOG_TAG, "IME: setSelection(" + start + ", " + end + ")");
+                boolean result = super.setSelection(start, end);
+                // The IME moved the cursor within the (fake) Editable. Redraw so the pre-edit cursor
+                // (read from the Editable Selection/composing span) updates. Movement is the IME's job.
+                invalidate();
+                // If the IME moved the cursor OUTSIDE the composing region it is leaving the
+                // composition, so finalize (commit) at the current cursor before the move takes effect.
+                Editable editable = getEditable();
+                int composingStart = BaseInputConnection.getComposingSpanStart(editable);
+                int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+                if (composingStart != -1 && composingEnd != -1 && (start < composingStart || end > composingEnd)) {
+                    finalizeComposingIfActive();
+                }
+                return result;
             }
 
             void sendTextToTerminal(CharSequence text) {
@@ -435,6 +499,8 @@ public final class TerminalView extends View {
             }
 
         };
+        mInputConnection = connection;
+        return connection;
     }
 
     @Override
@@ -771,6 +837,16 @@ public final class TerminalView extends View {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED)
             mClient.logInfo(LOG_TAG, "onKeyDown(keyCode=" + keyCode + ", isSystem()=" + event.isSystem() + ", event=" + event + ")");
         if (mEmulator == null) return true;
+        // Keys arriving here (hardware keyboard or the Termux extra-keys bar) bypass the IME, so
+        // finalize any in-progress composing now: it commits at the current cursor instead of the
+        // preview following the cursor around after it moves. (No-op when nothing is composing.)
+        // Modifier keys (shift/ctrl/alt/meta/sym/fn) produce no input and must NOT finalize:
+        // otherwise pressing shift to build a CJK double consonant (e.g. Korean ㅆ = shift+ㅅ
+        // for 했) aborts the in-progress composition (해) — finalize commits it and the posted
+        // restartInput clears the IME's composing buffer, so the following ㅅ enters detached.
+        if (!KeyEvent.isModifierKey(keyCode)) {
+            finalizeComposingIfActive();
+        }
         if (isSelectingText()) {
             stopTextSelectionMode();
         }
@@ -851,6 +927,9 @@ public final class TerminalView extends View {
         }
 
         if (mTermSession == null) return;
+        // Same rationale as onKeyDown(): some input paths (extra-keys literal characters) call
+        // inputCodePoint directly, bypassing onKeyDown and the IME. Finalize composing first.
+        finalizeComposingIfActive();
 
         // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
         if (mEmulator != null)
@@ -1033,7 +1112,78 @@ public final class TerminalView extends View {
 
             // render the text selection handles
             renderTextSelection();
+
+            // render the in-progress IME composing text (e.g. CJK) preview at the cursor
+            drawComposingText(canvas);
         }
+    }
+
+    /** Update the IME composing text preview shown at the cursor and request a redraw if it changed. */
+    private void setComposingTextPreview(CharSequence text) {
+        CharSequence newPreview = (text != null && text.length() > 0) ? text : null;
+        if (newPreview == null) {
+            if (mComposingText == null) return;
+            mComposingText = null;
+        } else {
+            mComposingText = newPreview;
+        }
+        invalidate();
+    }
+
+    /**
+     * Finalize (commit) any in-progress IME composing text through the InputConnection path.
+     * Called when input bypasses the IME (hardware keys / extra-keys literals via
+     * {@link #onKeyDown} / {@link #inputCodePoint}), which would otherwise leave the composing
+     * text uncommitted with the preview chasing the cursor once it moves.
+     *
+     * Some IMEs do not keep the composing text in the (fake) Editable, so {@code getEditable()}
+     * may be empty even though {@code mComposingText} has the in-progress composition; copy it in
+     * so {@code finishComposingText} sends it (no direct pty write).
+     *
+     * Afterwards {@code restartInput} is posted so the IME discards its own composing buffer
+     * (some IMEs keep committed text stale in it). Only after finalize — not every commit — so
+     * digit-only input is unaffected.
+     */
+    private void finalizeComposingIfActive() {
+        if (mComposingText == null) return;
+        if (mInputConnection != null) {
+            Editable e = mInputConnection.getEditable();
+            if (e.length() == 0 && mComposingText.length() > 0) {
+                e.append(mComposingText);
+            }
+            mInputConnection.finishComposingText();
+        }
+        post(() -> {
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.restartInput(TerminalView.this);
+        });
+    }
+
+    /**
+     * Draw the current IME composing text (e.g. partially composed CJK) as a preview at the
+     * terminal cursor, on top of the rendered terminal. Delegates to
+     * {@link TerminalRenderer#renderComposingText} so the preview uses the exact same paint, font
+     * family/fallback, width scaling and text style (bold/italic/colors/dim) as the on-screen text.
+     */
+    private void drawComposingText(Canvas canvas) {
+        if (mEmulator == null || mRenderer == null) return;
+        CharSequence composing = mComposingText;
+        if (composing == null || composing.length() == 0) return;
+        // Read the IME's pre-edit cursor (its Selection within the composing span of the fake
+        // Editable) so in-composition cursor movement is visible (GNOME-terminal-like). Movement
+        // is the IME's job; we only display it.
+        int cursorOffsetInChars = -1;
+        if (mInputConnection != null) {
+            Editable editable = mInputConnection.getEditable();
+            int composingStart = BaseInputConnection.getComposingSpanStart(editable);
+            int composingEnd = BaseInputConnection.getComposingSpanEnd(editable);
+            int selStart = Selection.getSelectionStart(editable);
+            if (composingStart != -1 && composingEnd != -1 && selStart >= composingStart && selStart <= composingEnd) {
+                cursorOffsetInChars = selStart - composingStart;
+            }
+        }
+        final char[] chars = composing.toString().toCharArray();
+        mRenderer.renderComposingText(mEmulator, canvas, mTopRow, chars, 0, chars.length, cursorOffsetInChars);
     }
 
     public TerminalSession getCurrentSession() {

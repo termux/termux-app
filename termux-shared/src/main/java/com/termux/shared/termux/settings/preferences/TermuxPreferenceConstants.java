@@ -69,6 +69,10 @@ package com.termux.shared.termux.settings.preferences;
  * - 0.16.0 (2022-06-11)
  *      - Added following to `TERMUX_APP`:
  *          `KEY_APP_SHELL_NUMBER_SINCE_BOOT` and `KEY_TERMINAL_SESSION_NUMBER_SINCE_BOOT`.
+ *
+ * - 0.17.0 (2026-08-06)
+ *      - Added following to `TERMUX_APP`:
+ *          `KEY_IME_COMPOSING_ENABLED` and `DEFAULT_VALUE_KEY_IME_COMPOSING_ENABLED`.
  */
 
 import com.termux.shared.shell.command.ExecutionCommand;
@@ -116,6 +120,14 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = "soft_keyboard_enabled_only_if_no_hardware";
         public static final boolean DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = false;
+
+        /**
+         * Defines the key for whether IME composing text (CJK, etc.) inline preview at the
+         * cursor is enabled. Default is false (InputType.TYPE_NULL behavior unchanged = no regression).
+         * Toggled from Settings -> Terminal I/O, not from termux.properties.
+         */
+        public static final String KEY_IME_COMPOSING_ENABLED = "ime_composing_enabled";
+        public static final boolean DEFAULT_VALUE_KEY_IME_COMPOSING_ENABLED = false;
 
 
         /**

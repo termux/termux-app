@@ -16,6 +16,12 @@
             app:summaryOn="@string/termux_soft_keyboard_enabled_only_if_no_hardware_on"
             app:title="@string/termux_soft_keyboard_enabled_only_if_no_hardware_title" />
 
+        <SwitchPreferenceCompat
+            app:key="ime_composing_enabled"
+            app:summaryOff="@string/termux_ime_composing_enabled_off"
+            app:summaryOn="@string/termux_ime_composing_enabled_on"
+            app:title="@string/termux_ime_composing_enabled_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
