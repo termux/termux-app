@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <errno.h>
+#include <sys/syscall.h>
 
 #define LOG_TAG "InvappRedirector"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -182,10 +183,26 @@ static int transform_usr_bin_env_shebang(const char* path, char* const argv[],
     return 1;
 }
 
+static int path_is_dpkg_maintainer_script(const char* path) {
+    if (!path || strstr(path, "/var/lib/dpkg/") == NULL) {
+        return 0;
+    }
+    if (strstr(path, "/var/lib/dpkg/tmp.ci/") != NULL) {
+        return 1;
+    }
+    const char* slash = strrchr(path, '/');
+    const char* name = slash ? slash + 1 : path;
+    return strstr(name, ".preinst") != NULL || strstr(name, ".postinst") != NULL
+        || strstr(name, ".prerm") != NULL || strstr(name, ".postrm") != NULL
+        || strstr(name, ".config") != NULL || strcmp(name, "preinst") == 0
+        || strcmp(name, "postinst") == 0 || strcmp(name, "prerm") == 0
+        || strcmp(name, "postrm") == 0 || strcmp(name, "config") == 0;
+}
+
 /*
- * dpkg maintainer scripts ship with #!/data/data/com.termux/... shebangs.
- * Kernel shebang resolution ignores LD_PRELOAD, so rewrite scripts in-place
- * immediately before execve when they still contain the old package name.
+ * dpkg maintainer scripts may lack a shebang (e.g. openjdk-17 preinst) or ship
+ * #!/data/data/com.termux/... interpreters. Kernel shebang resolution ignores
+ * LD_PRELOAD, so patch scripts in-place immediately before execve.
  */
 static void rewrite_termux_paths_in_script(const char* path) {
     if (!path) return;
@@ -195,22 +212,14 @@ static void rewrite_termux_paths_in_script(const char* path) {
     static ssize_t (*orig_write)(int, const void*, size_t);
     static off_t (*orig_lseek)(int, off_t, int);
     static int (*orig_close)(int);
-    static int (*orig_ftruncate)(int, off_t);
     if (!orig_open) orig_open = dlsym(RTLD_NEXT, "open");
     if (!orig_read) orig_read = dlsym(RTLD_NEXT, "read");
     if (!orig_write) orig_write = dlsym(RTLD_NEXT, "write");
     if (!orig_lseek) orig_lseek = dlsym(RTLD_NEXT, "lseek");
     if (!orig_close) orig_close = dlsym(RTLD_NEXT, "close");
-    if (!orig_ftruncate) orig_ftruncate = dlsym(RTLD_NEXT, "ftruncate");
 
     int fd = orig_open(path, O_RDONLY);
     if (fd < 0) return;
-
-    char hdr[2];
-    if (orig_read(fd, hdr, 2) != 2 || hdr[0] != '#' || hdr[1] != '!') {
-        orig_close(fd);
-        return;
-    }
 
     off_t size = orig_lseek(fd, 0, SEEK_END);
     if (size < 0 || size > 1024 * 1024) {
@@ -232,11 +241,40 @@ static void rewrite_termux_paths_in_script(const char* path) {
     orig_close(fd);
     data[size] = '\0';
 
-    int has_old_pkg = strstr(data, OLD_PKG) != NULL;
-    int has_broken_keepalive = strstr(data, BROKEN_KEEPALIVE_COMPONENT) != NULL
-        || strstr(data, OLD_KEEPALIVE_COMPONENT) != NULL;
-    if (!has_old_pkg && !has_broken_keepalive) {
+    int has_shebang = size >= 2 && data[0] == '#' && data[1] == '!';
+    int is_maint = path_is_dpkg_maintainer_script(path);
+    if (!has_shebang && !is_maint) {
         free(data);
+        return;
+    }
+
+    char* prefixed = NULL;
+    const char* body = data;
+    size_t body_len = (size_t)size;
+    if (!has_shebang && is_maint) {
+        /* NEW_USR is a pointer, not a string literal — build shebang explicitly. */
+        const char* prefix = "#!";
+        const char* suffix = "/bin/sh\n";
+        size_t shebang_len = strlen(prefix) + strlen(NEW_USR) + strlen(suffix);
+        prefixed = (char*)malloc(shebang_len + (size_t)size + 1);
+        if (!prefixed) {
+            free(data);
+            return;
+        }
+        snprintf(prefixed, shebang_len + 1, "%s%s%s", prefix, NEW_USR, suffix);
+        memcpy(prefixed + shebang_len, data, (size_t)size);
+        prefixed[shebang_len + (size_t)size] = '\0';
+        body = prefixed;
+        body_len = shebang_len + (size_t)size;
+        has_shebang = 1;
+    }
+
+    int has_old_pkg = strstr(body, OLD_PKG) != NULL;
+    int has_broken_keepalive = strstr(body, BROKEN_KEEPALIVE_COMPONENT) != NULL
+        || strstr(body, OLD_KEEPALIVE_COMPONENT) != NULL;
+    if (!has_old_pkg && !has_broken_keepalive && body == data) {
+        free(data);
+        free(prefixed);
         return;
     }
 
@@ -244,26 +282,27 @@ static void rewrite_termux_paths_in_script(const char* path) {
     const size_t new_pkg_len = strlen(NEW_PKG);
 
     /* Worst-case expansion bound (package rewrite + KeepAlive FQCN). */
-    size_t out_cap = (size_t)size * (new_pkg_len + 1)
+    size_t out_cap = body_len * (new_pkg_len + 1)
         + strlen(NEW_KEEPALIVE_COMPONENT) * 4 + 64;
     char* out = (char*)malloc(out_cap);
     if (!out) {
         free(data);
+        free(prefixed);
         return;
     }
 
     size_t oi = 0;
-    for (size_t i = 0; i < (size_t)size; ) {
-        if (i + old_pkg_len <= (size_t)size
-            && memcmp(data + i, OLD_PKG, old_pkg_len) == 0) {
+    for (size_t i = 0; i < body_len; ) {
+        if (i + old_pkg_len <= body_len
+            && memcmp(body + i, OLD_PKG, old_pkg_len) == 0) {
             /*
              * Do not rewrite Java packages that live inside stock TermuxAm
              * (am.apk still ships com.termux.termuxam.Am). Intent actions like
              * com.termux.app.* still get rewritten.
              */
-            const char* after = data + i + old_pkg_len;
+            const char* after = body + i + old_pkg_len;
             if (strncmp(after, ".termuxam", 9) == 0) {
-                memcpy(out + oi, data + i, old_pkg_len);
+                memcpy(out + oi, body + i, old_pkg_len);
                 oi += old_pkg_len;
                 i += old_pkg_len;
                 continue;
@@ -272,7 +311,7 @@ static void rewrite_termux_paths_in_script(const char* path) {
             oi += new_pkg_len;
             i += old_pkg_len;
         } else {
-            out[oi++] = data[i++];
+            out[oi++] = body[i++];
         }
     }
     out[oi] = '\0';
@@ -300,6 +339,7 @@ static void rewrite_termux_paths_in_script(const char* path) {
     }
 
     free(data);
+    free(prefixed);
     free(out);
 }
 
@@ -720,6 +760,31 @@ int fstatat(int dirfd, const char* path, struct stat* sbuf, int flags) {
     if (!orig_fstatat) orig_fstatat = dlsym(RTLD_NEXT, "fstatat");
     return orig_fstatat(dirfd, redirected, sbuf, flags);
 }
+
+#if defined(__NR_execveat)
+int execveat(int dirfd, const char* pathname, char* const argv[], char* const envp[],
+             int flags) {
+    char buf[4096];
+    const char* redirected = pathname;
+    if (pathname && pathname[0] == '/') {
+        redirected = redirect_path(pathname, buf, sizeof(buf));
+        rewrite_termux_paths_in_script(redirected);
+    }
+    char** new_argv = rewrite_argv_for_exec(argv);
+    char* const* effective_argv = new_argv ? new_argv : argv;
+    char** new_envp = rewrite_envp_for_exec(redirected, envp);
+    static int (*orig_execveat)(int, const char*, char* const[], char* const[], int);
+    if (!orig_execveat) orig_execveat = dlsym(RTLD_NEXT, "execveat");
+    if (!orig_execveat) {
+        errno = ENOSYS;
+        return -1;
+    }
+    return orig_execveat(dirfd, redirected,
+        (char**)effective_argv,
+        new_envp ? new_envp : (char**)envp,
+        flags);
+}
+#endif
 
 int execve(const char* filename, char* const argv[], char* const envp[]) {
     char buf[4096];

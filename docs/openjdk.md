@@ -23,6 +23,8 @@ jdk-doctor   # if something still fails
 | `libiconv_open` in `libsplashscreen.so` | Old OpenJDK build | `pkg upgrade openjdk-17` (fixed upstream in 17.0.16+) |
 | **Bad system call** when running `java` | Debian/Ubuntu JDK in proot, or wrong binary | Only use Termux `openjdk-17` in the main prefix; not `apt install default-jdk` on the host |
 | `dpkg` / configure errors after interrupt | Half-configured package | `dpkg --configure -a` then `td-jdk-setup` |
+| `openjdk-17-x` Depends on `openjdk-17` / **fix-broken** loop | `openjdk-17` failed but `-x` (recommend) left apt broken | `invapp-openjdk-recover` then install **17 before -x** (see below) |
+| `unable to execute … tmp.ci/preinst: No such file or directory` | `openjdk-17` **preinst has no shebang** (dpkg execs it directly) or shebang points at `com.termux` | Install latest app build (redirector prepends `#!$PREFIX/bin/sh`), or repack deb (below); ensure `LD_PRELOAD=$PREFIX/lib/libinvapp-redirector.so` |
 
 This fork already rewrites `com.termux` paths in apt/dpkg and maintainer scripts
 (`TermuxShellEnvironment`), so OpenJDK postinst scripts should run against
@@ -39,6 +41,59 @@ This fork already rewrites `com.termux` paths in apt/dpkg and maintainer scripts
 If we embed later, the realistic pattern is **on-demand download** to
 `$PREFIX/var/cache/invapp/` (similar to `opencode-setup`), not `.incbin` in
 native libs—unless we accept universal APKs well over 200 MiB.
+
+## Fix broken apt after a failed install
+
+`openjdk-17-x` is often pulled in as a recommend **with** `openjdk-17`. If the
+main package fails on `preinst`, apt can end up with `-x` installed (or half-installed)
+while `openjdk-17` is missing — then every `pkg`/`apt` command complains about
+unmet dependencies.
+
+```bash
+export LD_PRELOAD=$PREFIX/lib/libinvapp-redirector.so
+invapp-openjdk-recover    # or manual purge below
+```
+
+Manual equivalent:
+
+```bash
+export LD_PRELOAD=$PREFIX/lib/libinvapp-redirector.so
+dpkg --purge --force-remove-reinstreq openjdk-17-x openjdk-17
+apt --fix-broken install -y
+```
+
+Then install **only** `openjdk-17` first (repack if needed), **then** recommends:
+
+```bash
+pkg install -y libandroid-shmem libandroid-spawn libiconv libjpeg-turbo zlib littlecms alsa-plugins
+invapp-openjdk-repack-install   # if plain pkg still fails on preinst
+# OR: pkg install -y openjdk-17
+pkg install -y openjdk-17-x ca-certificates-java resolv-conf
+```
+
+## Workaround: repack the deb on-device (no app update)
+
+If `pkg install openjdk-17` still fails, add a shebang to the control scripts and reinstall:
+
+```bash
+DEB="$HOME/../cache/apt/archives/openjdk-17_17.0.20_aarch64.deb"
+WORK="$PREFIX/tmp/openjdk-repack"
+rm -rf "$WORK" && mkdir -p "$WORK" && cd "$WORK"
+ar x "$DEB"
+tar xf control.tar.xz
+for s in preinst postinst prerm postrm; do
+  [ -f "$s" ] || continue
+  if ! head -1 "$s" | grep -q '^#!'; then
+    { echo "#!$PREFIX/bin/sh"; cat "$s"; } > "$s.new" && mv "$s.new" "$s"
+  fi
+  sed -i "s/com.termux/com.involvex.termux_app/g" "$s"
+  chmod 700 "$s"
+done
+tar -cJf control.tar.xz ./*
+printf '2.0\n' > debian-binary
+ar cr openjdk-17-fixed.deb debian-binary control.tar.xz data.tar.xz
+dpkg -i openjdk-17-fixed.deb
+```
 
 ## References
 

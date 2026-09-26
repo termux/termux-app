@@ -209,6 +209,10 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
         patchBinaryWrapperForRedirector(prefix + "/bin/gpgv", false);
         patchBinaryWrapperForRedirector(prefix + "/lib/apt/methods/gpgv", false);
         patchBinaryWrapperForRedirector(prefix + "/lib/apt/methods/http", false);
+        // apt/pkg → dpkg: keep redirector loaded so maintainer scripts in tmp.ci get shebang fixes.
+        patchBinaryWrapperForRedirector(prefix + "/bin/apt", false);
+        patchBinaryWrapperForRedirector(prefix + "/bin/apt-get", false);
+        patchBinaryWrapperForRedirector(prefix + "/bin/pkg", true);
         // Keep redirector loaded in dpkg so execve can rewrite maintainer-script shebangs.
         patchBinaryWrapperForRedirector(prefix + "/bin/dpkg", false);
         // sshd clears LD_* for sessions; keep preload on the daemon so execve can reinject.
@@ -373,17 +377,73 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
     }
 
     /**
-     * Rewrite leftover {@code com.termux} paths in already-unpacked dpkg maintainer
-     * scripts (postinst/prerm/…) so configure can run after a failed upgrade.
+     * Rewrite leftover {@code com.termux} paths in dpkg maintainer scripts under
+     * {@code var/lib/dpkg/info/} and in-flight {@code var/lib/dpkg/tmp.ci/} (unpack).
      */
     private synchronized static void fixDpkgMaintainerScripts(String prefix) {
-        File infoDir = new File(prefix + "/var/lib/dpkg/info");
-        File[] files = infoDir.listFiles();
-        if (files == null) {
-            return;
+        int fixed = fixDpkgScriptsInDirectory(new File(prefix + "/var/lib/dpkg/info"), prefix);
+        fixed += fixDpkgScriptsInDirectory(new File(prefix + "/var/lib/dpkg/tmp.ci"), prefix);
+        if (fixed > 0) {
+            Logger.logInfo(LOG_TAG, "Patched " + fixed + " dpkg maintainer script file(s)");
         }
+    }
+
+    /**
+     * Patch stock Termux package-id paths in a maintainer script body. Used when
+     * rewriting {@code tmp.ci/preinst} before dpkg executes it (redirector may be absent).
+     */
+    @NonNull
+    public static String patchDpkgMaintainerScriptText(@NonNull String text, @NonNull String prefix) {
+        return patchDpkgMaintainerScriptText(text, prefix, "");
+    }
+
+    private static boolean isDpkgMaintainerScriptFileName(@NonNull String fileName) {
+        if ("preinst".equals(fileName) || "postinst".equals(fileName)
+            || "prerm".equals(fileName) || "postrm".equals(fileName)
+            || "config".equals(fileName)) {
+            return true;
+        }
+        return fileName.endsWith(".preinst") || fileName.endsWith(".postinst")
+            || fileName.endsWith(".prerm") || fileName.endsWith(".postrm")
+            || fileName.endsWith(".config");
+    }
+
+    @NonNull
+    public static String patchDpkgMaintainerScriptText(@NonNull String text, @NonNull String prefix,
+            @NonNull String fileName) {
         String oldPkg = "com.termux";
         String newPkg = TermuxConstants.TERMUX_PACKAGE_NAME;
+        boolean needsListNewline = fileName.endsWith(".list") && !text.isEmpty() && !text.endsWith("\n");
+        boolean needsShebang = isDpkgMaintainerScriptFileName(fileName)
+            && !text.isEmpty() && !text.startsWith("#!");
+        if (!text.contains(oldPkg)
+            && !text.startsWith("#!/bin/sh")
+            && !text.startsWith("#!/bin/bash")
+            && !needsListNewline
+            && !needsShebang) {
+            return text;
+        }
+        String patched = text;
+        if (needsShebang) {
+            patched = "#!" + prefix + "/bin/sh\n" + patched;
+        }
+        patched = patched.replace(oldPkg, newPkg);
+        if (patched.startsWith("#!/bin/sh\n") || patched.startsWith("#!/bin/sh\r\n")) {
+            patched = "#!" + prefix + "/bin/sh" + patched.substring("#!/bin/sh".length());
+        } else if (patched.startsWith("#!/bin/bash\n") || patched.startsWith("#!/bin/bash\r\n")) {
+            patched = "#!" + prefix + "/bin/bash" + patched.substring("#!/bin/bash".length());
+        }
+        if (needsListNewline && !patched.endsWith("\n")) {
+            patched = patched + "\n";
+        }
+        return patched;
+    }
+
+    private static int fixDpkgScriptsInDirectory(@NonNull File dir, @NonNull String prefix) {
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return 0;
+        }
         int fixed = 0;
         for (File file : files) {
             if (!file.isFile()) {
@@ -397,16 +457,9 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
                 continue;
             }
             String text = contents.toString();
-            if (!text.contains(oldPkg)) {
-                // Still repair dpkg .list files that lost their final newline.
-                if (!(name.endsWith(".list") && !text.isEmpty() && !text.endsWith("\n"))) {
-                    continue;
-                }
-            }
-            String patched = text.replace(oldPkg, newPkg);
-            // dpkg requires files-list entries to end with a newline.
-            if (!patched.isEmpty() && !patched.endsWith("\n")) {
-                patched = patched + "\n";
+            String patched = patchDpkgMaintainerScriptText(text, prefix, name);
+            if (patched.equals(text)) {
+                continue;
             }
             Error writeError = FileUtils.writeTextToFile(name, file.getAbsolutePath(),
                 Charset.defaultCharset(), patched, false);
@@ -421,10 +474,7 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
             }
             fixed++;
         }
-        if (fixed > 0) {
-            Logger.logInfo(LOG_TAG, "Rewrote com.termux paths in " + fixed
-                + " dpkg maintainer script(s)");
-        }
+        return fixed;
     }
 
     /**

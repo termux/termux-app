@@ -121,6 +121,10 @@ See `ROADMAP.md`.
 - `openjdk-17` stuck / `java` dlopen / **Bad system call** — use Termux
   `openjdk-17` only (`td-jdk-setup` pulls `libandroid-shmem` + recommends).
   Not bundled in the APK (~96 MiB deb/arch). `jdk-doctor` + `docs/openjdk.md`.
+- `tmp.ci/preinst: No such file or directory` on `pkg install` — deb
+  maintainer script shebang is `#!/data/data/com.termux/.../sh`. Reopen app,
+  `invapp-fix-dpkg-scripts`, `pkg install -f openjdk-17` (apt/dpkg/pkg need
+  redirector wrappers from `TermuxShellEnvironment`).
 
 ## 2. Useful Commands
 
