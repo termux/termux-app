@@ -799,4 +799,22 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             session.getEmulator().paste(text);
     }
 
+    @Override
+    public boolean isHorizontalScrollEnabled() {
+        if (mActivity == null || mActivity.getProperties() == null) return true;
+        return mActivity.getProperties().isHorizontalScrollEnabled();
+    }
+
+    @Override
+    public int getHorizontalScrollLeftCode() {
+        if (mActivity == null || mActivity.getProperties() == null) return 66;
+        return mActivity.getProperties().getHorizontalScrollLeftCode();
+    }
+
+    @Override
+    public int getHorizontalScrollRightCode() {
+        if (mActivity == null || mActivity.getProperties() == null) return 67;
+        return mActivity.getProperties().getHorizontalScrollRightCode();
+    }
+
 }

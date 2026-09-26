@@ -124,4 +124,19 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         Logger.logStackTrace(tag, e);
     }
 
+    @Override
+    public boolean isHorizontalScrollEnabled() {
+        return true;
+    }
+
+    @Override
+    public int getHorizontalScrollLeftCode() {
+        return 66;
+    }
+
+    @Override
+    public int getHorizontalScrollRightCode() {
+        return 67;
+    }
+
 }

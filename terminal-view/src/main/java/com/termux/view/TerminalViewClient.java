@@ -80,4 +80,10 @@ public interface TerminalViewClient {
 
     void logStackTrace(String tag, Exception e);
 
+    boolean isHorizontalScrollEnabled();
+
+    int getHorizontalScrollLeftCode();
+
+    int getHorizontalScrollRightCode();
+
 }

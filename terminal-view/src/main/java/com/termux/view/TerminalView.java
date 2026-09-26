@@ -78,6 +78,8 @@ public final class TerminalView extends View {
     /** Keep track of the time when a touch event leading to sending mouse scroll events started. */
     private long mMouseStartDownTime = -1;
 
+    private float mScrollXRemainder;
+
     final Scroller mScroller;
 
     /** What was left in from scrolling movement. */
@@ -177,10 +179,30 @@ public final class TerminalView extends View {
                     sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
                 } else {
                     scrolledWithFinger = true;
-                    distanceY += mScrollRemainder;
-                    int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
-                    mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
-                    doScroll(e, deltaRows);
+
+                    if (Math.abs(distanceX) > Math.abs(distanceY)) {
+                        if (mClient.isHorizontalScrollEnabled() && mEmulator.isMouseTrackingActive()) {
+                            distanceX += mScrollXRemainder;
+                            int deltaCols = (int) (distanceX / mRenderer.mFontWidth);
+                            mScrollXRemainder = distanceX - deltaCols * mRenderer.mFontWidth;
+
+                            int codeLeft = mClient.getHorizontalScrollLeftCode();
+                            int codeRight = mClient.getHorizontalScrollRightCode();
+
+                            // Swiping left (deltaCols > 0) moves content to the right (codeRight)
+                            int button = (deltaCols > 0) ? codeRight : codeLeft;
+
+                            int amount = Math.abs(deltaCols);
+                            for (int i = 0; i < amount; i++) {
+                                sendMouseEventCode(e, button, true);
+                            }
+                        }
+                    } else {
+                        distanceY += mScrollRemainder;
+                        int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
+                        mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
+                        doScroll(e, deltaRows);
+                    }
                 }
                 return true;
             }

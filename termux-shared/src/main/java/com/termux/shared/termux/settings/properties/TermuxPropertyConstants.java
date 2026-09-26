@@ -478,4 +478,13 @@ public final class TermuxPropertyConstants {
     public static final Set<String> TERMUX_DEFAULT_INVERETED_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
     ));
 
+    /* Horizontal scroll enable/disable flag */
+    public static final String KEY_HORIZONTAL_SCROLL_ENABLED = "horizontal-scroll-enabled";
+
+    /* Left swipe code (default 66) */
+    public static final String KEY_HORIZONTAL_SCROLL_LEFT_CODE = "horizontal-scroll-left-code";
+
+    /* Right swipe code (default 67) */
+    public static final String KEY_HORIZONTAL_SCROLL_RIGHT_CODE = "horizontal-scroll-right-code";
+
 }
