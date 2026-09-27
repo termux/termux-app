@@ -318,7 +318,7 @@ public class Logger {
             stackTraceString = errors.toString();
             errors.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            android.util.Log.w("TermuxLogger", e);
         }
 
         return stackTraceString;
