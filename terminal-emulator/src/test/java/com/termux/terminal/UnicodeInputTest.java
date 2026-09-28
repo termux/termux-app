@@ -133,4 +133,20 @@ public class UnicodeInputTest extends TerminalTestCase {
 		enterString("a枝").assertLinesAre("枝a", "   ", "   ");
 	}
 
+	/** See https://github.com/termux/termux-app/issues/5340 */
+	public void testRowWithMoreThanShortMaxValueJavaChars() {
+		// Each column holds 32 java chars: a two java chars code point followed by the maximum
+		// number of two java chars combining code points. With 1100 columns, a row needs 35200
+		// java chars, which is more than Short.MAX_VALUE.
+		StringBuilder column = new StringBuilder();
+		column.appendCodePoint(TerminalRowTest.TWO_JAVA_CHARS_DISPLAY_WIDTH_ONE_1);
+		for (int i = 0; i < 15; i++) // TerminalRow.MAX_COMBINING_CHARACTERS_PER_COLUMN
+			column.appendCodePoint(0x1D167); // MUSICAL SYMBOL COMBINING TREMOLO-1, zero width.
+		StringBuilder row = new StringBuilder();
+		for (int i = 0; i < 1100; i++) row.append(column);
+
+		withTerminalSized(1100, 3).enterString(row.toString());
+		assertLineIs(0, row.toString());
+	}
+
 }
