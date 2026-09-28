@@ -81,10 +81,10 @@ public class FileReceiverActivity extends AppCompatActivity {
             if (sharedUri != null) {
                 handleContentUri(sharedUri, sharedTitle);
             } else if (sharedText != null) {
+                String subject = IntentUtils.getStringExtraIfSet(intent, Intent.EXTRA_SUBJECT, null);
                 if (isSharedTextAnUrl(sharedText)) {
-                    handleUrlAndFinish(sharedText);
+                    handleUrlAndFinish(sharedText, subject);
                 } else {
-                    String subject = IntentUtils.getStringExtraIfSet(intent, Intent.EXTRA_SUBJECT, null);
                     if (subject == null) subject = sharedTitle;
                     if (subject != null) subject += ".txt";
                     promptNameAndSave(new ByteArrayInputStream(sharedText.getBytes(StandardCharsets.UTF_8)), subject);
@@ -228,11 +228,11 @@ public class FileReceiverActivity extends AppCompatActivity {
         }
     }
 
-    void handleUrlAndFinish(final String url) {
+    void handleUrlAndFinish(final String url, final String subject) {
         final File urlOpenerProgramFile = new File(URL_OPENER_PROGRAM);
         if (!urlOpenerProgramFile.isFile()) {
             showErrorDialogAndQuit("The following file does not exist:\n$HOME/bin/termux-url-opener\n\n"
-                + "Create this file as a script or a symlink - it will be called with the shared URL as the first argument.");
+                + "Create this file as a script or a symlink - it will be called with the shared URL as the first argument and the shared subject, if any, as the second argument.");
             return;
         }
 
@@ -244,7 +244,7 @@ public class FileReceiverActivity extends AppCompatActivity {
 
         Intent executeIntent = new Intent(TERMUX_SERVICE.ACTION_SERVICE_EXECUTE, urlOpenerProgramUri);
         executeIntent.setClass(FileReceiverActivity.this, TermuxService.class);
-        executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, new String[]{url});
+        executeIntent.putExtra(TERMUX_SERVICE.EXTRA_ARGUMENTS, subject == null ? new String[]{url} : new String[]{url, subject});
         startService(executeIntent);
         finish();
     }
