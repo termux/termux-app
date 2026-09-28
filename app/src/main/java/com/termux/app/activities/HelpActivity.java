@@ -63,6 +63,9 @@ public final class HelpActivity extends AppCompatActivity {
             }
         });
         mWebView.loadUrl(TermuxConstants.TERMUX_WIKI_URL);
+        // Anubis prevents Termux wiki from loading in regular WebView, we need to launch an external browser
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_WIKI_URL));
+        startActivity(browserIntent);
     }
 
     @Override
