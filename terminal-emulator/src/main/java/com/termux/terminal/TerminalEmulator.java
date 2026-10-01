@@ -845,10 +845,9 @@ public final class TerminalEmulator {
                 break;
             case 24: // CAN.
             case 26: // SUB.
+                // Cancel any escape sequence in progress. Nothing is printed, as in xterm.
                 if (mEscapeState != ESC_NONE) {
-                    // FIXME: What is this??
                     mEscapeState = ESC_NONE;
-                    emitCodePoint(127);
                 }
                 break;
             case 27: // ESC
@@ -867,7 +866,8 @@ public final class TerminalEmulator {
                 mContinueSequence = false;
                 switch (mEscapeState) {
                     case ESC_NONE:
-                        if (b >= 32) emitCodePoint(b);
+                        // DEL (127) is not a graphic character and is ignored, as in xterm.
+                        if (b >= 32 && b != 127) emitCodePoint(b);
                         break;
                     case ESC:
                         doEsc(b);
