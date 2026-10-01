@@ -46,6 +46,17 @@ public class ScrollRegionTest extends TerminalTestCase {
 		enterString("\n").assertLinesAre("GHY", "IJ ", "   ");
 	}
 
+	public void testScrollCounterCountsOnlyRowsMovedIntoTheTranscript() {
+		// A full width scroll moves the screen one row up in the transcript, which TerminalView follows
+		// through the scroll counter while text is selected:
+		withTerminalSized(3, 3).enterString("ABCDEFGHI\r\n").assertLinesAre("DEF", "GHI", "   ").assertHistoryStartsWith("ABC");
+		assertEquals(1, mTerminal.getScrollCounter());
+		// A scroll between the left and right margins moves no row of the screen or the transcript:
+		withTerminalSized(3, 3).enterString("\033[?69h\033[2sABCDEFG\n").assertLinesAre("ADE", " FG", "   ");
+		assertEquals(0, mTerminal.getScreen().getActiveTranscriptRows());
+		assertEquals(0, mTerminal.getScrollCounter());
+	}
+
 	public void testScrollRegionOnAllSides() {
 		// ${CSI}?69h for DECLRMM enabling, ${CSI}${LEFTMARGIN};${RIGHTMARGIN}s for DECSLRM margin setting.
 		withTerminalSized(4, 4).enterString("ABCDEFGHIJKLMNOP").assertLinesAre("ABCD", "EFGH", "IJKL", "MNOP");
