@@ -108,6 +108,19 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		enterString("\033[?6h\033[`").assertCursorAt(0, 1).enterString("\033[22`").assertCursorAt(0, 2);
 	}
 
+	/** VPA, VPR and HPA with a top margin, with and without origin mode (http://www.vt100.net/docs/vt510-rm/DECOM). */
+	public void testCursorPositionWithOriginModeAndTopMargin() {
+		// Without origin mode, VPA and VPR are not limited by the scroll region:
+		withTerminalSized(4, 6).enterString("\033[3;5r\033[2d").assertCursorAt(1, 0).enterString("\033[9d").assertCursorAt(5, 0);
+		enterString("\033[1;1H\033[2e").assertCursorAt(2, 0).enterString("\033[9e").assertCursorAt(5, 0);
+		// With origin mode, VPA counts from the top margin and stops at the bottom margin:
+		enterString("\033[?6h\033[1d").assertCursorAt(2, 0).enterString("\033[2d").assertCursorAt(3, 0).enterString("\033[9d").assertCursorAt(4, 0);
+		// .. VPR moves down from the cursor and stops at the bottom margin:
+		enterString("\033[1;1H\033[1e").assertCursorAt(3, 0).enterString("\033[9e").assertCursorAt(4, 0);
+		// .. and HPA does not move the cursor to another row:
+		enterString("\033[1;1H\033[3`").assertCursorAt(2, 2);
+	}
+
 	public void testCursorForward() {
 		// "${CSI}${N:=1}C" moves cursor forward N columns:
 		withTerminalSized(6, 2).enterString("A\033[CB\033[2CC").assertLinesAre("A B  C", "      ");
