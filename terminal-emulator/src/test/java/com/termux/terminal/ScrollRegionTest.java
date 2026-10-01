@@ -118,24 +118,40 @@ public class ScrollRegionTest extends TerminalTestCase {
 	}
 
 	/** See https://github.com/termux/termux-app/issues/1340 */
-	public void testScrollRegionDoesNotLimitCursorMovement() {
-		withTerminalSized(6, 4)
+	public void testScrollRegionDoesNotLimitCursorMovementOutsideIt() {
+		// Cursor above the scroll region:
+		withTerminalSized(6, 8)
 			.enterString("\033[4;7r\033[3;1Haaa\033[Axxx")
 			.assertLinesAre(
 				"      ",
 				"   xxx",
 				"aaa   ",
+				"      ",
+				"      ",
+				"      ",
+				"      ",
 				"      "
 			);
 
+		// Cursor below the scroll region:
 		withTerminalSized(6, 4)
-			.enterString("\033[1;3r\033[3;1Haaa\033[Bxxx")
+			.enterString("\033[1;2r\033[3;1Haaa\033[Bxxx")
 			.assertLinesAre(
 				"      ",
 				"      ",
 				"aaa   ",
 				"   xxx"
 			);
+	}
+
+	public void testScrollRegionLimitsCursorMovementInsideIt() {
+		// Inside the scroll region, CUU and CUD stop at the margins (as in xterm):
+		withTerminalSized(3, 5).enterString("\033[2;4r\033[3;1HA\033[9AB\033[9BC").assertLinesAre("   ", " B ", "A  ", "  C", "   ");
+		// And so do CNL and CPL:
+		withTerminalSized(3, 5).enterString("\033[2;4r\033[3;2H\033[9EA\033[9FB").assertLinesAre("   ", "B  ", "   ", "A  ", "   ");
+		// With origin mode, CNL and CPL move relative to the cursor:
+		withTerminalSized(3, 5).enterString("\033[2;4r\033[?6h\033[1;2H\033[EA").assertLinesAre("   ", "   ", "A  ", "   ", "   ");
+		withTerminalSized(3, 5).enterString("\033[2;4r\033[?6h\033[3;2H\033[FA").assertLinesAre("   ", "   ", "A  ", "   ", "   ");
 	}
 
 	/**
