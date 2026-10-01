@@ -2325,10 +2325,10 @@ public final class TerminalEmulator {
                 if (getArg0(0) == 0) mSession.write("\033[?64;1;2;4;6;9;15;18;21;22c");
                 break;
             case 'd': // ESC [ Pn d - Vert Position Absolute
-                setCursorRow(Math.min(Math.max(1, getArg0(1)), mRows) - 1);
+                setCursorRowRespectingOriginMode(getArg0(1) - 1);
                 break;
             case 'e': // Vertical Position Relative (VPR). From ISO-6429 (ECMA-48).
-                setCursorPosition(mCursorCol, mCursorRow + getArg0(1));
+                setCursorRowRespectingOriginMode(mCursorRow - (isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE) ? mTopMargin : 0) + getArg0(1));
                 break;
             // case 'f': "${CSI}${ROW};${COLUMN}f" - Horizontal and Vertical Position (HVP). Grouped with case 'H'.
             case 'g': // Clear tab stop
@@ -3443,9 +3443,26 @@ public final class TerminalEmulator {
         mAboutToAutoWrap = false;
     }
 
-    /** Set the cursor mode, but limit it to margins if {@link #DECSET_BIT_ORIGIN_MODE} is enabled. */
+    /**
+     * Set the cursor column, relative to the left margin and limited to the margins if
+     * {@link #DECSET_BIT_ORIGIN_MODE} is enabled. The cursor row is not changed.
+     */
     private void setCursorColRespectingOriginMode(int col) {
-        setCursorPosition(col, mCursorRow);
+        boolean originMode = isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE);
+        int effectiveLeftMargin = originMode ? mLeftMargin : 0;
+        int effectiveRightMargin = originMode ? mRightMargin : mColumns;
+        setCursorCol(Math.max(effectiveLeftMargin, Math.min(effectiveLeftMargin + col, effectiveRightMargin - 1)));
+    }
+
+    /**
+     * Set the cursor row, relative to the top margin and limited to the margins if
+     * {@link #DECSET_BIT_ORIGIN_MODE} is enabled. The cursor column is not changed.
+     */
+    private void setCursorRowRespectingOriginMode(int row) {
+        boolean originMode = isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE);
+        int effectiveTopMargin = originMode ? mTopMargin : 0;
+        int effectiveBottomMargin = originMode ? mBottomMargin : mRows;
+        setCursorRow(Math.max(effectiveTopMargin, Math.min(effectiveTopMargin + row, effectiveBottomMargin - 1)));
     }
 
     /** TODO: Better name, distinguished from {@link #setCursorPosition(int, int)} by not regarding origin mode. */
