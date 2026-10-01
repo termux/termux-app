@@ -2159,10 +2159,10 @@ public final class TerminalEmulator {
             }
             break;
             case 'A': // "CSI${n}A" - Cursor up (CUU) ${n} rows.
-                setCursorRow(Math.max(0, mCursorRow - getArg0(1)));
+                setCursorRow(cursorRowUp(getArg0(1)));
                 break;
             case 'B': // "CSI${n}B" - Cursor down (CUD) ${n} rows.
-                setCursorRow(Math.min(mRows - 1, mCursorRow + getArg0(1)));
+                setCursorRow(cursorRowDown(getArg0(1)));
                 break;
             case 'C': // "CSI${n}C" - Cursor forward (CUF).
             case 'a': // "CSI${n}a" - Horizontal position relative (HPR). From ISO-6428/ECMA-48.
@@ -2172,10 +2172,10 @@ public final class TerminalEmulator {
                 setCursorCol(Math.max(mLeftMargin, mCursorCol - getArg0(1)));
                 break;
             case 'E': // "CSI{n}E - Cursor Next Line (CNL). From ISO-6428/ECMA-48.
-                setCursorPosition(0, mCursorRow + getArg0(1));
+                setCursorRowCol(cursorRowDown(getArg0(1)), isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE) ? mLeftMargin : 0);
                 break;
             case 'F': // "CSI{n}F - Cursor Previous Line (CPL). From ISO-6428/ECMA-48.
-                setCursorPosition(0, mCursorRow - getArg0(1));
+                setCursorRowCol(cursorRowUp(getArg0(1)), isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE) ? mLeftMargin : 0);
                 break;
             case 'G': // "CSI${n}G" - Cursor horizontal absolute (CHA) to column ${n}.
                 setCursorCol(Math.min(Math.max(1, getArg0(1)), mColumns) - 1);
@@ -3051,6 +3051,24 @@ public final class TerminalEmulator {
      * NOTE: The parameters of this function respect the {@link #DECSET_BIT_ORIGIN_MODE}. Use
      * {@link #setCursorRowCol(int, int)} for absolute pos.
      */
+    /**
+     * The row ${n} rows above the cursor for CUU and CPL. As in xterm, the cursor stops at the top margin if it starts
+     * at or below it, and at the first row if it starts above it (see https://github.com/termux/termux-app/issues/1340).
+     */
+    private int cursorRowUp(int n) {
+        int limit = mCursorRow >= mTopMargin ? mTopMargin : 0;
+        return Math.max(limit, mCursorRow - n);
+    }
+
+    /**
+     * The row ${n} rows below the cursor for CUD and CNL. As in xterm, the cursor stops at the bottom margin if it
+     * starts at or above it, and at the last row if it starts below it.
+     */
+    private int cursorRowDown(int n) {
+        int limit = mCursorRow < mBottomMargin ? mBottomMargin - 1 : mRows - 1;
+        return Math.min(limit, mCursorRow + n);
+    }
+
     private void setCursorPosition(int x, int y) {
         boolean originMode = isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE);
         int effectiveTopMargin = originMode ? mTopMargin : 0;
