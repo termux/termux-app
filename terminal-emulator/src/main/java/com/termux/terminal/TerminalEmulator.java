@@ -2063,10 +2063,11 @@ public final class TerminalEmulator {
             case 'M': // "${ESC}M" - reverse index (RI).
                 // http://www.vt100.net/docs/vt100-ug/chapter3.html: "Move the active position to the same horizontal
                 // position on the preceding line. If the active position is at the top margin, a scroll down is performed".
-                if (mCursorRow <= mTopMargin) {
+                // Above the top margin it is a plain cursor up, which stops at the top of the screen (as in xterm).
+                if (mCursorRow == mTopMargin) {
                     mScreen.blockCopy(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin, mBottomMargin - (mTopMargin + 1), mLeftMargin, mTopMargin + 1);
                     blockClear(mLeftMargin, mTopMargin, mRightMargin - mLeftMargin);
-                } else {
+                } else if (mCursorRow > 0) {
                     mCursorRow--;
                 }
                 break;

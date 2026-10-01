@@ -80,6 +80,15 @@ public class ScrollRegionTest extends TerminalTestCase {
 		withTerminalSized(4, 3).enterString("ABCD\033[?69h\033[2;3s\033[?6h\033M").assertLinesAre("A  D", " BC ", "    ");
 	}
 
+	public void testRiAboveTopMargin() {
+		// Reverse Index (RI), ${ESC}M, above the top margin moves the cursor up and does not scroll the region:
+		withTerminalSized(3, 5).enterString("111222333444555\033[3;5r\033[2;1H\033MX").assertLinesAre("X11", "222", "333", "444", "555");
+		// On the first line, above the top margin, it does nothing:
+		withTerminalSized(3, 5).enterString("111222333444555\033[3;5r\033[1;1H\033MX").assertLinesAre("X11", "222", "333", "444", "555");
+		// At the top margin it scrolls the region down:
+		withTerminalSized(3, 5).enterString("111222333444555\033[3;5r\033[3;1H\033MX").assertLinesAre("111", "222", "X  ", "333", "444");
+	}
+
 	public void testSdRespectsLeftMargin() {
 		// Scroll Down (SD), ${CSI}${N}T, should respect horizontal margins:
 		withTerminalSized(4, 3).enterString("ABCD\033[?69h\033[2;3s\033[?6h\033[2T").assertLinesAre("A  D", "    ", " BC ");
