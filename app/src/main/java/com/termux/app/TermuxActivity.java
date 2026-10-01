@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.autofill.AutofillManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -1010,4 +1011,74 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return intent;
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            if (mProperties.isUsingFullScreen()) {
+                enableImmersiveMode();
+            } else {
+                disableImmersiveMode();
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void enableImmersiveMode() {
+        // if (Build.VERSION.SDK_INT >= 30) {
+        //     getWindow().setDecorFitsSystemWindows(false);
+        //     WindowInsetsController insetsController = getWindow().getInsetsController();
+        //     if (insetsController != null) {
+        //         insetsController.hide(WindowInsets.Type.navigationBars() | WindowInsets.Type.statusBars());
+        //         insetsController.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        //     }
+        // } else {
+            View decorView = getWindow().getDecorView();
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            decorView.setSystemUiVisibility(flags);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        decorView.setSystemUiVisibility(flags);
+                    }
+                }
+            });
+        // }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void disableImmersiveMode() {
+        // if (Build.VERSION.SDK_INT >= 30) {
+        //     getWindow().setDecorFitsSystemWindows(true);
+        //     WindowInsetsController insetsController = getWindow().getInsetsController();
+        //     if (insetsController != null) {
+        //         insetsController.show(WindowInsets.Type.navigationBars() | WindowInsets.Type.statusBars());
+        //         insetsController.setSystemBarsBehavior(
+        //             Build.VERSION.SDK_INT >= 31
+        //                 ? WindowInsetsController.BEHAVIOR_DEFAULT
+        //                 : WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
+        //         );
+        //     }
+        // } else {
+            View decorView = getWindow().getDecorView();
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            decorView.setSystemUiVisibility(flags);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        decorView.setSystemUiVisibility(flags);
+                    }
+                }
+            });
+        // }
+    }
 }
