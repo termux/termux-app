@@ -278,6 +278,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             } else if (unicodeChar >= '1' && unicodeChar <= '9') {
                 int index = unicodeChar - '1';
                 mTermuxTerminalSessionActivityClient.switchToSession(index);
+            } else {
+                return false;
             }
             return true;
         }
