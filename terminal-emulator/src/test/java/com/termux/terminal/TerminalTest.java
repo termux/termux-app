@@ -335,6 +335,15 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals(4, mOutput.bellsRung);
 	}
 
+	public void testDelAndCancelPrintNothing() {
+		// DEL (0x7f) is not a graphic character. It must not be stored with the cell before it, where it would end up
+		// in copied text:
+		withTerminalSized(4, 2).enterString("ab\u007fc").assertLinesAre("abc ", "    ").assertCursorAt(0, 3);
+		// CAN and SUB cancel an escape sequence without printing anything:
+		withTerminalSized(4, 2).enterString("ab\033[1;2\u0018c").assertLinesAre("abc ", "    ").assertCursorAt(0, 3);
+		withTerminalSized(4, 2).enterString("ab\033[1;2\u001ac").assertLinesAre("abc ", "    ").assertCursorAt(0, 3);
+	}
+
 	public void testAutomargins() throws UnsupportedEncodingException {
 		withTerminalSized(3, 3).enterString("abc").assertLinesAre("abc", "   ", "   ").assertCursorAt(0, 2);
 		enterString("d").assertLinesAre("abc", "d  ", "   ").assertCursorAt(1, 1);
