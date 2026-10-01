@@ -2263,7 +2263,10 @@ public final class TerminalEmulator {
             }
             break;
             case 'S': { // "${CSI}${N}S" - scroll up ${N} lines (default = 1) (SU).
-                final int linesToScroll = getArg0(1);
+                // Like SD below, scroll at most the height of the scroll region: once every line in it
+                // has been scrolled out, scrolling further only pushes blank lines into the transcript
+                // and evicts real history. This matches xterm and tmux.
+                final int linesToScroll = Math.min(getArg0(1), mBottomMargin - mTopMargin);
                 for (int i = 0; i < linesToScroll; i++)
                     scrollDownOneLine();
                 break;
