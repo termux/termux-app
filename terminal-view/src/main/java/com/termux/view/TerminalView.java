@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -31,7 +32,10 @@ import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.ExtractedText;
+import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Scroller;
 
 import androidx.annotation.Nullable;
@@ -305,6 +309,19 @@ public final class TerminalView extends View {
         return true;
     }
 
+    /** Return whether Samsung Honeyboard is the currently selected system IME. */
+    private boolean isSamsungHoneyboardInputMethod() {
+        try {
+            String imeId = Settings.Secure.getString(
+                getContext().getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+            return imeId != null && (
+                imeId.equals("com.samsung.android.honeyboard") ||
+                imeId.startsWith("com.samsung.android.honeyboard/"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         // Ensure that inputType is only set if TerminalView is selected view with the keyboard and
@@ -340,7 +357,118 @@ public final class TerminalView extends View {
         // keyboard on Android TV (see https://github.com/termux/termux-app/issues/221).
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
 
+        // Samsung Honeyboard/Keys Cafe performs its own cursor-boundary check before emitting
+        // DPAD LEFT/RIGHT. Termux is not a normal text editor, so Honeyboard may otherwise
+        // conclude that the cursor is already at the end of an empty editor and suppress RIGHT.
+        // For Honeyboard only, expose a private virtual editor that always looks like "x|x".
+        // These sentinels are IME metadata only and are never written to the terminal or PTY.
+        final boolean samsungHoneyboardIme =
+            mClient.isTerminalViewSelected() && isSamsungHoneyboardInputMethod();
+        if (samsungHoneyboardIme) {
+            outAttrs.initialSelStart = 1;
+            outAttrs.initialSelEnd = 1;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                outAttrs.setInitialSurroundingText("xx");
+            }
+        }
+
         return new BaseInputConnection(this, true) {
+
+            private int mHoneyboardExtractedTextToken = -1;
+            private boolean mHoneyboardExtractedTextMonitor = false;
+
+            private ExtractedText createHoneyboardVirtualExtractedText() {
+                ExtractedText result = new ExtractedText();
+                result.text = "xx";
+                result.startOffset = 0;
+                result.partialStartOffset = -1;
+                result.partialEndOffset = -1;
+                result.selectionStart = 1;
+                result.selectionEnd = 1;
+                result.flags = 0;
+                return result;
+            }
+
+            /** Keep Honeyboard's cached editor selection centered between the virtual sentinels. */
+            private void synchronizeHoneyboardVirtualEditorState() {
+                if (!isSamsungHoneyboardInputMethod()) return;
+
+                TerminalView.this.post(() -> {
+                    if (!isSamsungHoneyboardInputMethod()) return;
+
+                    InputMethodManager imm = (InputMethodManager)
+                        getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm == null) return;
+
+                    imm.updateSelection(TerminalView.this, 1, 1, -1, -1);
+
+                    if (mHoneyboardExtractedTextMonitor && mHoneyboardExtractedTextToken >= 0) {
+                        imm.updateExtractedText(TerminalView.this,
+                            mHoneyboardExtractedTextToken, createHoneyboardVirtualExtractedText());
+                    }
+                });
+            }
+
+            private CharSequence getHoneyboardBoundarySentinel(int requestedLength) {
+                return requestedLength > 0 ? "x" : "";
+            }
+
+            @Override
+            public CharSequence getTextBeforeCursor(int length, int flags) {
+                if (isSamsungHoneyboardInputMethod()) {
+                    return getHoneyboardBoundarySentinel(length);
+                }
+                return super.getTextBeforeCursor(length, flags);
+            }
+
+            @Override
+            public CharSequence getTextAfterCursor(int length, int flags) {
+                if (isSamsungHoneyboardInputMethod()) {
+                    return getHoneyboardBoundarySentinel(length);
+                }
+                return super.getTextAfterCursor(length, flags);
+            }
+
+            @Override
+            public CharSequence getSelectedText(int flags) {
+                if (isSamsungHoneyboardInputMethod()) return null;
+                return super.getSelectedText(flags);
+            }
+
+            @Override
+            public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
+                if (isSamsungHoneyboardInputMethod()) {
+                    if (request != null) {
+                        mHoneyboardExtractedTextToken = request.token;
+                        mHoneyboardExtractedTextMonitor =
+                            (flags & InputConnection.GET_EXTRACTED_TEXT_MONITOR) != 0;
+                    }
+                    return createHoneyboardVirtualExtractedText();
+                }
+                return super.getExtractedText(request, flags);
+            }
+
+            @Override
+            public boolean setSelection(int start, int end) {
+                // Honeyboard is moving a virtual editor cursor, not Termux's real terminal cursor.
+                // Acknowledge the request without modifying BaseInputConnection's backing Editable.
+                if (isSamsungHoneyboardInputMethod()) return true;
+                return super.setSelection(start, end);
+            }
+
+            @Override
+            public boolean setComposingText(CharSequence text, int newCursorPosition) {
+                boolean result = super.setComposingText(text, newCursorPosition);
+                synchronizeHoneyboardVirtualEditorState();
+                return result;
+            }
+
+            @Override
+            public boolean setComposingRegion(int start, int end) {
+                boolean result = super.setComposingRegion(start, end);
+                synchronizeHoneyboardVirtualEditorState();
+                return result;
+            }
 
             @Override
             public boolean finishComposingText() {
@@ -349,6 +477,7 @@ public final class TerminalView extends View {
 
                 sendTextToTerminal(getEditable());
                 getEditable().clear();
+                synchronizeHoneyboardVirtualEditorState();
                 return true;
             }
 
@@ -359,11 +488,15 @@ public final class TerminalView extends View {
                 }
                 super.commitText(text, newCursorPosition);
 
-                if (mEmulator == null) return true;
+                if (mEmulator == null) {
+                    synchronizeHoneyboardVirtualEditorState();
+                    return true;
+                }
 
                 Editable content = getEditable();
                 sendTextToTerminal(content);
                 content.clear();
+                synchronizeHoneyboardVirtualEditorState();
                 return true;
             }
 
@@ -375,7 +508,16 @@ public final class TerminalView extends View {
                 // The stock Samsung keyboard with 'Auto check spelling' enabled sends leftLength > 1.
                 KeyEvent deleteKey = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
                 for (int i = 0; i < leftLength; i++) sendKeyEvent(deleteKey);
-                return super.deleteSurroundingText(leftLength, rightLength);
+                boolean result = super.deleteSurroundingText(leftLength, rightLength);
+                synchronizeHoneyboardVirtualEditorState();
+                return result;
+            }
+
+            @Override
+            public boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
+                boolean result = super.deleteSurroundingTextInCodePoints(beforeLength, afterLength);
+                synchronizeHoneyboardVirtualEditorState();
+                return result;
             }
 
             void sendTextToTerminal(CharSequence text) {
