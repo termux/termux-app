@@ -305,6 +305,8 @@ public class TextSelectionCursorController implements CursorController {
     }
 
     private int getValidCurX(TerminalBuffer screen, int cy, int cx) {
+        //Cursor drawing incompatible.
+        /*
         String line = screen.getSelectedText(0, cy, cx, cy);
         if (!TextUtils.isEmpty(line)) {
             int col = 0;
@@ -332,6 +334,7 @@ public class TextSelectionCursorController implements CursorController {
                 col = cend;
             }
         }
+         */
         return cx;
     }
 

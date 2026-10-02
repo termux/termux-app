@@ -29,6 +29,11 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         return false;
     }
 
+    @Override
+    public boolean isInputComposingDisabled() {
+        return true;
+    }
+
     public boolean shouldUseCtrlSpaceWorkaround() {
         return false;
     }
