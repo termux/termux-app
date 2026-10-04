@@ -789,9 +789,11 @@ public final class TerminalView extends View {
 
         final int metaState = event.getMetaState();
         final boolean controlDown = event.isCtrlPressed() || mClient.readControlKey();
-        final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey();
+        final boolean leftAltDown = (metaState & KeyEvent.META_ALT_LEFT_ON) != 0 || mClient.readAltKey() ||
+            (mClient.shouldUseRightAltWorkaround() && (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0);
         final boolean shiftDown = event.isShiftPressed() || mClient.readShiftKey();
-        final boolean rightAltDownFromEvent = (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
+        final boolean rightAltDownFromEvent = !mClient.shouldUseRightAltWorkaround() &&
+            (metaState & KeyEvent.META_ALT_RIGHT_ON) != 0;
 
         int keyMod = 0;
         if (controlDown) keyMod |= KeyHandler.KEYMOD_CTRL;
@@ -811,6 +813,9 @@ public final class TerminalView extends View {
         } else {
             // Use left alt to send to terminal (e.g. Left Alt+B to jump back a word), so remove:
             bitsToClear |= KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON;
+            if (mClient.shouldUseRightAltWorkaround()) {
+                bitsToClear |= KeyEvent.META_ALT_RIGHT_ON;
+            }
         }
         int effectiveMetaState = event.getMetaState() & ~bitsToClear;
 

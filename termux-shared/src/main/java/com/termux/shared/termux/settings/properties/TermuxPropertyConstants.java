@@ -153,6 +153,11 @@ public final class TermuxPropertyConstants {
 
 
 
+    /** Defines the key for whether to use right alt workaround to fix the issue where right_alt does not work */
+    public static final String KEY_USE_RIGHT_ALT_WORKAROUND =  "right-alt-workaround"; // Default: "right-alt-workaround"
+
+
+
     /** Defines the key for whether to use fullscreen */
     public static final String KEY_USE_FULLSCREEN =  "fullscreen"; // Default: "fullscreen"
 
@@ -401,6 +406,7 @@ public final class TermuxPropertyConstants {
         KEY_RUN_TERMUX_AM_SOCKET_SERVER,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_CTRL_SPACE_WORKAROUND,
+        KEY_USE_RIGHT_ALT_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
         TermuxConstants.PROP_ALLOW_EXTERNAL_APPS,
@@ -447,6 +453,7 @@ public final class TermuxPropertyConstants {
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_CTRL_SPACE_WORKAROUND,
+        KEY_USE_RIGHT_ALT_WORKAROUND,
         KEY_USE_FULLSCREEN,
         KEY_USE_FULLSCREEN_WORKAROUND,
         TermuxConstants.PROP_ALLOW_EXTERNAL_APPS

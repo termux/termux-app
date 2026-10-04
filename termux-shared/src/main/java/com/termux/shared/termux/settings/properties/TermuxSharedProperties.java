@@ -618,6 +618,10 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_CTRL_SPACE_WORKAROUND, true);
     }
 
+    public boolean isUsingRightAltWorkaround() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_RIGHT_ALT_WORKAROUND, true);
+    }
+
     public boolean isUsingFullScreen() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_USE_FULLSCREEN, true);
     }

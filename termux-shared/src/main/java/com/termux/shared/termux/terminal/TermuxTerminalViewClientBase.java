@@ -33,6 +33,10 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         return false;
     }
 
+    public boolean shouldUseRightAltWorkaround() {
+        return false;
+    }
+
     @Override
     public boolean isTerminalViewSelected() {
         return true;

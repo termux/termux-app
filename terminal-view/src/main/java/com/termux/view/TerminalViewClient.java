@@ -34,6 +34,8 @@ public interface TerminalViewClient {
 
     boolean shouldUseCtrlSpaceWorkaround();
 
+    boolean shouldUseRightAltWorkaround();
+
     boolean isTerminalViewSelected();
 
 
