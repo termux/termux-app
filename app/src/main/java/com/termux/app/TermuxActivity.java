@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.shared.view.KeyboardUtils;
 import com.termux.app.activities.HelpActivity;
 import com.termux.app.activities.SettingsActivity;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
@@ -319,6 +321,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         // notification with the crash details if it did
         TermuxCrashUtils.notifyAppCrashFromCrashLogFile(this, LOG_TAG);
 
+        updateTerminalToolbarVisibility();
+
         mIsOnResumeAfterOnCreate = false;
     }
 
@@ -512,7 +516,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             mTermuxTerminalViewClient, mTermuxTerminalSessionActivityClient);
 
         final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
-        if (mPreferences.shouldShowTerminalToolbar()) terminalToolbarViewPager.setVisibility(View.VISIBLE);
+        updateTerminalToolbarVisibility();
 
         ViewGroup.LayoutParams layoutParams = terminalToolbarViewPager.getLayoutParams();
         mTerminalToolbarDefaultHeight = layoutParams.height;
@@ -525,6 +529,21 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         terminalToolbarViewPager.setAdapter(new TerminalToolbarViewPager.PageAdapter(this, savedTextInput));
         terminalToolbarViewPager.addOnPageChangeListener(new TerminalToolbarViewPager.OnPageChangeListener(this, terminalToolbarViewPager));
+    }
+
+    private void updateTerminalToolbarVisibility() {
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
+        if (terminalToolbarViewPager == null) return;
+
+        boolean showToolbar = mPreferences.shouldShowTerminalToolbar();
+
+        if (showToolbar
+            && mPreferences.shouldHideTerminalToolbarIfHardwareKeyboard()
+            && KeyboardUtils.isHardKeyboardConnected(this)) {
+            showToolbar = false;
+        }
+
+        terminalToolbarViewPager.setVisibility(showToolbar ? View.VISIBLE : View.GONE);
     }
 
     private void setTerminalToolbarHeight() {
@@ -722,6 +741,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
         b.setNegativeButton(android.R.string.no, null);
         b.show();
+    }
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        updateTerminalToolbarVisibility();
     }
 
     private void onResetTerminalSession(TerminalSession session) {

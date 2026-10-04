@@ -183,6 +183,18 @@
 
                 <!-- Soft Keyboard Only If No Hardware-->
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">Soft Keyboard Only If No Hardware</string>
+                <!-- Hide Terminal Toolbar If Hardware Keyboard -->
+                <string name="termux_hide_terminal_toolbar_if_hardware_keyboard_title">
+                    Hide Terminal Toolbar With Hardware Keyboard
+                </string>
+
+                <string name="termux_hide_terminal_toolbar_if_hardware_keyboard_off">
+                    Terminal toolbar will remain visible when a hardware keyboard is connected. (Default)
+                </string>
+
+                <string name="termux_hide_terminal_toolbar_if_hardware_keyboard_on">
+                    Terminal toolbar will be hidden when a hardware keyboard is connected.
+                </string>
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">Soft keyboard will be enabled even if
                     hardware keyboard is connected. (Default)</string>
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if

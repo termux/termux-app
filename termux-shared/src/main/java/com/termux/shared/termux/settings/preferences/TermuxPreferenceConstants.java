@@ -102,6 +102,12 @@ public final class TermuxPreferenceConstants {
         public static final String KEY_SHOW_TERMINAL_TOOLBAR = "show_extra_keys";
         public static final boolean DEFAULT_VALUE_SHOW_TERMINAL_TOOLBAR = true;
 
+        /**
+         * Defines whether the terminal toolbar should be hidden when a hardware keyboard is connected.
+         */
+        public static final String KEY_HIDE_TERMINAL_TOOLBAR_IF_HARDWARE_KEYBOARD =
+            "hide_terminal_toolbar_if_hardware_keyboard";
+        public static final boolean DEFAULT_VALUE_HIDE_TERMINAL_TOOLBAR_IF_HARDWARE_KEYBOARD = false;
 
         /**
          * Defines the key for whether the soft keyboard will be enabled, for cases where users want

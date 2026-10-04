@@ -60,6 +60,9 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
             case "soft_keyboard_enabled_only_if_no_hardware":
                 mPreferences.setSoftKeyboardEnabledOnlyIfNoHardware(value);
                 break;
+            case "hide_terminal_toolbar_if_hardware_keyboard":
+                mPreferences.setHideTerminalToolbarIfHardwareKeyboard(value);
+                break;
             default:
                 break;
         }
@@ -74,6 +77,8 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
                 return mPreferences.isSoftKeyboardEnabled();
             case "soft_keyboard_enabled_only_if_no_hardware":
                 return mPreferences.isSoftKeyboardEnabledOnlyIfNoHardware();
+            case "hide_terminal_toolbar_if_hardware_keyboard":
+                return mPreferences.shouldHideTerminalToolbarIfHardwareKeyboard();
             default:
                 return false;
         }
