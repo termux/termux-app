@@ -915,10 +915,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         context.sendBroadcast(stylingIntent);
     }
 
+    public static void toggleTermuxTerminalToolbar(Context context) {
+        Intent toggleIntent = new Intent(TERMUX_ACTIVITY.ACTION_TOGGLE_TERMINAL_TOOLBAR);
+        toggleIntent.setPackage(TermuxConstants.TERMUX_PACKAGE_NAME);
+        context.sendBroadcast(toggleIntent);
+    }
+
     private void registerTermuxActivityBroadcastReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_NOTIFY_APP_CRASH);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_RELOAD_STYLE);
+        intentFilter.addAction(TERMUX_ACTIVITY.ACTION_TOGGLE_TERMINAL_TOOLBAR);
         intentFilter.addAction(TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS);
 
         registerReceiver(mTermuxActivityBroadcastReceiver, intentFilter);
@@ -954,6 +961,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     case TERMUX_ACTIVITY.ACTION_RELOAD_STYLE:
                         Logger.logDebug(LOG_TAG, "Received intent to reload styling");
                         reloadActivityStyling(intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_RECREATE_ACTIVITY, true));
+                        return;
+                    case TERMUX_ACTIVITY.ACTION_TOGGLE_TERMINAL_TOOLBAR:
+                        Logger.logDebug(LOG_TAG, "Received intent to toggle terminal toolbar");
+                        toggleTerminalToolbar();
                         return;
                     case TERMUX_ACTIVITY.ACTION_REQUEST_PERMISSIONS:
                         Logger.logDebug(LOG_TAG, "Received intent to request storage permissions");
