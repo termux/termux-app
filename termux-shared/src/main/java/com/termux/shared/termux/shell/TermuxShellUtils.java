@@ -35,6 +35,7 @@ public class TermuxShellUtils {
         //   system /system/bin/sh. The system shell may vary and may not work at all due to LD_LIBRARY_PATH.
         // - A file with shebang, which we try to handle with e.g. /bin/foo -> $PREFIX/bin/foo.
         String interpreter = null;
+        List<String> interpreterArguments = null;
         try {
             File file = new File(executable);
             try (FileInputStream in = new FileInputStream(file)) {
@@ -44,25 +45,45 @@ public class TermuxShellUtils {
                     if (buffer[0] == 0x7F && buffer[1] == 'E' && buffer[2] == 'L' && buffer[3] == 'F') {
                         // Elf file, do nothing.
                     } else if (buffer[0] == '#' && buffer[1] == '!') {
-                        // Try to parse shebang.
+                        // Try to parse shebang. The shebang consists of the interpreter path and its
+                        // arguments (e.g. "#!/bin/bash -e" or "#!/usr/bin/env bash"), all of which
+                        // must be preserved since the kernel would otherwise also pass them to the
+                        // interpreter when the file is executed directly.
                         StringBuilder builder = new StringBuilder();
                         for (int i = 2; i < bytesRead; i++) {
                             char c = (char) buffer[i];
-                            if (c == ' ' || c == '\n') {
-                                if (builder.length() == 0) {
-                                    // Skip whitespace after shebang.
-                                } else {
-                                    // End of shebang.
-                                    String shebangExecutable = builder.toString();
-                                    if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin")) {
-                                        String[] parts = shebangExecutable.split("/");
-                                        String binary = parts[parts.length - 1];
-                                        interpreter = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/" + binary;
-                                    }
-                                    break;
+                            if (c == '\n') break;
+                            builder.append(c);
+                        }
+
+                        List<String> shebangTokens = new ArrayList<>();
+                        StringBuilder tokenBuilder = new StringBuilder();
+                        for (int i = 0; i < builder.length(); i++) {
+                            char c = builder.charAt(i);
+                            if (Character.isWhitespace(c)) {
+                                if (tokenBuilder.length() > 0) {
+                                    shebangTokens.add(tokenBuilder.toString());
+                                    tokenBuilder = new StringBuilder();
                                 }
                             } else {
-                                builder.append(c);
+                                tokenBuilder.append(c);
+                            }
+                        }
+                        if (tokenBuilder.length() > 0)
+                            shebangTokens.add(tokenBuilder.toString());
+
+                        if (shebangTokens.size() > 0) {
+                            String shebangExecutable = shebangTokens.get(0);
+                            if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin")) {
+                                String[] parts = shebangExecutable.split("/");
+                                String binary = parts[parts.length - 1];
+                                interpreter = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/" + binary;
+                                // Preserve the interpreter arguments so that they are not lost,
+                                // like the "-e" flag of "#!/bin/bash -e" or the interpreter name
+                                // of "#!/usr/bin/env bash".
+                                if (shebangTokens.size() > 1) {
+                                    interpreterArguments = new ArrayList<>(shebangTokens.subList(1, shebangTokens.size()));
+                                }
                             }
                         }
                     } else {
@@ -77,6 +98,7 @@ public class TermuxShellUtils {
 
         List<String> result = new ArrayList<>();
         if (interpreter != null) result.add(interpreter);
+        if (interpreterArguments != null) result.addAll(interpreterArguments);
         result.add(executable);
         if (arguments != null) Collections.addAll(result, arguments);
         return result.toArray(new String[0]);

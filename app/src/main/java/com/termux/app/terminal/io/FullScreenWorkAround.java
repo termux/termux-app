@@ -3,6 +3,7 @@ package com.termux.app.terminal.io;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import com.termux.app.TermuxActivity;
 
@@ -15,15 +16,30 @@ import com.termux.app.TermuxActivity;
  * For more information, see https://issuetracker.google.com/issues/36911528
  */
 public class FullScreenWorkAround {
+    private static FullScreenWorkAround sInstance;
+
     private final View mChildOfContent;
     private int mUsableHeightPrevious;
     private final ViewGroup.LayoutParams mViewGroupLayoutParams;
 
     private final int mNavBarHeight;
 
+    private final ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener = this::possiblyResizeChildOfContent;
+
 
     public static void apply(TermuxActivity activity) {
-        new FullScreenWorkAround(activity);
+        // Remove any previously applied instance so that its global layout listener does not
+        // keep running and duplicate listeners do not accumulate on activity recreation.
+        remove();
+        sInstance = new FullScreenWorkAround(activity);
+    }
+
+    /** Remove the global layout listener of the currently applied instance, if any. */
+    public static void remove() {
+        if (sInstance != null) {
+            sInstance.removeGlobalLayoutListener();
+            sInstance = null;
+        }
     }
 
     private FullScreenWorkAround(TermuxActivity activity) {
@@ -31,7 +47,11 @@ public class FullScreenWorkAround {
         mChildOfContent = content.getChildAt(0);
         mViewGroupLayoutParams = mChildOfContent.getLayoutParams();
         mNavBarHeight = activity.getNavBarHeight();
-        mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+        mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
+    }
+
+    private void removeGlobalLayoutListener() {
+        mChildOfContent.getViewTreeObserver().removeOnGlobalLayoutListener(mGlobalLayoutListener);
     }
 
     private void possiblyResizeChildOfContent() {
@@ -65,4 +85,3 @@ public class FullScreenWorkAround {
     }
 
 }
-
