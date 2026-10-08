@@ -1,0 +1,50 @@
+{
+  "device": "PTP-AN10",
+  "android": "16",
+  "source_commit": "91ae4885",
+  "method": "Touching real Termux extra keys and Rime soft keyboard; app lifecycle and keyboard resize; shell capture setup through temporary instrumentation",
+  "results": [
+    {
+      "name": "Termux CTRL extra key + real Rime IME 0",
+      "expected_hex": "1b5b34383b3575",
+      "actual_hex": "1b5b34383b3575",
+      "passed": true
+    },
+    {
+      "name": "IME plain 0 after one-shot CTRL clears",
+      "expected_hex": "30",
+      "actual_hex": "30",
+      "passed": true
+    },
+    {
+      "name": "Termux CTRL extra key + real Rime IME 2",
+      "expected_hex": "1b5b35303b3575",
+      "actual_hex": "1b5b35303b3575",
+      "passed": true
+    },
+    {
+      "name": "Termux CTRL extra key + real Rime IME 1",
+      "expected_hex": "1b5b34393b3575",
+      "actual_hex": "1b5b34393b3575",
+      "passed": true
+    },
+    {
+      "name": "Real Rime IME Enter",
+      "expected_hex": "0d",
+      "actual_hex": "0d",
+      "passed": true
+    },
+    {
+      "name": "CTRL extra key + IME 0 after app background and foreground",
+      "expected_hex": "1b5b34383b3575",
+      "actual_hex": "1b5b34383b3575",
+      "passed": true
+    },
+    {
+      "name": "CTRL extra key + IME 1 after keyboard close/open and view resize",
+      "expected_hex": "1b5b34393b3575",
+      "actual_hex": "1b5b34393b3575",
+      "passed": true
+    }
+  ]
+}

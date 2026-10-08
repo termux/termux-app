@@ -1,0 +1,365 @@
+{
+  "started_date": "2026-10-08",
+  "completed_date": "2026-10-09",
+  "device": {
+    "model": "PTP-AN10",
+    "android": "16",
+    "abi": "arm64-v8a"
+  },
+  "apk_version": "0.118.0+kitty.events.p2.60a581a1.2439221fb851",
+  "apk_sha256": "e792ba8bea09cccbafaa262154fc6f6ecda32f9ab5180f70020716960f22c392",
+  "source_patch_sha256": "2439221fb851e0e8ddef6501402d9aca9ea2149ad17c0a39e4a0aa43bc98f02c",
+  "bluetooth": {
+    "keyboard": "RAPOO Keyboard-1 Keyboard",
+    "android_device_id": 9,
+    "sources": "0x01000311",
+    "keyboard_type": 2,
+    "actual_hardware": true,
+    "input_injection": false,
+    "flag3_group": {
+      "stage": "bt_flag3_retry_1791470731",
+      "flags": 3,
+      "method": "Actual Bluetooth keyboard hardware input through Android input dispatch, production Termux activity/client/view and native PTY. No injected key events.",
+      "keyboard": "RAPOO Keyboard-1 Keyboard",
+      "raw_hex": "1b5b411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a32411b5b313b313a33411b5b3130353b35751b5b3130353b353a33751b5b3130353b35751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a33751b5b39373b36751b5b39373b363a33751b5b31333b35751b5b393b32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b33323b33751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a32751b5b33323b333a33751b5b3237751b5b32373b313a33751b5b3130353b35751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a32751b5b3130353b353a337561410d097f",
+      "sequence_counts": {
+        "ESC[A": 1,
+        "ESC[1;1:2A": 13,
+        "ESC[1;1:3A": 1,
+        "ESC[105;5u": 3,
+        "ESC[105;5:3u": 3,
+        "ESC[105;5:2u": 27,
+        "ESC[97;6u": 1,
+        "ESC[97;6:3u": 1,
+        "ESC[13;5u": 1,
+        "ESC[9;2u": 1,
+        "ESC[9;2:2u": 28,
+        "ESC[32;3u": 1,
+        "ESC[32;3:2u": 25,
+        "ESC[32;3:3u": 1,
+        "ESC[27u": 1,
+        "ESC[27;1:3u": 1
+      },
+      "passed_observations": [
+        "Up press/repeat/release",
+        "Ctrl+I press/repeat/release",
+        "Ctrl+Shift+A press/release",
+        "Esc press/release",
+        "plain a and Shift+A text",
+        "plain Enter/Tab/Backspace control bytes without releases"
+      ],
+      "pending": [
+        "Ctrl+Enter repeat absent",
+        "requested Alt+Backspace yielded Alt+Space",
+        "modifier-first I release still carried Ctrl"
+      ],
+      "text_tail_hex": "61410d097f",
+      "all_requested_checks_passed": false
+    },
+    "flag2_recovery_supplement": {
+      "flags": 2,
+      "keyboard": "RAPOO Keyboard-1 Keyboard",
+      "method": "Actual Bluetooth keyboard hardware input through Android input dispatch, production Termux activity/client/view and native PTY. No injected key events.",
+      "hardware_event_log": "bt_flag2_recovery_1791470895-hardware-events.log",
+      "raw_capture": "bt_flag2_recovery_1791470895.bin",
+      "raw_hex": "0d1b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b31333b353a32751b5b5a1b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b5b393b323a32751b7f1b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a32751b5b3132373b333a3275",
+      "checks": [
+        {
+          "input": "Ctrl+Enter hold",
+          "repeat_count": 34,
+          "press_hex": "0d",
+          "repeat_hex": "1b5b31333b353a3275",
+          "release": "none",
+          "passed": true
+        },
+        {
+          "input": "Shift+Tab hold",
+          "repeat_count": 37,
+          "press_hex": "1b5b5a",
+          "repeat_hex": "1b5b393b323a3275",
+          "release": "none",
+          "passed": true
+        },
+        {
+          "input": "left Alt+Backspace hold",
+          "repeat_count": 39,
+          "press_hex": "1b7f",
+          "repeat_hex": "1b5b3132373b333a3275",
+          "release": "none",
+          "passed": true
+        }
+      ],
+      "all_checks_passed": true
+    },
+    "limitations": [
+      "No numeric keypad: P1 Num Lock/keypad hardware scenarios skipped.",
+      "Original flag3 group had no Ctrl+Enter repeat, Alt+Space instead of requested Alt+Backspace, and I released while Ctrl still active; these original cases were not passed.",
+      "The simpler flag2 supplement confirms real Ctrl+Enter, Shift+Tab, Alt+Backspace holds and correct repeated bytes; it does not retroactively pass the missing flag3 cases.",
+      "Modifier-first I release remains unverified on hardware.",
+      "AltGr character-producing layout not tested."
+    ]
+  },
+  "ime": {
+    "id": "org.fcitx.fcitx5.android/.input.FcitxInputMethodService",
+    "engines": [
+      "English",
+      "Rime 中州韵(薄)"
+    ],
+    "method": "ADB touchscreen taps and gestures on actual IME and Termux extra-key UI, through actual Termux activity/client/view/session and native PTY; no direct text commit or injected key events",
+    "checks": [
+      {
+        "name": "ime_ctrl0",
+        "flags": 3,
+        "stage": "ime_ctrl0_1791471312968",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            280,
+            1750
+          ],
+          [
+            640,
+            2570
+          ]
+        ],
+        "expected_hex": "1b5b34383b3575",
+        "actual_hex": "1b5b34383b3575",
+        "passed": true
+      },
+      {
+        "name": "ime_plain0_after_ctrl",
+        "flags": 3,
+        "stage": "ime_plain0_after_ctrl_1791471314212",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            640,
+            2570
+          ]
+        ],
+        "expected_hex": "30",
+        "actual_hex": "30",
+        "passed": true
+      },
+      {
+        "name": "ime_alt1",
+        "flags": 3,
+        "stage": "ime_alt1_1791471315228",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            460,
+            1750
+          ],
+          [
+            340,
+            2050
+          ]
+        ],
+        "expected_hex": "1b5b34393b3375",
+        "actual_hex": "1b5b34393b3375",
+        "passed": true
+      },
+      {
+        "name": "ime_plain1_after_alt",
+        "flags": 3,
+        "stage": "ime_plain1_after_alt_1791471316621",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            340,
+            2050
+          ]
+        ],
+        "expected_hex": "31",
+        "actual_hex": "31",
+        "passed": true
+      },
+      {
+        "name": "ime_enter",
+        "flags": 3,
+        "stage": "ime_enter_1791471317758",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            1180,
+            2570
+          ]
+        ],
+        "expected_hex": "0d",
+        "actual_hex": "0d",
+        "passed": true
+      },
+      {
+        "name": "ime_ctrl_enter",
+        "flags": 3,
+        "stage": "ime_ctrl_enter_1791471318893",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            280,
+            1750
+          ],
+          [
+            1180,
+            2570
+          ]
+        ],
+        "expected_hex": "1b5b31333b3575",
+        "actual_hex": "1b5b31333b3575",
+        "passed": true
+      },
+      {
+        "name": "ime_chinese_candidate_commit",
+        "flags": 3,
+        "stage": "ime_chinese_composition_1791471362808",
+        "method": "ADB touchscreen taps on actual Fcitx Rime engine; zhongwen composition and visible 中文 candidate tap; native PTY",
+        "composition_before_commit_hex": "",
+        "expected_hex": "e4b8ade69687",
+        "actual_hex": "e4b8ade69687",
+        "passed": true,
+        "taps": [
+          [
+            256,
+            2400
+          ],
+          [
+            768,
+            2200
+          ],
+          [
+            1088,
+            2025
+          ],
+          [
+            896,
+            2400
+          ],
+          [
+            640,
+            2200
+          ],
+          [
+            192,
+            2025
+          ],
+          [
+            320,
+            2025
+          ],
+          [
+            896,
+            2400
+          ],
+          [
+            110,
+            1890
+          ]
+        ]
+      },
+      {
+        "name": "ime_flag2_ctrl0_legacy_press",
+        "flags": 2,
+        "stage": "ime_flag2_ctrl0_legacy_press_1791471462027",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            280,
+            1750
+          ],
+          [
+            640,
+            2570
+          ]
+        ],
+        "expected_hex": "30",
+        "actual_hex": "30",
+        "passed": true
+      },
+      {
+        "name": "ime_flag2_plain0_after_ctrl",
+        "flags": 2,
+        "stage": "ime_flag2_plain0_after_ctrl_1791471544202",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            640,
+            2570
+          ]
+        ],
+        "expected_hex": "30",
+        "actual_hex": "30",
+        "passed": true
+      },
+      {
+        "name": "ime_flag2_alt1_legacy_press",
+        "flags": 2,
+        "stage": "ime_flag2_alt1_legacy_press_1791471545353",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            460,
+            1750
+          ],
+          [
+            340,
+            2050
+          ]
+        ],
+        "expected_hex": "1b31",
+        "actual_hex": "1b31",
+        "passed": true
+      },
+      {
+        "name": "ime_flag2_ctrl_enter_legacy_press",
+        "flags": 2,
+        "stage": "ime_flag2_ctrl_enter_legacy_press_1791471546825",
+        "method": "ADB touchscreen taps on real Fcitx IME/Termux UI; no injected text or key events; real native PTY capture",
+        "taps": [
+          [
+            280,
+            1750
+          ],
+          [
+            1180,
+            2570
+          ]
+        ],
+        "expected_hex": "0d",
+        "actual_hex": "0d",
+        "passed": true
+      },
+      {
+        "name": "ime_background_foreground",
+        "flags": 3,
+        "stage": "ime_background_foreground_1791471548286",
+        "method": "Actual IME/extra-key taps, Home touchscreen gesture and Termux resume; real native PTY",
+        "expected_hex": "1b5b34383b3575301b5b34383b3575",
+        "actual_hex": "1b5b34383b3575301b5b34383b3575",
+        "passed": true,
+        "operations": [
+          "tap CTRL then IME 0",
+          "touchscreen Home gesture",
+          "am start TermuxActivity",
+          "tap IME 0 without modifier",
+          "tap CTRL then IME 0"
+        ]
+      }
+    ],
+    "total_checks": 12,
+    "failures": 0,
+    "all_checks_passed": true
+  },
+  "test_harness": {
+    "setup": "Temporary instrumentation created a named dedicated Termux session and wrote only the capture script startup command. Test input came from user Bluetooth hardware or touchscreen taps.",
+    "control": "Foreground bash with raw /dev/tty dd capture; each test negotiates and pops its own keyboard mode.",
+    "infrastructure_note": "A temporary request-file race during extra flag2 IME checks was corrected with atomic rename; no invalid stage was counted.",
+    "cleanup": "Capture shell exited and restored modes; temporary helper uninstalled; fixture directory and raw event/UI dump files removed; original IME display setting restored; Termux reopened. Host artifacts and toolchain retained."
+  },
+  "remaining": [
+    "Physical Num Lock transitions and modifier-first key release",
+    "Untested hardware combinations/layouts",
+    "Other IMEs",
+    "SSH and multiplexers"
+  ]
+}

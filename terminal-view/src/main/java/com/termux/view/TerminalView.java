@@ -34,6 +34,9 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Scroller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
@@ -85,6 +88,53 @@ public final class TerminalView extends View {
 
     /** If non-zero, this is the last unicode code point received if that was a combining character. */
     int mCombiningAccent;
+
+    /** Only terminal-delivered physical keys may produce a matching release. */
+    private final Map<Long, KittyKeyPress> mKittyKeyPresses = new HashMap<>();
+
+    private static final class KittyKeyPress {
+        final KeyHandler.KittyKey textKey;
+        final int virtualModifiers;
+        final String releaseCode;
+        final TerminalEmulator emulator;
+        final Object screen;
+        final long generation;
+        final long downTime;
+
+        KittyKeyPress(KeyHandler.KittyKey textKey, int virtualModifiers, String releaseCode, TerminalEmulator emulator, KeyEvent event) {
+            this.textKey = textKey;
+            this.virtualModifiers = virtualModifiers;
+            this.releaseCode = releaseCode;
+            this.emulator = emulator;
+            screen = emulator.getScreen();
+            generation = emulator.getKittyKeyboardGeneration();
+            downTime = event.getDownTime();
+        }
+    }
+
+    private static long kittyKeyId(KeyEvent event) {
+        return ((long) event.getDeviceId() << 32) | (event.getKeyCode() & 0xffffffffL);
+    }
+
+    private static int kittyEventModifiers(KeyEvent event) {
+        int modifiers = 0;
+        if (event.isCtrlPressed()) modifiers |= KeyHandler.KEYMOD_CTRL;
+        if (event.isAltPressed()) modifiers |= KeyHandler.KEYMOD_ALT;
+        if (event.isShiftPressed()) modifiers |= KeyHandler.KEYMOD_SHIFT;
+        if (event.isMetaPressed()) modifiers |= KeyHandler.KEYMOD_SUPER;
+        if (event.isCapsLockOn()) modifiers |= KeyHandler.KEYMOD_CAPS_LOCK;
+        if (event.isNumLockOn()) modifiers |= KeyHandler.KEYMOD_NUM_LOCK;
+        return modifiers;
+    }
+
+    private void rememberKittyKey(KeyEvent event, KeyHandler.KittyKey textKey, int modifiers, String releaseCode) {
+        // Repeats must not replace the identity or mode captured by the initial press.
+        if (event == null || event.getAction() != KeyEvent.ACTION_DOWN || event.getRepeatCount() != 0 ||
+            (mEmulator.getKittyKeyboardFlags() & KeyHandler.KITTY_REPORT_EVENTS) == 0 ||
+            KeyHandler.isKittyRecoveryKey(event.getKeyCode())) return;
+        mKittyKeyPresses.put(kittyKeyId(event), new KittyKeyPress(textKey,
+            modifiers & ~kittyEventModifiers(event), releaseCode, mEmulator, event));
+    }
 
     /**
      * The current AutoFill type returned for {@link View#getAutofillType()} by {@link #getAutofillType()}.
@@ -290,6 +340,7 @@ public final class TerminalView extends View {
     public boolean attachSession(TerminalSession session) {
         if (session == mTermSession) return false;
 
+        mKittyKeyPresses.clear();
         mTermSession = session;
         mEmulator = null;
         mCombiningAccent = 0;
@@ -775,7 +826,10 @@ public final class TerminalView extends View {
             stopTextSelectionMode();
         }
 
+        // Forget stale or intercepted presses before dispatching this event to application shortcuts.
+        if (event.getRepeatCount() == 0) mKittyKeyPresses.remove(kittyKeyId(event));
         if (mClient.onKeyDown(keyCode, event, mTermSession)) {
+            mKittyKeyPresses.remove(kittyKeyId(event));
             invalidate();
             return true;
         } else if (event.isSystem() && (!mClient.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
@@ -798,14 +852,19 @@ public final class TerminalView extends View {
         if (event.isAltPressed() || leftAltDown) keyMod |= KeyHandler.KEYMOD_ALT;
         if (shiftDown) keyMod |= KeyHandler.KEYMOD_SHIFT;
         if (event.isNumLockOn()) keyMod |= KeyHandler.KEYMOD_NUM_LOCK;
+        if (mEmulator.isKittyKeyboardEnabled()) {
+            if (event.isMetaPressed()) keyMod |= KeyHandler.KEYMOD_SUPER;
+            if (event.isCapsLockOn()) keyMod |= KeyHandler.KEYMOD_CAPS_LOCK;
+        }
         // https://github.com/termux/termux-app/issues/731
-        if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod)) {
+        if (!event.isFunctionPressed() && handleKeyCode(keyCode, keyMod, event)) {
             if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "handleKeyCode() took key event");
             return true;
         }
 
         // Clear Ctrl since we handle that ourselves:
         int bitsToClear = KeyEvent.META_CTRL_MASK;
+        if (mEmulator.isKittyKeyboardEnabled()) bitsToClear |= KeyEvent.META_META_MASK;
         if (rightAltDownFromEvent) {
             // Let right Alt/Alt Gr be used to compose characters.
         } else {
@@ -814,7 +873,11 @@ public final class TerminalView extends View {
         }
         int effectiveMetaState = event.getMetaState() & ~bitsToClear;
 
-        if (shiftDown) effectiveMetaState |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
+        if (shiftDown) {
+            effectiveMetaState |= KeyEvent.META_SHIFT_ON;
+            // Virtual Shift keeps the existing left-Shift default; physical sides stay intact.
+            if (!event.isShiftPressed()) effectiveMetaState |= KeyEvent.META_SHIFT_LEFT_ON;
+        }
         if (mClient.readFnKey()) effectiveMetaState |= KeyEvent.META_FUNCTION_ON;
 
         int result = event.getUnicodeChar(effectiveMetaState);
@@ -836,7 +899,26 @@ public final class TerminalView extends View {
                 if (combinedChar > 0) result = combinedChar;
                 mCombiningAccent = 0;
             }
-            inputCodePoint(event.getDeviceId(), result, controlDown, leftAltDown);
+            // Keep the layout's unshifted key before legacy Ctrl mapping destroys its identity.
+            int unshiftedMetaState = effectiveMetaState & ~(KeyEvent.META_SHIFT_MASK | KeyEvent.META_CAPS_LOCK_ON);
+            int unshiftedCodePoint = event.getUnicodeChar(unshiftedMetaState);
+            if (oldCombiningAccent != 0 || unshiftedCodePoint <= 0 || (unshiftedCodePoint & KeyCharacterMap.COMBINING_ACCENT) != 0)
+                unshiftedCodePoint = Character.toLowerCase(result);
+            int textKeyMod = keyMod;
+            // Right Alt is used by the keyboard layout (AltGr), rather than a terminal Alt shortcut.
+            if (rightAltDownFromEvent && !leftAltDown) textKeyMod &= ~KeyHandler.KEYMOD_ALT;
+            int shiftedCodePoint = 0, baseLayoutCodePoint = 0;
+            if ((mEmulator.getKittyKeyboardFlags() & KeyHandler.KITTY_REPORT_ALTERNATE_KEYS) != 0 &&
+                oldCombiningAccent == 0 && unshiftedCodePoint > 0 &&
+                (event.getUnicodeChar(unshiftedMetaState) & KeyCharacterMap.COMBINING_ACCENT) == 0) {
+                if (shiftDown) shiftedCodePoint = event.getUnicodeChar(effectiveMetaState & ~KeyEvent.META_CAPS_LOCK_ON);
+                if (event.getAction() == KeyEvent.ACTION_DOWN &&
+                    (event.getFlags() & KeyEvent.FLAG_SOFT_KEYBOARD) == 0)
+                    baseLayoutCodePoint = KeyHandler.getKittyBaseLayoutCodePoint(keyCode);
+            }
+            KeyHandler.KittyKey textKey = new KeyHandler.KittyKey(unshiftedCodePoint,
+                shiftedCodePoint, baseLayoutCodePoint);
+            inputCodePoint(event.getDeviceId(), result, controlDown, leftAltDown, textKey, textKeyMod, event);
         }
 
         if (mCombiningAccent != oldCombiningAccent) invalidate();
@@ -845,6 +927,12 @@ public final class TerminalView extends View {
     }
 
     public void inputCodePoint(int eventSource, int codePoint, boolean controlDownFromEvent, boolean leftAltDownFromEvent) {
+        inputCodePoint(eventSource, codePoint, controlDownFromEvent, leftAltDownFromEvent,
+            new KeyHandler.KittyKey(Character.toLowerCase(codePoint), 0, 0), 0, null);
+    }
+
+    private void inputCodePoint(int eventSource, int codePoint, boolean controlDownFromEvent,
+                               boolean leftAltDownFromEvent, KeyHandler.KittyKey textKey, int keyMod, KeyEvent event) {
         if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) {
             mClient.logInfo(LOG_TAG, "inputCodePoint(eventSource=" + eventSource + ", codePoint=" + codePoint + ", controlDownFromEvent=" + controlDownFromEvent + ", leftAltDownFromEvent="
                 + leftAltDownFromEvent + ")");
@@ -859,7 +947,26 @@ public final class TerminalView extends View {
         final boolean controlDown = controlDownFromEvent || mClient.readControlKey();
         final boolean altDown = leftAltDownFromEvent || mClient.readAltKey();
 
-        if (mClient.onCodePoint(codePoint, controlDown, mTermSession)) return;
+        if (mClient.onCodePoint(codePoint, controlDown, mTermSession)) {
+            if (event != null) mKittyKeyPresses.remove(kittyKeyId(event));
+            return;
+        }
+
+        if (mEmulator != null && mEmulator.isKittyKeyboardEnabled()) {
+            if (controlDown) keyMod |= KeyHandler.KEYMOD_CTRL;
+            if (altDown) keyMod |= KeyHandler.KEYMOD_ALT;
+            if (mClient.readShiftKey()) keyMod |= KeyHandler.KEYMOD_SHIFT;
+            int eventType = event != null && event.getRepeatCount() > 0 ?
+                KeyHandler.KEY_EVENT_REPEAT : KeyHandler.KEY_EVENT_PRESS;
+            String kittyCode = KeyHandler.getKittyCodePoint(textKey, keyMod,
+                mEmulator.getKittyKeyboardFlags(), eventType);
+            if (KeyHandler.getKittyCodePoint(textKey.codePoint, keyMod) != null)
+                rememberKittyKey(event, textKey, keyMod, null);
+            if (kittyCode != null) {
+                mTermSession.write(kittyCode);
+                return;
+            }
+        }
 
         if (controlDown) {
             if (codePoint >= 'a' && codePoint <= 'z') {
@@ -911,17 +1018,28 @@ public final class TerminalView extends View {
 
     /** Input the specified keyCode if applicable and return if the input was consumed. */
     public boolean handleKeyCode(int keyCode, int keyMod) {
+        return handleKeyCode(keyCode, keyMod, null);
+    }
+
+    private boolean handleKeyCode(int keyCode, int keyMod, KeyEvent event) {
         // Ensure cursor is shown when a key is pressed down like long hold on (arrow) keys
         if (mEmulator != null)
             mEmulator.setCursorBlinkState(true);
 
-        if (handleKeyCodeAction(keyCode, keyMod))
+        if (handleKeyCodeAction(keyCode, keyMod)) {
+            if (event != null) mKittyKeyPresses.remove(kittyKeyId(event));
             return true;
+        }
 
         TerminalEmulator term = mTermSession.getEmulator();
-        String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
+        String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(),
+            term.isKeypadApplicationMode(), term.getKittyKeyboardFlags(),
+            event != null && event.getRepeatCount() > 0 ? KeyHandler.KEY_EVENT_REPEAT : KeyHandler.KEY_EVENT_PRESS);
         if (code == null) return false;
         mTermSession.write(code);
+        String releaseCode = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(),
+            term.isKeypadApplicationMode(), term.getKittyKeyboardFlags(), KeyHandler.KEY_EVENT_RELEASE);
+        if (releaseCode != null) rememberKittyKey(event, null, keyMod, releaseCode);
         return true;
     }
 
@@ -961,15 +1079,34 @@ public final class TerminalView extends View {
         // to exit the activity.
         if (mEmulator == null && keyCode != KeyEvent.KEYCODE_BACK) return true;
 
+        KittyKeyPress press = mKittyKeyPresses.remove(kittyKeyId(event));
         if (mClient.onKeyUp(keyCode, event)) {
             invalidate();
             return true;
-        } else if (event.isSystem()) {
+        } else if (event.isSystem() && (!mClient.shouldBackButtonBeMappedToEscape() || keyCode != KeyEvent.KEYCODE_BACK)) {
             // Let system key events through.
             return super.onKeyUp(keyCode, event);
         }
 
+        if (press != null && mEmulator == press.emulator && mEmulator.getScreen() == press.screen &&
+            mEmulator.getKittyKeyboardGeneration() == press.generation && event.getDownTime() == press.downTime &&
+            (mEmulator.getKittyKeyboardFlags() & KeyHandler.KITTY_REPORT_EVENTS) != 0 && !event.isCanceled()) {
+            int modifiers = kittyEventModifiers(event) | press.virtualModifiers;
+            if (press.textKey != null && (event.getMetaState() & KeyEvent.META_ALT_RIGHT_ON) != 0 &&
+                (event.getMetaState() & KeyEvent.META_ALT_LEFT_ON) == 0)
+                modifiers &= ~KeyHandler.KEYMOD_ALT;
+            String code = press.textKey == null ? KeyHandler.getKittyReleaseCode(press.releaseCode, modifiers) :
+                KeyHandler.getKittyCodePoint(press.textKey, modifiers,
+                    mEmulator.getKittyKeyboardFlags(), KeyHandler.KEY_EVENT_RELEASE);
+            if (code != null) mTermSession.write(code);
+        }
         return true;
+    }
+
+    @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, android.graphics.Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        if (!gainFocus) mKittyKeyPresses.clear();
     }
 
     /**
@@ -1462,6 +1599,7 @@ public final class TerminalView extends View {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        mKittyKeyPresses.clear();
 
         if (mTextSelectionCursorController != null) {
             // Might solve the following exception

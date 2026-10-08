@@ -1,0 +1,3827 @@
+{
+    "method": "Android framework KeyEvent delivered directly to production TerminalView; real TerminalSession/native PTY and bash raw byte capture; not physical HID or OS input dispatch",
+    "model": "PTP-AN10",
+    "android": "16",
+    "checks": 125,
+    "failures": 0,
+    "results": [
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "1b5b411b5b41",
+            "actual_hex": "1b5b411b5b41",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 0,
+            "expected_hex": "1b1b",
+            "actual_hex": "1b1b",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "1b5b411b5b41",
+            "actual_hex": "1b5b411b5b41",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "1b5b3130353b35751b5b3130353b3575",
+            "actual_hex": "1b5b3130353b35751b5b3130353b3575",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 1,
+            "expected_hex": "1b5b3237751b5b323775",
+            "actual_hex": "1b5b3237751b5b323775",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "actual_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "091b5b3130353b353a32751b5b3130353b353a3375",
+            "actual_hex": "091b5b3130353b353a32751b5b3130353b353a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b1b5b32373b313a32751b5b32373b313a3375",
+            "actual_hex": "1b1b5b32373b313a32751b5b32373b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "actual_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b3130353b35751b5b3130353b353a32751b5b3130353b353a3375",
+            "actual_hex": "1b5b3130353b35751b5b3130353b353a32751b5b3130353b353a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b3237751b5b32373b313a32751b5b32373b313a3375",
+            "actual_hex": "1b5b3237751b5b32373b313a32751b5b32373b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "1b5b411b5b41",
+            "actual_hex": "1b5b411b5b41",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 4,
+            "expected_hex": "1b1b",
+            "actual_hex": "1b1b",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "1b5b411b5b41",
+            "actual_hex": "1b5b411b5b41",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "1b5b3130353b35751b5b3130353b3575",
+            "actual_hex": "1b5b3130353b35751b5b3130353b3575",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "1b5b3237751b5b323775",
+            "actual_hex": "1b5b3237751b5b323775",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "actual_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "091b5b3130353b353a32751b5b3130353b353a3375",
+            "actual_hex": "091b5b3130353b353a32751b5b3130353b353a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "1b1b5b32373b313a32751b5b32373b313a3375",
+            "actual_hex": "1b1b5b32373b313a32751b5b32373b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Up press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "actual_hex": "1b5b411b5b313b313a32411b5b313b313a3341",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Ctrl+I press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b3130353b35751b5b3130353b353a32751b5b3130353b353a3375",
+            "actual_hex": "1b5b3130353b35751b5b3130353b353a32751b5b3130353b353a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    37,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "6161",
+            "actual_hex": "6161",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift text A press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "4141",
+            "actual_hex": "4141",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 66",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 66",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "0d0d",
+            "actual_hex": "0d0d",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 61",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 61",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "0909",
+            "actual_hex": "0909",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "plain recovery 67",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "locked recovery 67",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "7f7f",
+            "actual_hex": "7f7f",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    3145728,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    3145728,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Escape press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b3237751b5b32373b313a32751b5b32373b313a3375",
+            "actual_hex": "1b5b3237751b5b32373b313a32751b5b32373b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    111,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    111,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    111,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Ctrl+Enter repeated",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "0d1b5b31333b353a3275",
+            "actual_hex": "0d1b5b31333b353a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Shift+Tab repeated",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b5b5a1b5b393b323a3275",
+            "actual_hex": "1b5b5a1b5b393b323a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Alt+Backspace repeated",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b7f1b5b3132373b333a3275",
+            "actual_hex": "1b7f1b5b3132373b333a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    18,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    18,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    18,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "F3 Shift press repeat release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "actual_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    133,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    133,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    133,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "modifier released before letter",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "091b5b3130353b313a3375",
+            "actual_hex": "091b5b3130353b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "orphaned repeat has no release",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b5b313b313a3241",
+            "actual_hex": "1b5b313b313a3241",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Ctrl+Enter repeated",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b31333b35751b5b31333b353a3275",
+            "actual_hex": "1b5b31333b35751b5b31333b353a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Shift+Tab repeated",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b393b32751b5b393b323a3275",
+            "actual_hex": "1b5b393b32751b5b393b323a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Alt+Backspace repeated",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b3132373b33751b5b3132373b333a3275",
+            "actual_hex": "1b5b3132373b33751b5b3132373b333a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    18,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    18,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    18,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "F3 Shift press repeat release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "actual_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    133,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    133,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    133,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "modifier released before letter",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b3130353b35751b5b3130353b313a3375",
+            "actual_hex": "1b5b3130353b35751b5b3130353b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "orphaned repeat has no release",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b313b313a3241",
+            "actual_hex": "1b5b313b313a3241",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Ctrl+Enter repeated",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "0d1b5b31333b353a3275",
+            "actual_hex": "0d1b5b31333b353a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Shift+Tab repeated",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "1b5b5a1b5b393b323a3275",
+            "actual_hex": "1b5b5a1b5b393b323a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Alt+Backspace repeated",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "1b7f1b5b3132373b333a3275",
+            "actual_hex": "1b7f1b5b3132373b333a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    18,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    18,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    18,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "F3 Shift press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "actual_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    133,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    133,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    133,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "modifier released before letter",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "091b5b3130353b313a3375",
+            "actual_hex": "091b5b3130353b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "orphaned repeat has no release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "1b5b313b313a3241",
+            "actual_hex": "1b5b313b313a3241",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Ctrl+Enter repeated",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b31333b35751b5b31333b353a3275",
+            "actual_hex": "1b5b31333b35751b5b31333b353a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    66,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    0,
+                    66,
+                    1,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    66,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Shift+Tab repeated",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b393b32751b5b393b323a3275",
+            "actual_hex": "1b5b393b32751b5b393b323a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    61,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    61,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    61,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P2 Alt+Backspace repeated",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b3132373b33751b5b3132373b333a3275",
+            "actual_hex": "1b5b3132373b33751b5b3132373b333a3275",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    67,
+                    0,
+                    18,
+                    0
+                ],
+                [
+                    0,
+                    67,
+                    1,
+                    18,
+                    0
+                ],
+                [
+                    1,
+                    67,
+                    0,
+                    18,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "F3 Shift press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "actual_hex": "1b5b31333b327e1b5b31333b323a327e1b5b31333b323a337e",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    133,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    133,
+                    1,
+                    1,
+                    0
+                ],
+                [
+                    1,
+                    133,
+                    0,
+                    1,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "modifier released before letter",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b3130353b35751b5b3130353b313a3375",
+            "actual_hex": "1b5b3130353b35751b5b3130353b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    37,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    37,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "orphaned repeat has no release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b313b313a3241",
+            "actual_hex": "1b5b313b313a3241",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    19,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    19,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P1 NumLock on to off during repeats",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b35373339393b313239751b5b35373432353b313a32751b5b35373339393b313a3375",
+            "actual_hex": "1b5b35373339393b313239751b5b35373432353b313a32751b5b35373339393b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    144,
+                    0,
+                    2097152,
+                    0
+                ],
+                [
+                    0,
+                    144,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    1,
+                    144,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P1 NumLock off to on during repeats",
+            "synthetic_layout": false,
+            "flags": 3,
+            "expected_hex": "1b5b3537343235751b5b35373339393b3132393a32751b5b35373432353b3132393a3375",
+            "actual_hex": "1b5b3537343235751b5b35373339393b3132393a32751b5b35373432353b3132393a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    144,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    144,
+                    1,
+                    2097152,
+                    0
+                ],
+                [
+                    1,
+                    144,
+                    0,
+                    2097152,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "P1 legacy keypad navigation to text repeat",
+            "synthetic_layout": false,
+            "flags": 2,
+            "expected_hex": "1b5b327e301b5b323b3132393a337e",
+            "actual_hex": "1b5b327e301b5b323b3132393a337e",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    144,
+                    0,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    144,
+                    1,
+                    2097152,
+                    0
+                ],
+                [
+                    1,
+                    144,
+                    0,
+                    2097152,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Alternate Ctrl+Shift+= press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "1b5b36313a34333b36751b5b36313a34333b3675",
+            "actual_hex": "1b5b36313a34333b36751b5b36313a34333b3675",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Alternate Ctrl+Shift+A press repeat release",
+            "synthetic_layout": false,
+            "flags": 5,
+            "expected_hex": "1b5b39373a36353b36751b5b39373a36353b3675",
+            "actual_hex": "1b5b39373a36353b36751b5b39373a36353b3675",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Alternate Ctrl+Shift+= press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "2b1b5b36313a34333b363a32751b5b36313a34333b363a3375",
+            "actual_hex": "2b1b5b36313a34333b363a32751b5b36313a34333b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Alternate Ctrl+Shift+A press repeat release",
+            "synthetic_layout": false,
+            "flags": 6,
+            "expected_hex": "011b5b39373a36353b363a32751b5b39373a36353b363a3375",
+            "actual_hex": "011b5b39373a36353b363a32751b5b39373a36353b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Alternate Ctrl+Shift+= press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b36313a34333b36751b5b36313a34333b363a32751b5b36313a34333b363a3375",
+            "actual_hex": "1b5b36313a34333b36751b5b36313a34333b363a32751b5b36313a34333b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Alternate Ctrl+Shift+A press repeat release",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b39373a36353b36751b5b39373a36353b363a32751b5b39373a36353b363a3375",
+            "actual_hex": "1b5b39373a36353b36751b5b39373a36353b363a32751b5b39373a36353b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    29,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Shift released before shortcut key",
+            "synthetic_layout": false,
+            "flags": 7,
+            "expected_hex": "1b5b39373a36353b36751b5b39373b353a3375",
+            "actual_hex": "1b5b39373a36353b36751b5b39373b353a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    29,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    29,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Cyrillic primary shifted and base",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b313038393a313035373a39393b36751b5b313038393a313035373a39393b363a32751b5b313038393a313035373a39393b363a3375",
+            "actual_hex": "1b5b313038393a313035373a39393b36751b5b313038393a313035373a39393b363a32751b5b313038393a313035373a39393b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    31,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    31,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    31,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Cyrillic base-only and modifier-first release",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b313038393a3a39393b35751b5b313038393a3a39393b313a3375",
+            "actual_hex": "1b5b313038393a3a39393b35751b5b313038393a3a39393b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    31,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    31,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture soft keyboard omits physical base",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b313038393a313035373b36751b5b313038393a313035373b363a3375",
+            "actual_hex": "1b5b313038393a313035373b36751b5b313038393a313035373b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    31,
+                    0,
+                    4097,
+                    2
+                ],
+                [
+                    1,
+                    31,
+                    0,
+                    4097,
+                    2
+                ]
+            ]
+        }
+    ],
+    "date": "2026-10-09",
+    "apk_version": "0.118.0+kitty.59c2f1ea.10429391625c",
+    "apk_arm64_sha256": "3a228d5a3bf52604670879663ad6017dcf0218acabd942e71a1e826182cd56d1",
+    "source_snapshot_sha256": "10429391625cb048ef9ea822c421b00758a0ccdf4671d78cd51a0d93ccb6ce2e",
+    "base_commit": "59c2f1ea591fed2c282380b0542597d4b5c29ba1",
+    "all_recorded_checks_passed": true,
+    "counts": {
+        "real_android_virtual_layout": 122,
+        "synthetic_layout_values": 3
+    },
+    "notes": [
+        "Framework events are directly delivered to production TerminalView, not injected through OS input dispatch.",
+        "Three cases override Unicode resolution in a synthetic KeyEvent fixture to exercise Cyrillic/base-only/soft keyboard boundaries.",
+        "Flags 0 through 7 use raw negotiation emitted by a real bash process.",
+        "Capture uses foreground dd, a start handshake, and an actual foreground target activity to avoid background freezing."
+    ],
+    "uncovered": [
+        "No new flag 4 physical Bluetooth keyboard, real IME touches, hardware non-Latin layout, AltGr hardware, SSH or multiplexer verification. Historical phase 2 evidence does not validate flag 4."
+    ],
+    "cleanup": "Fixture processes exited; temporary capture directory removed; temporary instrumentation package uninstalled; Termux reopened. Application data and host toolchain/APKs retained."
+}

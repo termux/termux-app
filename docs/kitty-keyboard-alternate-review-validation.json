@@ -1,0 +1,407 @@
+{
+    "method": "Android framework KeyEvent delivered directly to production TerminalView; real TerminalSession/native PTY and bash raw byte capture; not physical HID or OS input dispatch",
+    "model": "PTP-AN10",
+    "android": "16",
+    "checks": 138,
+    "failures": 0,
+    "date": "2026-10-09",
+    "apk_version": "0.118.0+kitty.817dfb43.edcdab58162c",
+    "apk_arm64_sha256": "37b2b7587bd31c69f9c33067f22a21276014f5c79ab9e6ccc7a29f625d7e7afc",
+    "source_snapshot_sha256": "edcdab58162c2689b21bdabcc30201f3c9abe74c5f70b76a3b11673157e38dd4",
+    "base_commit": "817dfb4322a6e072bc006638da20e6e24532fc2b",
+    "all_recorded_checks_passed": true,
+    "counts": {
+        "android_virtual_layout": 122,
+        "synthetic_layout_fixture": 16
+    },
+    "notes": [
+        "Framework KeyEvents are delivered directly to production TerminalView and the native PTY; not physical HID or OS injection.",
+        "Original 125 regression cases plus 13 new synthetic Shift-side cases are verified on the new APK.",
+        "New fixtures cover generic/left/right/both Shift, right Shift+AltGr, ordinary right-Shift text, and virtual Shift default."
+    ],
+    "uncovered": [
+        "No new physical side-dependent keyboard layout or real IME verification is claimed for these fixes."
+    ],
+    "regression_checks": 125,
+    "regression_reference": "kitty-keyboard-alternate-device-validation.json (same expected cases, rerun on this APK)",
+    "new_checks": [
+        {
+            "name": "Fixture Shift side 64 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 5,
+            "expected_hex": "1b5b36313a33353b36751b5b36313a33353b3675",
+            "actual_hex": "1b5b36313a33353b36751b5b36313a33353b3675",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4161,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4161,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4161,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 128 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 5,
+            "expected_hex": "1b5b36313a34323b36751b5b36313a34323b3675",
+            "actual_hex": "1b5b36313a34323b36751b5b36313a34323b3675",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4225,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4225,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4225,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 192 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 5,
+            "expected_hex": "1b5b36313a39343b36751b5b36313a39343b3675",
+            "actual_hex": "1b5b36313a39343b36751b5b36313a39343b3675",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4289,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4289,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4289,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 0 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 5,
+            "expected_hex": "1b5b36313a34333b36751b5b36313a34333b3675",
+            "actual_hex": "1b5b36313a34333b36751b5b36313a34333b3675",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 64 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b36313a33353b36751b5b36313a33353b363a32751b5b36313a33353b363a3375",
+            "actual_hex": "1b5b36313a33353b36751b5b36313a33353b363a32751b5b36313a33353b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4161,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4161,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4161,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 128 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b36313a34323b36751b5b36313a34323b363a32751b5b36313a34323b363a3375",
+            "actual_hex": "1b5b36313a34323b36751b5b36313a34323b363a32751b5b36313a34323b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4225,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4225,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4225,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 192 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b36313a39343b36751b5b36313a39343b363a32751b5b36313a39343b363a3375",
+            "actual_hex": "1b5b36313a39343b36751b5b36313a39343b363a32751b5b36313a39343b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4289,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4289,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4289,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture Shift side 0 shortcut hold",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b36313a34333b36751b5b36313a34333b363a32751b5b36313a34333b363a3375",
+            "actual_hex": "1b5b36313a34333b36751b5b36313a34333b363a32751b5b36313a34333b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4097,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4097,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4097,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture right Shift+AltGr retains side",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b383336343a3231353a36313b36751b5b383336343a3231353a36313b363a32751b5b383336343a3a36313b313a3375",
+            "actual_hex": "1b5b383336343a3231353a36313b36751b5b383336343a3231353a36313b363a32751b5b383336343a3a36313b313a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4259,
+                    0
+                ],
+                [
+                    0,
+                    70,
+                    1,
+                    4259,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    34,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture plain right Shift stays text",
+            "synthetic_layout": true,
+            "flags": 0,
+            "expected_hex": "2a",
+            "actual_hex": "2a",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    129,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture plain right Shift stays text",
+            "synthetic_layout": true,
+            "flags": 4,
+            "expected_hex": "2a",
+            "actual_hex": "2a",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    129,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture plain right Shift stays text",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "2a",
+            "actual_hex": "2a",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    129,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "name": "Fixture virtual Shift keeps left-side default",
+            "synthetic_layout": true,
+            "flags": 7,
+            "expected_hex": "1b5b36313a33353b36751b5b36313a33353b363a3375",
+            "actual_hex": "1b5b36313a33353b36751b5b36313a33353b363a3375",
+            "passed": true,
+            "events": [
+                [
+                    0,
+                    70,
+                    0,
+                    4096,
+                    0
+                ],
+                [
+                    1,
+                    70,
+                    0,
+                    4096,
+                    0
+                ]
+            ]
+        }
+    ],
+    "full_report_artifact": "kitty-alternate-review-fixes/device-validation.json",
+    "full_report_sha256": "ff0d8f483ef14350b860c5c160a455e083e1ff88bad7c2b5c469a77717a90da1",
+    "cleanup": "Fixture processes exited; temporary capture directory and helper removed; Termux reopened; application data, host APKs/reports and toolchain retained."
+}

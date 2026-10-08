@@ -33,6 +33,29 @@ public final class TerminalEmulator {
     /** Log unknown or unimplemented escape sequences received from the shell process. */
     private static final boolean LOG_ESCAPE_SEQUENCES = false;
 
+    private static final int ESC_CSI_KITTY_KEYBOARD = 24;
+    private int mKittyKeyboardCommand;
+    private final KittyKeyboardState mKittyKeyboardMain = new KittyKeyboardState();
+    private final KittyKeyboardState mKittyKeyboardAlt = new KittyKeyboardState();
+
+    private KittyKeyboardState kittyKeyboardState() {
+        return mScreen == mAltBuffer ? mKittyKeyboardAlt : mKittyKeyboardMain;
+    }
+
+    /** Whether an enhancement changes key encoding; alternate reporting alone keeps legacy input. */
+    public boolean isKittyKeyboardEnabled() {
+        return (getKittyKeyboardFlags() & (KeyHandler.KITTY_DISAMBIGUATE | KeyHandler.KITTY_REPORT_EVENTS)) != 0;
+    }
+
+    public int getKittyKeyboardFlags() {
+        return kittyKeyboardState().getFlags();
+    }
+
+    /** Changes whenever the active keyboard mode is updated, including reset and stack operations. */
+    public long getKittyKeyboardGeneration() {
+        return kittyKeyboardState().getGeneration();
+    }
+
     public static final int MOUSE_LEFT_BUTTON = 0;
 
     /** Mouse moving while having left mouse button pressed. */
@@ -901,6 +924,23 @@ public final class TerminalEmulator {
                     case ESC_CSI_BIGGERTHAN:
                         doCsiBiggerThan(b);
                         break;
+                    case ESC_CSI_KITTY_KEYBOARD:
+                        if (b == 'u') {
+                            // Reject subparameters and excess parameters rather than changing modes.
+                            if (mArgsSubParamsBitSet == 0 && mArgIndex <= (mKittyKeyboardCommand == '=' ? 1 : 0)) {
+                                if (mKittyKeyboardCommand == '<')
+                                    kittyKeyboardState().pop(getArg0(1));
+                                else
+                                    kittyKeyboardState().set(getArg0(0), getArg1(1));
+                            }
+                        } else if ((b >= '0' && b <= '9') || b == ';' || b == ':') {
+                            parseArg(b);
+                        } else if (b >= 0x20 && b <= 0x3F) {
+                            continueSequence(b >= 0x30 ? ESC_CSI_UNSUPPORTED_PARAMETER_BYTE : ESC_CSI_UNSUPPORTED_INTERMEDIATE_BYTE);
+                        } else {
+                            unknownSequence(b);
+                        }
+                        break;
                     case ESC_CSI_DOLLAR:
                         boolean originMode = isDecsetInternalBitSet(DECSET_BIT_ORIGIN_MODE);
                         int effectiveTopMargin = originMode ? mTopMargin : 0;
@@ -1703,6 +1743,10 @@ public final class TerminalEmulator {
     /** Process byte while in the {@link #ESC_CSI_QUESTIONMARK} escape state. */
     private void doCsiQuestionMark(int b) {
         switch (b) {
+            case 'u':
+                if (mArgIndex == 0 && mArgs[0] == -1)
+                    mSession.write("\033[?" + kittyKeyboardState().getFlags() + "u");
+                break;
             case 'J': // Selective erase in display (DECSED) - http://www.vt100.net/docs/vt510-rm/DECSED.
             case 'K': // Selective erase in line (DECSEL) - http://vt100.net/docs/vt510-rm/DECSEL.
                 mAboutToAutoWrap = false;
@@ -1857,7 +1901,9 @@ public final class TerminalEmulator {
                 if (newScreen != mScreen) {
                     boolean resized = !(newScreen.mColumns == mColumns && newScreen.mScreenRows == mRows);
                     if (setting) saveCursor();
+                    kittyKeyboardState().invalidateEvents();
                     mScreen = newScreen;
+                    kittyKeyboardState().invalidateEvents();
                     if (!setting) {
                         int col = mSavedStateMain.mSavedCursorCol;
                         int row = mSavedStateMain.mSavedCursorRow;
@@ -1887,6 +1933,10 @@ public final class TerminalEmulator {
 
     private void doCsiBiggerThan(int b) {
         switch (b) {
+            case 'u':
+                if (mArgIndex == 0 && mArgsSubParamsBitSet == 0)
+                    kittyKeyboardState().push(getArg0(0));
+                break;
             case 'c': // "${CSI}>c" or "${CSI}>c". Secondary Device Attributes (DA2).
                 // Originally this was used for the terminal to respond with "identification code, firmware version level,
                 // and hardware options" (http://vt100.net/docs/vt510-rm/DA2), with the first "41" meaning the VT420
@@ -2308,7 +2358,8 @@ public final class TerminalEmulator {
                 break;
             case '<': // "Esc [ <" -- start of a private parameter byte
             case '=': // "Esc [ =" -- start of a private parameter byte
-                continueSequence(ESC_CSI_UNSUPPORTED_PARAMETER_BYTE);
+                mKittyKeyboardCommand = b;
+                continueSequence(ESC_CSI_KITTY_KEYBOARD);
                 break;
             case '`': // Horizontal position absolute (HPA - http://www.vt100.net/docs/vt510-rm/HPA).
                 setCursorColRespectingOriginMode(getArg0(1) - 1);
@@ -3484,6 +3535,8 @@ public final class TerminalEmulator {
 
     /** Reset terminal state so user can interact with it regardless of present state. */
     public void reset() {
+        mKittyKeyboardMain.reset();
+        mKittyKeyboardAlt.reset();
         setCursorStyle();
         mArgIndex = 0;
         mContinueSequence = false;

@@ -1,0 +1,333 @@
+{
+  "device": "PTP-AN10",
+  "android": "16",
+  "abi": "arm64-v8a",
+  "source_commit": "91ae4885",
+  "method": "Android system-injected key events through installed Termux TerminalView, native PTY and raw byte capture",
+  "tests": [
+    {
+      "mode": "kitty",
+      "protocol_replies_hex": "1b5b3f30751b5b3f31751b5b3f30751b5b3f31751b5b3f30751b5b3f31751b5b3f30751b5b3f3175",
+      "results": [
+        {
+          "key": "Ctrl+0",
+          "expected_hex": "1b5b34383b3575",
+          "actual_hex": "1b5b34383b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+1",
+          "expected_hex": "1b5b34393b3575",
+          "actual_hex": "1b5b34393b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+2",
+          "expected_hex": "1b5b35303b3575",
+          "actual_hex": "1b5b35303b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+3",
+          "expected_hex": "1b5b35313b3575",
+          "actual_hex": "1b5b35313b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+4",
+          "expected_hex": "1b5b35323b3575",
+          "actual_hex": "1b5b35323b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+5",
+          "expected_hex": "1b5b35333b3575",
+          "actual_hex": "1b5b35333b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+6",
+          "expected_hex": "1b5b35343b3575",
+          "actual_hex": "1b5b35343b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+7",
+          "expected_hex": "1b5b35353b3575",
+          "actual_hex": "1b5b35353b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+8",
+          "expected_hex": "1b5b35363b3575",
+          "actual_hex": "1b5b35363b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+9",
+          "expected_hex": "1b5b35373b3575",
+          "actual_hex": "1b5b35373b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+I",
+          "expected_hex": "1b5b3130353b3575",
+          "actual_hex": "1b5b3130353b3575",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Shift+A",
+          "expected_hex": "1b5b39373b3675",
+          "actual_hex": "1b5b39373b3675",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Shift+=",
+          "expected_hex": "1b5b36313b3675",
+          "actual_hex": "1b5b36313b3675",
+          "passed": true
+        },
+        {
+          "key": "Shift+Enter",
+          "expected_hex": "1b5b31333b3275",
+          "actual_hex": "1b5b31333b3275",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Enter",
+          "expected_hex": "1b5b31333b3575",
+          "actual_hex": "1b5b31333b3575",
+          "passed": true
+        },
+        {
+          "key": "Alt+Enter",
+          "expected_hex": "1b5b31333b3375",
+          "actual_hex": "1b5b31333b3375",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Tab",
+          "expected_hex": "1b5b393b3575",
+          "actual_hex": "1b5b393b3575",
+          "passed": true
+        },
+        {
+          "key": "Shift+Tab",
+          "expected_hex": "1b5b393b3275",
+          "actual_hex": "1b5b393b3275",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Shift+Tab",
+          "expected_hex": "1b5b393b3675",
+          "actual_hex": "1b5b393b3675",
+          "passed": true
+        },
+        {
+          "key": "Plain Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "key": "Plain Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "key": "Backspace",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "key": "Escape",
+          "expected_hex": "1b5b323775",
+          "actual_hex": "1b5b323775",
+          "passed": true
+        },
+        {
+          "key": "F3",
+          "expected_hex": "1b5b31337e",
+          "actual_hex": "1b5b31337e",
+          "passed": true
+        },
+        {
+          "key": "Plain A",
+          "expected_hex": "61",
+          "actual_hex": "61",
+          "passed": true
+        },
+        {
+          "key": "Shift+A",
+          "expected_hex": "41",
+          "actual_hex": "41",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "mode": "legacy",
+      "protocol_replies_hex": "1b5b3f3075",
+      "results": [
+        {
+          "key": "Ctrl+0",
+          "expected_hex": "30",
+          "actual_hex": "30",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+1",
+          "expected_hex": "31",
+          "actual_hex": "31",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+2",
+          "expected_hex": "00",
+          "actual_hex": "00",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+3",
+          "expected_hex": "1b",
+          "actual_hex": "1b",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+4",
+          "expected_hex": "1c",
+          "actual_hex": "1c",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+5",
+          "expected_hex": "1d",
+          "actual_hex": "1d",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+6",
+          "expected_hex": "1e",
+          "actual_hex": "1e",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+7",
+          "expected_hex": "1f",
+          "actual_hex": "1f",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+8",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+9",
+          "expected_hex": "39",
+          "actual_hex": "39",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+I",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Shift+A",
+          "expected_hex": "01",
+          "actual_hex": "01",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Shift+=",
+          "expected_hex": "2b",
+          "actual_hex": "2b",
+          "passed": true
+        },
+        {
+          "key": "Shift+Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "key": "Alt+Enter",
+          "expected_hex": "1b0d",
+          "actual_hex": "1b0d",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "key": "Shift+Tab",
+          "expected_hex": "1b5b5a",
+          "actual_hex": "1b5b5a",
+          "passed": true
+        },
+        {
+          "key": "Ctrl+Shift+Tab",
+          "expected_hex": "1b5b5a",
+          "actual_hex": "1b5b5a",
+          "passed": true
+        },
+        {
+          "key": "Plain Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "key": "Plain Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "key": "Backspace",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "key": "Escape",
+          "expected_hex": "1b",
+          "actual_hex": "1b",
+          "passed": true
+        },
+        {
+          "key": "F3",
+          "expected_hex": "1b4f52",
+          "actual_hex": "1b4f52",
+          "passed": true
+        },
+        {
+          "key": "Plain A",
+          "expected_hex": "61",
+          "actual_hex": "61",
+          "passed": true
+        },
+        {
+          "key": "Shift+A",
+          "expected_hex": "41",
+          "actual_hex": "41",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,732 @@
+{
+  "source_commit": "65c625b2bc7d4b1552084f449400bda18cb00b84",
+  "apk_version": "0.118.0+kitty.65c625b2",
+  "date": "2026-10-07",
+  "device": {
+    "model": "PTP-AN10",
+    "android": "16",
+    "abi": "arm64-v8a"
+  },
+  "counts": {
+    "framework_key_pty_and_scroll": 83,
+    "current_virtual_layout": 2,
+    "rime_touch_and_lifecycle": 7,
+    "rime_space_and_modifiers": 4
+  },
+  "total_checks": 96,
+  "all_recorded_checks_passed": true,
+  "uncovered": [
+    "AltGr+Space producing NBSP or another layout character remains unverified. Automated device checks used a virtual mapping that returns no character; the user-reported combination retest does not specifically confirm this layout case."
+  ],
+  "reports": {
+    "framework_key_pty_and_scroll": {
+      "source_commit": "65c625b2",
+      "method": "Android framework KeyEvent delivered directly to installed production TerminalView; real session queue, native PTY and foreground shell capture",
+      "results": [
+        {
+          "mode": "kitty",
+          "key": "Ctrl+0",
+          "expected_hex": "1b5b34383b3575",
+          "actual_hex": "1b5b34383b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+1",
+          "expected_hex": "1b5b34393b3575",
+          "actual_hex": "1b5b34393b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+2",
+          "expected_hex": "1b5b35303b3575",
+          "actual_hex": "1b5b35303b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+3",
+          "expected_hex": "1b5b35313b3575",
+          "actual_hex": "1b5b35313b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+4",
+          "expected_hex": "1b5b35323b3575",
+          "actual_hex": "1b5b35323b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+5",
+          "expected_hex": "1b5b35333b3575",
+          "actual_hex": "1b5b35333b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+6",
+          "expected_hex": "1b5b35343b3575",
+          "actual_hex": "1b5b35343b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+7",
+          "expected_hex": "1b5b35353b3575",
+          "actual_hex": "1b5b35353b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+8",
+          "expected_hex": "1b5b35363b3575",
+          "actual_hex": "1b5b35363b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+9",
+          "expected_hex": "1b5b35373b3575",
+          "actual_hex": "1b5b35373b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+I",
+          "expected_hex": "1b5b3130353b3575",
+          "actual_hex": "1b5b3130353b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+Shift+A",
+          "expected_hex": "1b5b39373b3675",
+          "actual_hex": "1b5b39373b3675",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Shift+Enter",
+          "expected_hex": "1b5b31333b3275",
+          "actual_hex": "1b5b31333b3275",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+Enter",
+          "expected_hex": "1b5b31333b3575",
+          "actual_hex": "1b5b31333b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+Tab",
+          "expected_hex": "1b5b393b3575",
+          "actual_hex": "1b5b393b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Shift+Tab",
+          "expected_hex": "1b5b393b3275",
+          "actual_hex": "1b5b393b3275",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Backspace",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Escape",
+          "expected_hex": "1b5b323775",
+          "actual_hex": "1b5b323775",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "F3",
+          "expected_hex": "1b5b31337e",
+          "actual_hex": "1b5b31337e",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+Space",
+          "expected_hex": "1b5b33323b3575",
+          "actual_hex": "1b5b33323b3575",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Left Alt+Space",
+          "expected_hex": "1b5b33323b3375",
+          "actual_hex": "1b5b33323b3375",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Ctrl+PageUp",
+          "expected_hex": "1b5b353b357e",
+          "actual_hex": "1b5b353b357e",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "PageDown",
+          "expected_hex": "1b5b367e",
+          "actual_hex": "1b5b367e",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Shift+PageUp local scroll",
+          "expected_hex": "",
+          "actual_hex": "",
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Scrollback offset after Shift+PageUp",
+          "actual": -27,
+          "expected": -27,
+          "passed": true
+        },
+        {
+          "mode": "kitty",
+          "key": "Shift+PageDown local scroll",
+          "expected_hex": "",
+          "actual_hex": "",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+0",
+          "expected_hex": "30",
+          "actual_hex": "30",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+1",
+          "expected_hex": "31",
+          "actual_hex": "31",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+2",
+          "expected_hex": "00",
+          "actual_hex": "00",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+3",
+          "expected_hex": "1b",
+          "actual_hex": "1b",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+4",
+          "expected_hex": "1c",
+          "actual_hex": "1c",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+5",
+          "expected_hex": "1d",
+          "actual_hex": "1d",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+6",
+          "expected_hex": "1e",
+          "actual_hex": "1e",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+7",
+          "expected_hex": "1f",
+          "actual_hex": "1f",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+8",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+9",
+          "expected_hex": "39",
+          "actual_hex": "39",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+I",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+Shift+A",
+          "expected_hex": "01",
+          "actual_hex": "01",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Shift+Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Shift+Tab",
+          "expected_hex": "1b5b5a",
+          "actual_hex": "1b5b5a",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Backspace",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Escape",
+          "expected_hex": "1b",
+          "actual_hex": "1b",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "F3",
+          "expected_hex": "1b4f52",
+          "actual_hex": "1b4f52",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+Space",
+          "expected_hex": "00",
+          "actual_hex": "00",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Left Alt+Space",
+          "expected_hex": "1b20",
+          "actual_hex": "1b20",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Ctrl+PageUp",
+          "expected_hex": "1b5b353b357e",
+          "actual_hex": "1b5b353b357e",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "PageDown",
+          "expected_hex": "1b5b367e",
+          "actual_hex": "1b5b367e",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Shift+PageUp local scroll",
+          "expected_hex": "",
+          "actual_hex": "",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Scrollback offset after Shift+PageUp",
+          "actual": -27,
+          "expected": -27,
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Shift+PageDown local scroll",
+          "expected_hex": "",
+          "actual_hex": "",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+0",
+          "expected_hex": "1b5b34383b3575",
+          "actual_hex": "1b5b34383b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+1",
+          "expected_hex": "1b5b34393b3575",
+          "actual_hex": "1b5b34393b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+2",
+          "expected_hex": "1b5b35303b3575",
+          "actual_hex": "1b5b35303b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+3",
+          "expected_hex": "1b5b35313b3575",
+          "actual_hex": "1b5b35313b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+4",
+          "expected_hex": "1b5b35323b3575",
+          "actual_hex": "1b5b35323b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+5",
+          "expected_hex": "1b5b35333b3575",
+          "actual_hex": "1b5b35333b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+6",
+          "expected_hex": "1b5b35343b3575",
+          "actual_hex": "1b5b35343b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+7",
+          "expected_hex": "1b5b35353b3575",
+          "actual_hex": "1b5b35353b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+8",
+          "expected_hex": "1b5b35363b3575",
+          "actual_hex": "1b5b35363b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+9",
+          "expected_hex": "1b5b35373b3575",
+          "actual_hex": "1b5b35373b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+I",
+          "expected_hex": "1b5b3130353b3575",
+          "actual_hex": "1b5b3130353b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+Shift+A",
+          "expected_hex": "1b5b39373b3675",
+          "actual_hex": "1b5b39373b3675",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Shift+Enter",
+          "expected_hex": "1b5b31333b3275",
+          "actual_hex": "1b5b31333b3275",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+Enter",
+          "expected_hex": "1b5b31333b3575",
+          "actual_hex": "1b5b31333b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+Tab",
+          "expected_hex": "1b5b393b3575",
+          "actual_hex": "1b5b393b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Shift+Tab",
+          "expected_hex": "1b5b393b3275",
+          "actual_hex": "1b5b393b3275",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Tab",
+          "expected_hex": "09",
+          "actual_hex": "09",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Backspace",
+          "expected_hex": "7f",
+          "actual_hex": "7f",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Escape",
+          "expected_hex": "1b5b323775",
+          "actual_hex": "1b5b323775",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "F3",
+          "expected_hex": "1b5b31337e",
+          "actual_hex": "1b5b31337e",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+Space",
+          "expected_hex": "1b5b33323b3575",
+          "actual_hex": "1b5b33323b3575",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Left Alt+Space",
+          "expected_hex": "1b5b33323b3375",
+          "actual_hex": "1b5b33323b3375",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Ctrl+PageUp",
+          "expected_hex": "1b5b353b357e",
+          "actual_hex": "1b5b353b357e",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "PageDown",
+          "expected_hex": "1b5b367e",
+          "actual_hex": "1b5b367e",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Shift+PageUp alternate scroll",
+          "expected_hex": "1b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b41",
+          "actual_hex": "1b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b411b5b41",
+          "passed": true
+        },
+        {
+          "mode": "alt",
+          "key": "Shift+PageDown alternate scroll",
+          "expected_hex": "1b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b42",
+          "actual_hex": "1b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b421b5b42",
+          "passed": true
+        }
+      ]
+    },
+    "current_virtual_layout": {
+      "source_commit": "65c625b2",
+      "method": "Android framework KeyEvent delivered directly to installed production TerminalView; real session queue, native PTY and foreground shell capture",
+      "layouts": [
+        {
+          "device": "virtual keyboard",
+          "altgr_space_codepoint": 0
+        },
+        {
+          "device": "Virtual",
+          "virtual": true,
+          "altgr_space_codepoint": 0
+        }
+      ],
+      "results": [
+        {
+          "mode": "kitty",
+          "key": "Right Alt+Space actual virtual layout",
+          "expected_hex": "",
+          "actual_hex": "",
+          "passed": true
+        },
+        {
+          "mode": "legacy",
+          "key": "Right Alt+Space actual virtual layout",
+          "expected_hex": "",
+          "actual_hex": "",
+          "passed": true
+        }
+      ]
+    },
+    "rime_touch_and_lifecycle": {
+      "source_commit": "65c625b2",
+      "method": "Real Rime touch input and Termux CTRL extra key across native PTY, with application lifecycle and keyboard resize checks; capture setup through temporary instrumentation",
+      "results": [
+        {
+          "name": "CTRL extra key + real Rime 0",
+          "expected_hex": "1b5b34383b3575",
+          "actual_hex": "1b5b34383b3575",
+          "passed": true
+        },
+        {
+          "name": "Plain Rime 0 after one-shot CTRL clears",
+          "expected_hex": "30",
+          "actual_hex": "30",
+          "passed": true
+        },
+        {
+          "name": "CTRL extra key + real Rime 2",
+          "expected_hex": "1b5b35303b3575",
+          "actual_hex": "1b5b35303b3575",
+          "passed": true
+        },
+        {
+          "name": "CTRL extra key + real Rime 1",
+          "expected_hex": "1b5b34393b3575",
+          "actual_hex": "1b5b34393b3575",
+          "passed": true
+        },
+        {
+          "name": "Real Rime Enter",
+          "expected_hex": "0d",
+          "actual_hex": "0d",
+          "passed": true
+        },
+        {
+          "name": "CTRL + Rime 0 after background and foreground",
+          "expected_hex": "1b5b34383b3575",
+          "actual_hex": "1b5b34383b3575",
+          "passed": true
+        },
+        {
+          "name": "CTRL + Rime 1 after keyboard close/open and resize",
+          "expected_hex": "1b5b34393b3575",
+          "actual_hex": "1b5b34393b3575",
+          "passed": true
+        }
+      ]
+    },
+    "rime_space_and_modifiers": {
+      "source_commit": "65c625b2",
+      "method": "Real Rime Space touches plus Termux CTRL/ALT extra keys, captured after native PTY",
+      "results": [
+        {
+          "name": "Plain Rime Space",
+          "expected_hex": "20",
+          "actual_hex": "20",
+          "passed": true
+        },
+        {
+          "name": "CTRL extra key + real Rime Space",
+          "expected_hex": "1b5b33323b3575",
+          "actual_hex": "1b5b33323b3575",
+          "passed": true
+        },
+        {
+          "name": "ALT extra key + real Rime Space",
+          "expected_hex": "1b5b33323b3375",
+          "actual_hex": "1b5b33323b3375",
+          "passed": true
+        },
+        {
+          "name": "Plain Space after one-shot ALT clears",
+          "expected_hex": "20",
+          "actual_hex": "20",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "user_reported_manual_validation": {
+    "source_commit": "65c625b2bc7d4b1552084f449400bda18cb00b84",
+    "date": "2026-10-07",
+    "source": "user report",
+    "status": "completed",
+    "coverage": [
+      "on-device and external physical keyboards",
+      "local Termux and SSH",
+      "Zellij and tmux"
+    ],
+    "versions_and_raw_captures": "not supplied",
+    "altgr_character_producing_layout": "not specifically confirmed"
+  }
+}
