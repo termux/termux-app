@@ -127,7 +127,7 @@ public class PackageUtils {
     /**
      * Get the {@link PackageInfo} for the package associated with the {@code packageName}.
      *
-     * Also check {@link #isAppInstalled(Context, String, String) if targetting targeting sdk
+     * Also check {@link #isAppInstalled(Context, String, String) if targeting targeting sdk
      * `30` (android `11`) since {@link PackageManager.NameNotFoundException} may be thrown.
      *
      * @param context The {@link Context} for operations.
@@ -161,7 +161,7 @@ public class PackageUtils {
     /**
      * Get the {@link ApplicationInfo} for the {@code packageName}.
      *
-     * Also check {@link #isAppInstalled(Context, String, String) if targetting targeting sdk
+     * Also check {@link #isAppInstalled(Context, String, String) if targeting targeting sdk
      * `30` (android `11`) since {@link PackageManager.NameNotFoundException} may be thrown.
      *
      * @param context The {@link Context} for operations.

@@ -323,7 +323,7 @@ public class TermuxUtils {
      * Get a markdown {@link String} for the apps info of termux app, its installed plugin apps or
      * external apps that called a Termux API depending on {@link AppInfoMode} passed.
      *
-     * Also check {@link PackageUtils#isAppInstalled(Context, String, String) if targetting targeting
+     * Also check {@link PackageUtils#isAppInstalled(Context, String, String) if targeting targeting
      * sdk `30` (android `11`) since {@link PackageManager.NameNotFoundException} may be thrown while
      * getting info of {@code callingPackageName} app.
      *
