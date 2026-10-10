@@ -586,6 +586,10 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_FILE_VIEW_RECEIVER, true);
     }
 
+    public boolean isHomeLauncherEnabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_ENABLE_HOME_SCREEN_LAUNCHER, true);
+    }
+
     public boolean areHardwareKeyboardShortcutsDisabled() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS, true);
     }

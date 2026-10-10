@@ -105,6 +105,9 @@ public final class TermuxPropertyConstants {
     /** Defines the key for whether file view receiver of the app is enabled. */
     public static final String KEY_DISABLE_FILE_VIEW_RECEIVER =  "disable-file-view-receiver"; // Default: "disable-file-view-receiver"
 
+    /** Defines the key for whether home screen launcher is enabled. */
+    public static final String KEY_ENABLE_HOME_SCREEN_LAUNCHER = "enable-home-screen-launcher"; // Default: false
+
 
 
     /** Defines the key for whether hardware keyboard shortcuts are enabled. */
@@ -393,6 +396,7 @@ public final class TermuxPropertyConstants {
         /* boolean */
         KEY_DISABLE_FILE_SHARE_RECEIVER,
         KEY_DISABLE_FILE_VIEW_RECEIVER,
+        KEY_ENABLE_HOME_SCREEN_LAUNCHER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
@@ -441,6 +445,7 @@ public final class TermuxPropertyConstants {
     public static final Set<String> TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         KEY_DISABLE_FILE_SHARE_RECEIVER,
         KEY_DISABLE_FILE_VIEW_RECEIVER,
+        KEY_ENABLE_HOME_SCREEN_LAUNCHER,
         KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,

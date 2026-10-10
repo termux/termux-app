@@ -280,6 +280,14 @@ public class FileReceiverActivity extends AppCompatActivity {
                 if (errmsg != null)
                     Logger.logError(LOG_TAG, errmsg);
 
+                state = properties.isHomeLauncherEnabled();
+                Logger.logVerbose(LOG_TAG, "Setting " + TERMUX_APP.HOME_LAUNCHER_ACTIVITY_CLASS_NAME + " component state to " + state);
+                errmsg = PackageUtils.setComponentState(context, TermuxConstants.TERMUX_PACKAGE_NAME,
+                    TERMUX_APP.HOME_LAUNCHER_ACTIVITY_CLASS_NAME,
+                    state, null, false, false);
+                if (errmsg != null)
+                    Logger.logError(LOG_TAG, errmsg);
+
             }
         }.start();
     }
