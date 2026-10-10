@@ -269,9 +269,9 @@ public final class AppShell {
             }
         }
 
-        if (mExecutionCommand.isExecuting()) {
-            kill();
-        }
+        // Send SIGKILL to process unconditionally since setStateFailed() sets state to FAILED and
+        // isExecuting() will always be false after that
+        kill();
     }
 
     /**
