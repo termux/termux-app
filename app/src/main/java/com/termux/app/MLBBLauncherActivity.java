@@ -16,11 +16,12 @@ import android.content.pm.PackageManager;
 
 /** Local BNK explorer. The protected-game Shizuku broker is a separate milestone. */
 public class MLBBLauncherActivity extends Activity {
-    private static final int OPEN_BNK=100, SAVE_WEM=101;
+    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103;
     private final java.util.concurrent.ExecutorService worker=Executors.newSingleThreadExecutor();
     private LinearLayout root;
     private TextView status;
     private MLBBBankReader bank;
+    private final java.util.Map<Long,byte[]> replacements=new java.util.HashMap<>();
     private IMLBBFiles shizukuFiles;
     private final android.content.ServiceConnection shizukuConnection=new android.content.ServiceConnection(){
         @Override public void onServiceConnected(android.content.ComponentName name,android.os.IBinder binder){
@@ -116,30 +117,43 @@ public class MLBBLauncherActivity extends Activity {
             try(android.os.ParcelFileDescriptor fd=shizukuFiles.openBank(name);
                 InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){
                 MLBBBankReader parsed=new MLBBBankReader(readLimited(in,128*1024*1024));
-                runOnUiThread(()->{bank=parsed;bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
+                runOnUiThread(()->{bank=parsed;replacements.clear();bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
             }catch(Exception e){message("Cannot open "+name+": "+e.getMessage());}
         });
     }
     private void showEntries(){
         label(bankName+" · "+bank.entries.size()+" audio entries",16);
+        label(replacements.size()+" replacements queued",14);
+        button("Export modified BNK (does not touch game)",this::savePatchedBank);
         for(MLBBBankReader.Entry e:bank.entries){
             button("WEM ID "+e.id+" ("+e.size+" bytes)",()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","About audio preview"},(d,option)->{
+                    .setItems(new String[]{"Export original WEM","Replace from WEM","About audio preview"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
                             i.setType("application/octet-stream");
                             i.putExtra(Intent.EXTRA_TITLE,e.id+".wem");
                             startActivityForResult(i,SAVE_WEM);
+                        } else if(option==1){
+                            Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                            i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
+                            startActivityForResult(i,IMPORT_WEM);
                         } else {
-                            new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis requires a native vgmstream decoder. The current milestone implements BNK inspection and export only.")
+                            new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis requires native vgmstream. Replacing audio with a different codec may not work in game.")
                                 .setPositiveButton("OK",null).show();
                         }
                     }).show();
             });
         }
+    }
+    private void savePatchedBank(){
+        if(bank==null){message("Select a BNK");return;}
+        Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("application/octet-stream");
+        i.putExtra(Intent.EXTRA_TITLE,"patched_"+bankName);
+        startActivityForResult(i,SAVE_BNK);
     }
     private static byte[] readLimited(InputStream in,int limit) throws IOException{
         ByteArrayOutputStream out=new ByteArrayOutputStream();
@@ -162,10 +176,29 @@ public class MLBBLauncherActivity extends Activity {
                     try(InputStream in=getContentResolver().openInputStream(uri)){bytes=readLimited(in,128*1024*1024);}
                     MLBBBankReader parsed=new MLBBBankReader(bytes);
                     runOnUiThread(()->{
-                        bank=parsed;selected=null;bankName="Imported BNK";audio();
+                        bank=parsed;replacements.clear();selected=null;bankName="Imported BNK.bnk";audio();
                         message("Parsed "+parsed.entries.size()+" WEM entries");
                     });
                 }catch(Exception e){message("Import failed: "+e.getMessage());}
+            });
+        }else if(request==IMPORT_WEM && bank!=null && selected!=null){
+            final long id=selected.id;
+            worker.execute(()->{
+                try(InputStream in=getContentResolver().openInputStream(uri)){
+                    byte[] wem=readLimited(in,64*1024*1024);
+                    if(wem.length<12 || !(new String(wem,0,4,java.nio.charset.StandardCharsets.US_ASCII).equals("RIFF")))
+                        throw new IOException("Not a RIFF/WEM");
+                    replacements.put(id,wem);
+                    runOnUiThread(()->{audio();message("Queued replacement for ID "+id);});
+                }catch(Exception ex){message("Import WEM failed: "+ex.getMessage());}
+            });
+        }else if(request==SAVE_BNK && bank!=null){
+            worker.execute(()->{
+                try{
+                    byte[] rebuilt=bank.repack(new java.util.HashMap<>(replacements));
+                    try(OutputStream out=getContentResolver().openOutputStream(uri)){out.write(rebuilt);}
+                    message("Repacked BNK exported. Original game file was not modified.");
+                }catch(Exception ex){message("Repack failed: "+ex.getMessage());}
             });
         }else if(request==SAVE_WEM && bank!=null && selected!=null){
             MLBBBankReader.Entry e=selected;
