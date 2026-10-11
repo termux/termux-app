@@ -106,8 +106,8 @@ export function oggVorbisToWem(ogg:Uint8Array):Uint8Array{
   const vorb=new Uint8Array(0x34);
   w32(vorb,0,Number(lastGranule));
   w32(vorb,0x18,0);w32(vorb,0x1c,setupPacket.length);
-  w32(vorb,0x28,0xabcdef01);
-  vorb[0x2c]=blockSmall;vorb[0x2d]=blockLarge;
+  w32(vorb,0x2c,0xabcdef01);
+  vorb[0x30]=blockSmall;vorb[0x31]=blockLarge;
   const parts=[chunk("fmt ",fmt),chunk("vorb",vorb),chunk("data",data)];
   const total=12+parts.reduce((n,p)=>n+p.length,0);
   const out=new Uint8Array(total);
