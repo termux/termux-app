@@ -19,7 +19,7 @@ assert.equal(parsed.channels,2);assert.equal(parsed.sampleRate,48000);
 const wem=oggVorbisToWem(ogg);
 assert.equal(readWemFormat(wem).codec,"Wwise Vorbis");
 assert.equal(wem[4] + 256*wem[5],wem.length-8);
-const vorbPos=wem.indexOf(Buffer.from("vorb"));
+const vorbPos=Buffer.from(wem).indexOf(Buffer.from("vorb"));
 assert.ok(vorbPos>0);
 assert.equal(new DataView(wem.buffer).getUint32(vorbPos+8,true),24000);
 assert.equal(new DataView(wem.buffer).getUint32(vorbPos+8+0x1c,true),9);
