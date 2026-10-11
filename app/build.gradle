@@ -36,6 +36,9 @@ android {
         implementation "io.noties.markwon:recycler:$markwonVersion"
         implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
 
+        implementation "dev.rikka.shizuku:api:13.1.5"
+        implementation "dev.rikka.shizuku:provider:13.1.5"
+
         implementation project(":terminal-view")
         implementation project(":termux-shared")
     }
