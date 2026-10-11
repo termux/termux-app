@@ -1,0 +1,24 @@
+name: MLBB Editor debug build
+on:
+  push:
+    branches: [feature/mlbb-editor-foundation]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build universal debug APK
+        env:
+          TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS: '0'
+        run: ./gradlew :app:assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MLBB-Editor-development-apk
+          path: app/build/outputs/apk/debug/*.apk
