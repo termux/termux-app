@@ -1,0 +1,19 @@
+name: TypeScript Wwise tests
+on:
+  push:
+    branches: [feature/mlbb-editor-foundation]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  ts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wwise-ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm test
