@@ -7,3 +7,11 @@ Dependency-free runtime TypeScript for inspecting Wwise `BKHD/DIDX/DATA` banks a
 Use `npm install && npm test` to build and run the tests. The Android app is currently Java, so this TypeScript module is standalone until an Android JavaScript runtime or a build-time bridge is introduced. No proprietary Wwise codec code is included.
 
 For real encoding, use a suitable licensed Wwise authoring tool and validate resulting WEMs before attempting installation. Never overwrite a verified original backup.
+
+## Experimental TypeScript Vorbis encoder
+
+`src/vorbis-encoder.ts` exports `parseOggVorbis(ogg)` and `oggVorbisToWem(ogg)`. This is an initial **legacy full-setup** Vorbis WEM writer. It accepts an already encoded Ogg Vorbis bitstream, parses its Ogg pages and packets, writes RIFF/WAVE `fmt ` / `vorb` / `data` chunks, and includes basic checks for sample rate, channels, block sizes, packet sizes and granule positions. It is **not** a PCM-to-Vorbis encoder.
+
+Important: modern Wwise Custom Vorbis commonly uses stripped aoTuV 6.03 codebooks, mod_packets, and a different packet layout. **This implementation does not yet emit that modern layout, and should not be installed into MLBB.** The unit tests validate container fields with a synthetic stream only; they do not establish that vgmstream or the game can decode the result.
+
+For a proven modern encoding route, evaluate `pas2k/wav2wem` (Go, GPL-2.0), which claims verified vgmstream/ww2ogg compatibility. Before deploying to Android, confirm native ARM64 encoding support and test against the actual game WEM version, looping metadata, and bank behavior.
