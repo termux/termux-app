@@ -31,3 +31,14 @@
 
 ## Build policy
 Android debug builds are experimental. A successfully built APK is not proof the custom bootstrap, Wwise decoding or in-game playback works.
+
+
+## Audio direct replacement (experimental, October 2026)
+Implemented in `MLBBAudioConverter.java` and `MLBBLauncherActivity.java`:
+1. Shizuku > select game BNK > select WEM ID.
+2. Choose **Replace from MP3/OGG/WAV** to queue system-decoded PCM replacement.
+3. Choose **Replace and auto-install MP3/OGG/WAV** for conversion then confirmed installation with a preserved backup.
+4. Existing **Restore original .bak** button restores backup.
+5. Android MediaExtractor / MediaCodec supplies the compressed audio decoder (not Python or FFmpeg); the resulting WEM is PCM16 and is validated by the existing repacker.
+6. Actual audio formats depend on device codec availability; Android's built-in decoder does not emit Wwise Custom Vorbis. **Successful conversion and installation are not proof of in-game codec compatibility.**
+7. Audio conversion is bounded to 128 MiB PCM to prevent running out of phone memory. Do not use with very large tracks until the importer is converted to streaming.
