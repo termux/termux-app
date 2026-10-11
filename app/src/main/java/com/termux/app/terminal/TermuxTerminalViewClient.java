@@ -269,6 +269,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 showUrlSelection();
             } else if (unicodeChar == 'v') {
                 doPaste();
+            } else if (unicodeChar == 'w'/* new window */) {
+                mActivity.addNewWindow();
             } else if (unicodeChar == '+' || e.getUnicodeChar(KeyEvent.META_SHIFT_ON) == '+') {
                 // We also check for the shifted char here since shift may be required to produce '+',
                 // see https://github.com/termux/termux-api/issues/2
