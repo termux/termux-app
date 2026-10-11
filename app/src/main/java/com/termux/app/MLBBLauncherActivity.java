@@ -31,6 +31,7 @@ public class MLBBLauncherActivity extends Activity {
     };
     private MLBBBankReader.Entry selected;
     private String bankName="soundbank";
+    private String gameBankName=null;
     private void label(String s,float size){
         TextView t=new TextView(this);t.setText(s);t.setTextSize(size);
         t.setTextColor(Color.WHITE);t.setPadding(12,16,12,16);root.addView(t);
@@ -117,7 +118,7 @@ public class MLBBLauncherActivity extends Activity {
             try(android.os.ParcelFileDescriptor fd=shizukuFiles.openBank(name);
                 InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){
                 MLBBBankReader parsed=new MLBBBankReader(readLimited(in,128*1024*1024));
-                runOnUiThread(()->{bank=parsed;replacements.clear();bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
+                runOnUiThread(()->{bank=parsed;replacements.clear();gameBankName=name;bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
             }catch(Exception e){message("Cannot open "+name+": "+e.getMessage());}
         });
     }
@@ -125,6 +126,10 @@ public class MLBBLauncherActivity extends Activity {
         label(bankName+" · "+bank.entries.size()+" audio entries",16);
         label(replacements.size()+" replacements queued",14);
         button("Export modified BNK (does not touch game)",this::savePatchedBank);
+        if(gameBankName!=null){
+            button("Install modified BNK with Shizuku",this::confirmInstall);
+            button("Restore original .bak with Shizuku",this::confirmRestore);
+        }
         for(MLBBBankReader.Entry e:bank.entries){
             button("WEM ID "+e.id+" ("+e.size+" bytes)",()->{
                 selected=e;
@@ -147,6 +152,35 @@ public class MLBBLauncherActivity extends Activity {
                     }).show();
             });
         }
+    }
+    private void confirmInstall(){
+        final String name=gameBankName;
+        if(name==null||shizukuFiles==null){message("Select game bank through Shizuku first");return;}
+        if(replacements.isEmpty()){message("Select at least one replacement WEM");return;}
+        new AlertDialog.Builder(this).setTitle("Install edited "+name+"?")
+            .setMessage("Close Mobile Legends before continuing. Original .bak is retained and never overwritten. Different Wwise codecs may fail in-game.")
+            .setNegativeButton("Cancel",null)
+            .setPositiveButton("Install", (dialog,which)->worker.execute(()->{
+                try{
+                    byte[] encoded=bank.repack(new java.util.HashMap<>(replacements));
+                    java.io.File stage=new java.io.File(getCacheDir(),"mlbb-patch.bnk");
+                    try(java.io.FileOutputStream out=new java.io.FileOutputStream(stage)){out.write(encoded);out.getFD().sync();}
+                    try(android.os.ParcelFileDescriptor fd=android.os.ParcelFileDescriptor.open(stage,android.os.ParcelFileDescriptor.MODE_READ_ONLY)){
+                        message(shizukuFiles.installBank(name,fd));
+                    }finally{stage.delete();}
+                }catch(Exception ex){message("Install failed: "+ex.getMessage());}
+            })).show();
+    }
+    private void confirmRestore(){
+        final String name=gameBankName;
+        if(name==null||shizukuFiles==null){message("Select a game bank through Shizuku");return;}
+        new AlertDialog.Builder(this).setTitle("Restore original "+name+"?")
+            .setMessage("Restore the .bak original and retain backup file? Close MLBB before restoring.")
+            .setNegativeButton("Cancel",null)
+            .setPositiveButton("Restore",(dialog,which)->worker.execute(()->{
+                try{message(shizukuFiles.restoreBank(name));}
+                catch(Exception ex){message("Restore failed: "+ex.getMessage());}
+            })).show();
     }
     private void savePatchedBank(){
         if(bank==null){message("Select a BNK");return;}
@@ -176,7 +210,7 @@ public class MLBBLauncherActivity extends Activity {
                     try(InputStream in=getContentResolver().openInputStream(uri)){bytes=readLimited(in,128*1024*1024);}
                     MLBBBankReader parsed=new MLBBBankReader(bytes);
                     runOnUiThread(()->{
-                        bank=parsed;replacements.clear();selected=null;bankName="Imported BNK.bnk";audio();
+                        bank=parsed;replacements.clear();gameBankName=null;selected=null;bankName="Imported BNK.bnk";audio();
                         message("Parsed "+parsed.entries.size()+" WEM entries");
                     });
                 }catch(Exception e){message("Import failed: "+e.getMessage());}
