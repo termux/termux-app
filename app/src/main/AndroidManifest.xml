@@ -21,6 +21,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
@@ -48,6 +49,8 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
         tools:targetApi="m">
+
+        <provider android:name="rikka.shizuku.ShizukuProvider" android:authorities="${TERMUX_PACKAGE_NAME}.shizuku" android:exported="true" android:multiprocess="false" />
 
         <activity
             android:name=".app.MLBBLauncherActivity"
