@@ -206,6 +206,12 @@ public class MLBBLauncherActivity extends Activity {
         final String name=gameBankName;
         if(name==null||shizukuFiles==null){message("Select game bank through Shizuku first");return;}
         if(replacements.isEmpty()){message("Select at least one replacement WEM");return;}
+        try {bank.validateReplacementCodecs(new java.util.HashMap<>(replacements));}
+        catch(IOException incompatible){
+            new AlertDialog.Builder(this).setTitle("Incompatible Wwise codec")
+                .setMessage(incompatible.getMessage()+"\n\nOriginal soundbank left unchanged. Use a matching Wwise encoder before installing.")
+                .setPositiveButton("OK",null).show();return;
+        }
         new AlertDialog.Builder(this).setTitle("Install edited "+name+"?")
             .setMessage("Close Mobile Legends before continuing. Original .bak is retained and never overwritten. Different Wwise codecs may fail in-game.")
             .setNegativeButton("Cancel",null)
@@ -286,7 +292,7 @@ public class MLBBLauncherActivity extends Activity {
             if(install){
                 new AlertDialog.Builder(this)
                     .setTitle("Convert and install audio?")
-                    .setMessage("The app will convert the selected MP3/OGG/WAV to PCM WEM, then ask for final confirmation to replace "+gameBankName+" through Shizuku. A .bak is preserved. IMPORTANT: PCM may be incompatible with an original Wwise Custom Vorbis event.")
+                    .setMessage("The app converts to PCM WEM. If the original WEM uses Wwise Custom Vorbis, installation will be blocked instead of silently replacing it with incompatible PCM. The converted media can still be exported.")
                     .setNegativeButton("Cancel",null).setPositiveButton("Convert", (d,w)->convert.run()).show();
             } else convert.run();
         }else if(request==IMPORT_WEM && bank!=null && selected!=null){
