@@ -11,6 +11,8 @@ import android.view.*;
 import android.widget.*;
 import java.io.*;
 import java.util.concurrent.Executors;
+import rikka.shizuku.Shizuku;
+import android.content.pm.PackageManager;
 
 /** Local BNK explorer. The protected-game Shizuku broker is a separate milestone. */
 public class MLBBLauncherActivity extends Activity {
@@ -49,9 +51,18 @@ public class MLBBLauncherActivity extends Activity {
         page("MLBB Resource Editor");
         label("Resource explorer · Development build",15);
         button("🎵 Audio Editor",this::audio);
+        button("Shizuku: check / request permission",this::checkShizuku);
         category("Models");category("Emotes");category("Images");category("Other Resources");
         button("Open Developer Terminal",()->startActivity(new Intent(this,TermuxActivity.class)));
         label("This build still uses the original Termux package prefix. The custom app ID and Shizuku integration require additional work.",13);
+    }
+    private void checkShizuku(){
+        try {
+            if(!Shizuku.pingBinder()){message("Start Shizuku first");return;}
+            if(Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED){message("Shizuku permission granted. File bridge coming next.");return;}
+            Shizuku.requestPermission(4238);
+            message("Shizuku permission requested");
+        }catch(Exception e){message("Shizuku: "+e.getMessage());}
     }
     private void audio(){
         page("Audio Editor");
