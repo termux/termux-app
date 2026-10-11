@@ -80,8 +80,10 @@ public class MLBBFilesService extends IMLBBFiles.Stub {
                 if(in.read(header)!=4||!Arrays.equals(header,new byte[]{'B','K','H','D'}))
                     throw new IOException("Replacement is not a BNK");
             }
+            byte[] expected=sha(stage);
             atomicInstall(stage,dest);
-            return "Installed "+name+"; retained .bak and verified staging";
+            if(!Arrays.equals(expected,sha(dest)))throw new IOException("Installed BNK checksum mismatch; restore .bak immediately");
+            return "Installed "+name+"; original .bak retained and installed SHA-256 verified";
         }catch(Exception ex){throw new IllegalStateException("Install refused: "+ex.getMessage(),ex);}
         finally{
             try{replacement.close();}catch(Exception ignored){}
