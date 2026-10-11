@@ -5,7 +5,7 @@
   "description": "Dependency-free Wwise BNK/WEM binary inspector and safe repacker",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node test/run.cjs"
+    "test": "npm run build && node test/run.cjs && node test/vorbis-encoder.cjs"
   },
   "devDependencies": {
     "typescript": "^5.6.3"
