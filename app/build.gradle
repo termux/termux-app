@@ -44,7 +44,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion project.properties.minSdkVersion.toInteger()
+        minSdkVersion 23 // Shizuku provider requires Android 6+
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
         versionCode 118
         versionName "0.118.0"
