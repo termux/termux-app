@@ -15,3 +15,12 @@ For real encoding, use a suitable licensed Wwise authoring tool and validate res
 Important: modern Wwise Custom Vorbis commonly uses stripped aoTuV 6.03 codebooks, mod_packets, and a different packet layout. **This implementation does not yet emit that modern layout, and should not be installed into MLBB.** The unit tests validate container fields with a synthetic stream only; they do not establish that vgmstream or the game can decode the result.
 
 For a proven modern encoding route, evaluate `pas2k/wav2wem` (Go, GPL-2.0), which claims verified vgmstream/ww2ogg compatibility. Before deploying to Android, confirm native ARM64 encoding support and test against the actual game WEM version, looping metadata, and bank behavior.
+
+
+## Android integration (experimental)
+
+The debug APK CI compiles `src/vorbis-encoder.ts` with TypeScript and copies its JavaScript output into `app/src/main/assets/wwise-legacy-vorbis.js`. `MLBBOggWemBridge.java` runs that exact compiled JS in a non-network Android WebView, sends Ogg input as Base64, then retrieves encoded WEM in bounded chunks.
+
+In the Audio Editor, open a BNK, select an embedded WEM, and choose **Experimental OGG → legacy Vorbis WEM (export only)**. Pick an Ogg Vorbis file; the resulting WEM can be exported for external vgmstream verification. It cannot yet be automatically installed by this path.
+
+**Safety:** Legacy full-setup WEM is different from many MLBB modern Custom Vorbis formats. Passing TypeScript unit tests or RIFF parsing does not establish that the game will play the audio. This experimental option does not modify any game files. Android WebView needs BigInt support and currently limits input to 4 MiB and output to 8 MiB. Modern Wwise encoder integration remains a separate milestone.
