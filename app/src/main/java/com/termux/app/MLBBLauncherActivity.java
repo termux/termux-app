@@ -171,7 +171,8 @@ public class MLBBLauncherActivity extends Activity {
             button("Restore original .bak with Shizuku",this::confirmRestore);
         }
         for(MLBBBankReader.Entry e:bank.entries){
-            button("WEM ID "+e.id+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
+            String codec; try{codec=MLBBBankReader.codecName(bank.originalCodec(e));}catch(IOException ex){codec="Unknown codec";}
+            button("WEM ID "+e.id+" · "+codec+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
                     .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview"},(d,option)->{
