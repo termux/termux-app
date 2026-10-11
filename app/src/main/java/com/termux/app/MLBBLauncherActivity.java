@@ -62,8 +62,8 @@ public class MLBBLauncherActivity extends Activity {
         button("🎵 Audio Editor",this::audio);
         button("Shizuku: check / request permission",this::checkShizuku);
         category("Models");category("Emotes");category("Images");category("Other Resources");
-        button("Open Developer Terminal",()->startActivity(new Intent(this,TermuxActivity.class)));
-        label("This build still uses the original Termux package prefix. The custom app ID and Shizuku integration require additional work.",13);
+        button("Developer Terminal (requires custom bootstrap)",()->new AlertDialog.Builder(this).setTitle("Terminal not available").setMessage("The standalone app has its own package ID. A matching com.farizgd.mlbbeditor Termux bootstrap must be rebuilt before enabling the shell. Audio BNK and Shizuku features do not need the terminal.").setPositiveButton("OK",null).show());
+        label("This standalone build uses com.farizgd.mlbbeditor. Termux shell runtime is temporarily disabled until the custom bootstrap is rebuilt.",13);
     }
     private void checkShizuku(){
         try {
