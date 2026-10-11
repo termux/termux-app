@@ -13,6 +13,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile TypeScript encoder and embed in APK
+        run: |
+          cd wwise-ts
+          npm install --no-audit --no-fund
+          npm test
+          node scripts/package-android.cjs
       - uses: gradle/actions/setup-gradle@v4
       - name: Build universal debug APK
         env:
