@@ -43,6 +43,38 @@ public final class MLBBBankReader {
         out.write(n&255);out.write(n>>>8&255);out.write(n>>>16&255);out.write(n>>>24&255);
     }
     public byte[] extract(Entry e){return Arrays.copyOfRange(source,dataStart+e.offset,dataStart+e.offset+e.size);}
+    public static int wemCodec(byte[] wem) throws IOException {
+        if(wem.length<24 || !ascii(wem,0).equals("RIFF") || !ascii(wem,8).equals("WAVE"))
+            throw new IOException("Invalid WEM RIFF/WAVE header");
+        int pos=12;
+        while(pos+8<=wem.length) {
+            String tag=ascii(wem,pos);
+            int size=integer(wem,pos+4);
+            if(size<0 || (long)pos+8+size>wem.length)throw new IOException("Corrupt WEM chunk");
+            if(tag.equals("fmt ")) {
+                if(size<16)throw new IOException("Short WEM fmt chunk");
+                return (wem[pos+8]&255)|((wem[pos+9]&255)<<8);
+            }
+            pos+=8+size+(size&1);
+        }
+        throw new IOException("WEM fmt chunk missing");
+    }
+    public static String codecName(int codec) {
+        if(codec==0xffff)return "Wwise Custom Vorbis";
+        if(codec==1 || codec==0xfffe)return "PCM";
+        if(codec==2 || codec==0x69)return "IMA ADPCM";
+        return String.format(java.util.Locale.ROOT,"Codec 0x%04X",codec);
+    }
+    public int originalCodec(Entry e)throws IOException{return wemCodec(extract(e));}
+    public void validateReplacementCodecs(Map<Long,byte[]> changes)throws IOException {
+        for(Entry e:entries)if(changes.containsKey(e.id)){
+            int original=originalCodec(e),incoming=wemCodec(changes.get(e.id));
+            if(original!=incoming)
+                throw new IOException("Audio "+e.id+" uses "+codecName(original)+
+                    ", but replacement is "+codecName(incoming)+". Game playback is not reliable. Export only; encode compatible Wwise media first.");
+        }
+    }
+
 
     /**
      * Creates a separate BNK. Preserves unknown chunks and their order as-is.
