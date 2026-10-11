@@ -16,7 +16,7 @@ import android.content.pm.PackageManager;
 
 /** Local BNK explorer. The protected-game Shizuku broker is a separate milestone. */
 public class MLBBLauncherActivity extends Activity {
-    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103, IMPORT_AUDIO=104;
+    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103, IMPORT_AUDIO=104, IMPORT_OGG_TS=105, SAVE_TS_WEM=106;
     private final java.util.concurrent.ExecutorService worker=Executors.newSingleThreadExecutor();
     private LinearLayout root;
     private TextView status;
@@ -33,6 +33,8 @@ public class MLBBLauncherActivity extends Activity {
     private String bankName="soundbank";
     private String gameBankName=null;
     private boolean autoInstallAfterConversion=false;
+    private byte[] experimentalWem=null;
+    private long experimentalId=0;
     private void label(String s,float size){
         TextView t=new TextView(this);t.setText(s);t.setTextSize(size);
         t.setTextColor(Color.WHITE);t.setPadding(12,16,12,16);root.addView(t);
@@ -175,7 +177,7 @@ public class MLBBLauncherActivity extends Activity {
             button("WEM ID "+e.id+" · "+codec+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview"},(d,option)->{
+                    .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview","Experimental OGG → legacy Vorbis WEM (export only)"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -195,8 +197,13 @@ public class MLBBLauncherActivity extends Activity {
                         } else if(option==4){
                             replacements.remove(e.id);
                             audio();message("Cleared replacement for "+e.id);
+                        } else if(option==6){
+                            Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                            i.addCategory(Intent.CATEGORY_OPENABLE);
+                            i.setType("*/*");
+                            startActivityForResult(i,IMPORT_OGG_TS);
                         } else {
-                            new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis requires native vgmstream. Replacing audio with a different codec may not work in game.")
+                            new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis requires a compatible encoder and vgmstream validation. Our experimental TypeScript legacy writer does not yet target MLBB's modern packet format.")
                                 .setPositiveButton("OK",null).show();
                         }
                     }).show();
@@ -270,6 +277,34 @@ public class MLBBLauncherActivity extends Activity {
                         message("Parsed "+parsed.entries.size()+" WEM entries");
                     });
                 }catch(Exception e){message("Import failed: "+e.getMessage());}
+            });
+        }else if(request==IMPORT_OGG_TS && selected!=null){
+            final long id=selected.id;
+            message("Running experimental TypeScript Ogg Vorbis encoder...");
+            MLBBOggWemBridge.encode(this,uri,new MLBBOggWemBridge.Listener(){
+                @Override public void completed(byte[] wem){
+                    experimentalWem=wem;experimentalId=id;
+                    message("Legacy Vorbis WEM generated ("+wem.length+" bytes). Export for external decoder testing. Not queued for installation.");
+                    new AlertDialog.Builder(MLBBLauncherActivity.this)
+                        .setTitle("Experimental WEM created")
+                        .setMessage("This file has NOT passed vgmstream or MLBB decoding validation. Save for external testing. It will NOT be installed into the game.")
+                        .setNegativeButton("Cancel",null)
+                        .setPositiveButton("Export WEM",(d,w)->{
+                            Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                            i.addCategory(Intent.CATEGORY_OPENABLE);
+                            i.setType("application/octet-stream");
+                            i.putExtra(Intent.EXTRA_TITLE,id+"_ts_experimental.wem");
+                            startActivityForResult(i,SAVE_TS_WEM);
+                        }).show();
+                }
+                @Override public void failed(String reason){message(reason);}
+            });
+        }else if(request==SAVE_TS_WEM && experimentalWem!=null){
+            final byte[] candidate=experimentalWem;
+            worker.execute(()->{
+                try(OutputStream out=getContentResolver().openOutputStream(uri)){
+                    out.write(candidate);message("Experimental WEM exported for validation. Game unchanged.");
+                }catch(Exception ex){message("Cannot export WEM: "+ex.getMessage());}
             });
         }else if(request==IMPORT_AUDIO && bank!=null && selected!=null){
             final long id=selected.id;
