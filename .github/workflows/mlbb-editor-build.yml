@@ -18,6 +18,13 @@ jobs:
         env:
           TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS: '0'
         run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --stacktrace
+      - name: Verify standalone package ID
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          test -n "$APK"
+          AAPT=$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          test -x "$AAPT"
+          "$AAPT" dump badging "$APK" | grep "package: name='com.farizgd.mlbbeditor'"
       - uses: actions/upload-artifact@v4
         with:
           name: MLBB-Editor-development-apk
