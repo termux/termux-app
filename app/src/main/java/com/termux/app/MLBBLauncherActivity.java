@@ -88,30 +88,69 @@ public class MLBBLauncherActivity extends Activity {
             startActivityForResult(i,OPEN_BNK);
         });
         if(bank!=null)showEntries();
-        else label("Import a BNK from shared storage. Shizuku game-folder browsing is not yet available in this build.",14);
+        else label("Browse game BNKs through Shizuku or import a local BNK file.",14);
     }
     private void browseGameBanks(){
         if(shizukuFiles==null){checkShizuku();message("Connect Shizuku, then tap Browse again");return;}
+        message("Loading MLBB soundbanks...");
         worker.execute(()->{
             try{
                 String[] names=shizukuFiles.listBanks();
-                runOnUiThread(()->{
-                    final EditText search=new EditText(this);search.setSingleLine(true);search.setHint("Search BNK filename");
-                    LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(LinearLayout.VERTICAL);
-                    wrapper.addView(search);
-                    new AlertDialog.Builder(this).setTitle("MLBB BNK files ("+names.length+")")
-                        .setView(wrapper).setPositiveButton("Search", (d,w)->{
-                            String q=search.getText().toString().toLowerCase(java.util.Locale.ROOT);
-                            java.util.ArrayList<String> matching=new java.util.ArrayList<>();
-                            for(String name:names){if(name.toLowerCase(java.util.Locale.ROOT).contains(q))matching.add(name);if(matching.size()==100)break;}
-                            String[] choices=matching.toArray(new String[0]);
-                            new AlertDialog.Builder(this).setTitle("Select BNK")
-                                .setItems(choices,(dialog,index)->openGameBank(choices[index]))
-                                .setNegativeButton("Cancel",null).show();
-                        }).setNegativeButton("Cancel",null).show();
-                });
+                runOnUiThread(()->showBankPicker(names));
             }catch(Exception e){message("Browse failed: "+e.getMessage());}
         });
+    }
+    private void showBankPicker(String[] names){
+        LinearLayout content=new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        int pad=(int)(16*getResources().getDisplayMetrics().density);
+        content.setPadding(pad,0,pad,0);
+        EditText query=new EditText(this);
+        query.setSingleLine(true);
+        query.setHint("Filter by filename, e.g. bgm_intro");
+        content.addView(query);
+        TextView count=new TextView(this);
+        count.setTextColor(Color.LTGRAY);
+        content.addView(count);
+        ListView list=new ListView(this);
+        content.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+        final java.util.ArrayList<String> filtered=new java.util.ArrayList<>();
+        final ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,filtered);
+        list.setAdapter(adapter);
+        AlertDialog dlg=new AlertDialog.Builder(this)
+            .setTitle("MLBB Soundbanks")
+            .setView(content)
+            .setNegativeButton("Close",null).create();
+        Runnable refresh=()->{
+            String q=query.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+            filtered.clear();
+            int found=0;
+            for(String name:names){
+                if(name.toLowerCase(java.util.Locale.ROOT).contains(q)){
+                    found++;
+                    if(filtered.size()<200)filtered.add(name);
+                }
+            }
+            count.setText(found+" of "+names.length+" matching (showing first "+filtered.size()+")");
+            adapter.notifyDataSetChanged();
+        };
+        query.addTextChangedListener(new android.text.TextWatcher(){
+            public void beforeTextChanged(CharSequence x,int start,int count,int after){}
+            public void onTextChanged(CharSequence x,int start,int before,int count){refresh.run();}
+            public void afterTextChanged(android.text.Editable e){}
+        });
+        list.setOnItemClickListener((parent,view,index,id)->{
+            String picked=filtered.get(index);
+            dlg.dismiss();
+            openGameBank(picked);
+        });
+        dlg.setOnShowListener(d->{
+            int height=(int)(440*getResources().getDisplayMetrics().density);
+            list.getLayoutParams().height=height;
+            list.requestLayout();
+        });
+        refresh.run();
+        dlg.show();
     }
     private void openGameBank(String name){
         worker.execute(()->{
@@ -131,10 +170,10 @@ public class MLBBLauncherActivity extends Activity {
             button("Restore original .bak with Shizuku",this::confirmRestore);
         }
         for(MLBBBankReader.Entry e:bank.entries){
-            button("WEM ID "+e.id+" ("+e.size+" bytes)",()->{
+            button("WEM ID "+e.id+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","Replace from WEM","About audio preview"},(d,option)->{
+                    .setItems(new String[]{"Export original WEM","Replace from WEM","Clear replacement","About audio preview"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -145,6 +184,9 @@ public class MLBBLauncherActivity extends Activity {
                             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
                             startActivityForResult(i,IMPORT_WEM);
+                        } else if(option==2){
+                            replacements.remove(e.id);
+                            audio();message("Cleared replacement for "+e.id);
                         } else {
                             new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis requires native vgmstream. Replacing audio with a different codec may not work in game.")
                                 .setPositiveButton("OK",null).show();
