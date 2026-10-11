@@ -21,6 +21,13 @@ public class MLBBLauncherActivity extends Activity {
     private LinearLayout root;
     private TextView status;
     private MLBBBankReader bank;
+    private IMLBBFiles shizukuFiles;
+    private final android.content.ServiceConnection shizukuConnection=new android.content.ServiceConnection(){
+        @Override public void onServiceConnected(android.content.ComponentName name,android.os.IBinder binder){
+            shizukuFiles=IMLBBFiles.Stub.asInterface(binder);message("Shizuku game file service connected");
+        }
+        @Override public void onServiceDisconnected(android.content.ComponentName name){shizukuFiles=null;message("Shizuku service disconnected");}
+    };
     private MLBBBankReader.Entry selected;
     private String bankName="soundbank";
     private void label(String s,float size){
@@ -59,7 +66,12 @@ public class MLBBLauncherActivity extends Activity {
     private void checkShizuku(){
         try {
             if(!Shizuku.pingBinder()){message("Start Shizuku first");return;}
-            if(Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED){message("Shizuku permission granted. File bridge coming next.");return;}
+            if(Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED){
+                Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new android.content.ComponentName(this,MLBBFilesService.class))
+                    .daemon(false).processNameSuffix("mlbb_files").debuggable(false).version(1);
+                Shizuku.bindUserService(args,shizukuConnection);
+                message("Connecting to Shizuku game file service");return;
+            }
             Shizuku.requestPermission(4238);
             message("Shizuku permission requested");
         }catch(Exception e){message("Shizuku: "+e.getMessage());}
@@ -67,6 +79,7 @@ public class MLBBLauncherActivity extends Activity {
     private void audio(){
         page("Audio Editor");
         button("← Home",this::home);
+        button("Browse MLBB game files via Shizuku",this::browseGameBanks);
         button("Open BNK using Android file picker",()->{
             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
@@ -74,6 +87,38 @@ public class MLBBLauncherActivity extends Activity {
         });
         if(bank!=null)showEntries();
         else label("Import a BNK from shared storage. Shizuku game-folder browsing is not yet available in this build.",14);
+    }
+    private void browseGameBanks(){
+        if(shizukuFiles==null){checkShizuku();message("Connect Shizuku, then tap Browse again");return;}
+        worker.execute(()->{
+            try{
+                String[] names=shizukuFiles.listBanks();
+                runOnUiThread(()->{
+                    final EditText search=new EditText(this);search.setSingleLine(true);search.setHint("Search BNK filename");
+                    LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(LinearLayout.VERTICAL);
+                    wrapper.addView(search);
+                    new AlertDialog.Builder(this).setTitle("MLBB BNK files ("+names.length+")")
+                        .setView(wrapper).setPositiveButton("Search", (d,w)->{
+                            String q=search.getText().toString().toLowerCase(java.util.Locale.ROOT);
+                            java.util.ArrayList<String> matching=new java.util.ArrayList<>();
+                            for(String name:names){if(name.toLowerCase(java.util.Locale.ROOT).contains(q))matching.add(name);if(matching.size()==100)break;}
+                            String[] choices=matching.toArray(new String[0]);
+                            new AlertDialog.Builder(this).setTitle("Select BNK")
+                                .setItems(choices,(dialog,index)->openGameBank(choices[index]))
+                                .setNegativeButton("Cancel",null).show();
+                        }).setNegativeButton("Cancel",null).show();
+                });
+            }catch(Exception e){message("Browse failed: "+e.getMessage());}
+        });
+    }
+    private void openGameBank(String name){
+        worker.execute(()->{
+            try(android.os.ParcelFileDescriptor fd=shizukuFiles.openBank(name);
+                InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){
+                MLBBBankReader parsed=new MLBBBankReader(readLimited(in,128*1024*1024));
+                runOnUiThread(()->{bank=parsed;bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
+            }catch(Exception e){message("Cannot open "+name+": "+e.getMessage());}
+        });
     }
     private void showEntries(){
         label(bankName+" · "+bank.entries.size()+" audio entries",16);
