@@ -17,7 +17,7 @@ jobs:
       - name: Build universal debug APK
         env:
           TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS: '0'
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: MLBB-Editor-development-apk
