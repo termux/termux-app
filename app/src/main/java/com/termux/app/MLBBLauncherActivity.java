@@ -16,7 +16,7 @@ import android.content.pm.PackageManager;
 
 /** Local BNK explorer. The protected-game Shizuku broker is a separate milestone. */
 public class MLBBLauncherActivity extends Activity {
-    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103;
+    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103, IMPORT_AUDIO=104;
     private final java.util.concurrent.ExecutorService worker=Executors.newSingleThreadExecutor();
     private LinearLayout root;
     private TextView status;
@@ -32,6 +32,7 @@ public class MLBBLauncherActivity extends Activity {
     private MLBBBankReader.Entry selected;
     private String bankName="soundbank";
     private String gameBankName=null;
+    private boolean autoInstallAfterConversion=false;
     private void label(String s,float size){
         TextView t=new TextView(this);t.setText(s);t.setTextSize(size);
         t.setTextColor(Color.WHITE);t.setPadding(12,16,12,16);root.addView(t);
@@ -173,7 +174,7 @@ public class MLBBLauncherActivity extends Activity {
             button("WEM ID "+e.id+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","Replace from WEM","Clear replacement","About audio preview"},(d,option)->{
+                    .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -184,7 +185,13 @@ public class MLBBLauncherActivity extends Activity {
                             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
                             startActivityForResult(i,IMPORT_WEM);
-                        } else if(option==2){
+                        } else if(option==2 || option==3){
+                            autoInstallAfterConversion=(option==3);
+                            Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                            i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("audio/*");
+                            i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"audio/mpeg","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/mp4","application/ogg"});
+                            startActivityForResult(i,IMPORT_AUDIO);
+                        } else if(option==4){
                             replacements.remove(e.id);
                             audio();message("Cleared replacement for "+e.id);
                         } else {
@@ -257,6 +264,31 @@ public class MLBBLauncherActivity extends Activity {
                     });
                 }catch(Exception e){message("Import failed: "+e.getMessage());}
             });
+        }else if(request==IMPORT_AUDIO && bank!=null && selected!=null){
+            final long id=selected.id;
+            final boolean install=autoInstallAfterConversion;
+            if(install && (gameBankName==null || shizukuFiles==null)){
+                message("Auto-install needs a game BNK opened via Shizuku");
+                return;
+            }
+            Runnable convert=()->worker.execute(()->{
+                try{
+                    message("Converting audio to 16-bit PCM WEM...");
+                    byte[] wem=MLBBAudioConverter.toPcmWem(this,uri);
+                    replacements.put(id,wem);
+                    runOnUiThread(()->{
+                        audio();
+                        message("Converted audio for "+id+" ("+(wem.length/1024)+" KiB)");
+                        if(install)confirmInstall();
+                    });
+                }catch(Exception ex){message("Audio conversion failed: "+ex.getMessage());}
+            });
+            if(install){
+                new AlertDialog.Builder(this)
+                    .setTitle("Convert and install audio?")
+                    .setMessage("The app will convert the selected MP3/OGG/WAV to PCM WEM, then ask for final confirmation to replace "+gameBankName+" through Shizuku. A .bak is preserved. IMPORTANT: PCM may be incompatible with an original Wwise Custom Vorbis event.")
+                    .setNegativeButton("Cancel",null).setPositiveButton("Convert", (d,w)->convert.run()).show();
+            } else convert.run();
         }else if(request==IMPORT_WEM && bank!=null && selected!=null){
             final long id=selected.id;
             worker.execute(()->{
