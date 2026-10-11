@@ -2,40 +2,87 @@ package com.termux.app;
 
 import java.io.*;
 import java.nio.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-/** Little-endian Wwise BNK inspector. Read-only: never modifies original game assets. */
+/** Minimal Wwise BNK reader/repacker for standard BKHD/DIDX/DATA media banks. */
 public final class MLBBBankReader {
     public static final class Entry {
         public final long id;
         public final int offset, size;
-        Entry(long id,int off,int size){this.id=id;this.offset=off;this.size=size;}
+        Entry(long id,int offset,int size){this.id=id;this.offset=offset;this.size=size;}
     }
-    public final List<Entry> entries = new ArrayList<>();
-    private byte[] source;
-    private int dataStart;
+    public final List<Entry> entries=new ArrayList<>();
+    private final byte[] source;
+    private final int dataStart;
+
     public MLBBBankReader(byte[] bytes) throws IOException {
-        this.source=bytes;
-        if(bytes.length<16 || !ascii(bytes,0).equals("BKHD")) throw new IOException("Not a Wwise BKHD soundbank");
-        int didx=-1, data=-1, didxLength=0, dataLength=0, position=0;
+        source=bytes;
+        if(bytes.length<16 || !ascii(bytes,0).equals("BKHD"))throw new IOException("Not a Wwise BKHD soundbank");
+        int didx=-1,data=-1,indexSize=0,dataSize=0,position=0;
         while(position+8<=bytes.length){
             int len=integer(bytes,position+4);
-            if(len<0 || (long)position+8+len>bytes.length)throw new IOException("Invalid BNK chunk length");
+            if(len<0||(long)position+8+len>bytes.length)throw new IOException("Invalid BNK chunk length");
             String tag=ascii(bytes,position);
-            if(tag.equals("DIDX")){didx=position+8;didxLength=len;}
-            if(tag.equals("DATA")){data=position+8;dataLength=len;}
+            if(tag.equals("DIDX")){didx=position+8;indexSize=len;}
+            if(tag.equals("DATA")){data=position+8;dataSize=len;}
             position+=8+len;
         }
-        if(didx<0||data<0||didxLength%12!=0)throw new IOException("Missing/invalid DIDX or DATA");
+        if(didx<0||data<0||indexSize%12!=0)throw new IOException("Missing/invalid DIDX or DATA");
         dataStart=data;
-        for(int i=didx;i<didx+didxLength;i+=12){
+        for(int i=didx;i<didx+indexSize;i+=12){
             long id=integer(bytes,i)&0xffffffffL;
             int off=integer(bytes,i+4),size=integer(bytes,i+8);
-            if(off<0||size<0||(long)off+size>dataLength)throw new IOException("Invalid WEM index");
+            if(off<0||size<0||(long)off+size>dataSize)throw new IOException("Invalid WEM index");
             entries.add(new Entry(id,off,size));
         }
     }
-    private static String ascii(byte[] b,int i){return new String(b,i,4,java.nio.charset.StandardCharsets.US_ASCII);}
-    private static int integer(byte[] b,int p){return ByteBuffer.wrap(b,p,4).order(ByteOrder.LITTLE_ENDIAN).getInt();}
+    private static String ascii(byte[] b,int at){return new String(b,at,4,StandardCharsets.US_ASCII);}
+    private static int integer(byte[] b,int at){return ByteBuffer.wrap(b,at,4).order(ByteOrder.LITTLE_ENDIAN).getInt();}
+    private static void little32(OutputStream out,int n)throws IOException {
+        out.write(n&255);out.write(n>>>8&255);out.write(n>>>16&255);out.write(n>>>24&255);
+    }
     public byte[] extract(Entry e){return Arrays.copyOfRange(source,dataStart+e.offset,dataStart+e.offset+e.size);}
+
+    /**
+     * Creates a separate BNK. Preserves unknown chunks and their order as-is.
+     * Does not guarantee that a game accepts a changed WEM codec or event length.
+     */
+    public byte[] repack(Map<Long,byte[]> replacements) throws IOException {
+        if(replacements.isEmpty())return source.clone();
+        Set<Long> known=new HashSet<>();
+        for(Entry e:entries)known.add(e.id);
+        if(!known.containsAll(replacements.keySet()))throw new IOException("Replacement has unknown audio ID");
+        ByteArrayOutputStream index=new ByteArrayOutputStream();
+        ByteArrayOutputStream media=new ByteArrayOutputStream();
+        for(Entry e:entries){
+            while(media.size()%16!=0)media.write(0);
+            byte[] wem=replacements.containsKey(e.id)?replacements.get(e.id):extract(e);
+            if(wem==null||wem.length<12||!ascii(wem,0).equals("RIFF"))
+                throw new IOException("Entry "+e.id+" is not RIFF WEM");
+            little32(index,(int)e.id);little32(index,media.size());little32(index,wem.length);
+            media.write(wem);
+        }
+        ByteArrayOutputStream out=new ByteArrayOutputStream();
+        int pos=0;
+        while(pos+8<=source.length){
+            int size=integer(source,pos+4);
+            if(size<0||(long)pos+8+size>source.length)break;
+            String tag=ascii(source,pos);
+            byte[] chunk=tag.equals("DIDX")?index.toByteArray():
+                         tag.equals("DATA")?media.toByteArray():
+                         Arrays.copyOfRange(source,pos+8,pos+8+size);
+            out.write(tag.getBytes(StandardCharsets.US_ASCII));
+            little32(out,chunk.length);out.write(chunk);
+            pos+=8+size;
+        }
+        out.write(source,pos,source.length-pos);
+        byte[] result=out.toByteArray();
+        MLBBBankReader verified=new MLBBBankReader(result);
+        if(verified.entries.size()!=entries.size())throw new IOException("Repack verification: incorrect entry count");
+        for(Entry e:verified.entries)if(replacements.containsKey(e.id)&&
+                !Arrays.equals(verified.extract(e),replacements.get(e.id)))
+            throw new IOException("Repack verification failed for "+e.id);
+        return result;
+    }
 }
