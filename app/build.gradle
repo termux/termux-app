@@ -14,6 +14,8 @@ ext {
 
 android {
     namespace "com.termux"
+    // Separate install identity; Java namespaces retained until upstream refactor.
+    defaultConfig { applicationId "com.farizgd.mlbbeditor" }
 
     compileSdkVersion project.properties.compileSdkVersion.toInteger()
     ndkVersion = System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
@@ -46,15 +48,15 @@ android {
     defaultConfig {
         minSdkVersion 24 // Shizuku API 13.1.5 requires Android 7+
         targetSdkVersion project.properties.targetSdkVersion.toInteger()
-        versionCode 118
-        versionName "0.118.0"
+        versionCode 119
+        versionName "0.1.0"
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
 
         buildConfigField "String", "TERMUX_PACKAGE_VARIANT", "\"" + project.ext.packageVariant + "\"" // Used by TermuxApplication class
 
-        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.termux"
+        manifestPlaceholders.TERMUX_PACKAGE_NAME = "com.farizgd.mlbbeditor"
         manifestPlaceholders.TERMUX_APP_NAME = "Termux"
         manifestPlaceholders.TERMUX_API_APP_NAME = "Termux:API"
         manifestPlaceholders.TERMUX_BOOT_APP_NAME = "Termux:Boot"
@@ -135,7 +137,7 @@ android {
         variant.outputs.all { output ->
             if (variant.buildType.name == "debug") {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
-                outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
+                outputFileName = new File("mlbb-resource-editor_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "debug") + "_" + (abi ? abi : "universal") + ".apk")
             } else if (variant.buildType.name == "release") {
                 def abi = output.getFilter(com.android.build.OutputFile.ABI)
                 outputFileName = new File("termux-app_" + (apkVersionTag ? apkVersionTag : project.ext.packageVariant + "-" + "release") + "_" + (abi ? abi : "universal") + ".apk")
