@@ -149,7 +149,7 @@ public class MLBBLauncherActivity extends Activity {
     }
     private void audio(){
         page("Editor Audio");
-        button("← Kembali ke beranda",this::home);
+        button("Kembali ke beranda",this::home);
         section("Langkah 1 · Pilih bank suara", "Bank suara (BNK) berisi musik atau efek suara yang dapat diganti.");
         if(shizukuFiles==null)button("Hubungkan Shizuku dahulu",this::checkShizuku);
         button("Jelajahi bank suara Mobile Legends",this::browseGameBanks);
@@ -233,20 +233,21 @@ public class MLBBLauncherActivity extends Activity {
         });
     }
     private void showEntries(){
-        section("Langkah 2 · Pilih suara", bankName+" · "+bank.entries.size()+" suara ditemukan. Ketuk salah satu untuk impor musik, pratinjau, atau ekspor.");
+        section("Langkah 2 · Pilih suara", bankName);
         hint(replacements.size()+" audio pengganti disiapkan. Belum ada perubahan yang dipasang tanpa konfirmasi.");
         button("Simpan hasil edit BNK sebagai berkas (aman)",this::savePatchedBank);
-        if(previewPlayer!=null)button("■ Hentikan pratinjau",()->{stopPreview();audio();message("Pratinjau dihentikan");});
+        if(previewPlayer!=null)button("Hentikan pratinjau",()->{stopPreview();audio();message("Pratinjau dihentikan");});
         if(gameBankName!=null){
             if(!replacements.isEmpty())button("Langkah 3 · Pasang bank suara hasil edit",this::confirmInstall);
             button("Pulihkan bank suara asli",this::confirmRestore);
         }
         for(MLBBBankReader.Entry e:bank.entries){
             String codec; try{codec=MLBBBankReader.codecName(bank.originalCodec(e));}catch(IOException ex){codec="Kodek tidak dikenal";}
-            button("♫ Suara "+e.id+" · "+codec+(replacements.containsKey(e.id)?"  ✓ Diubah":""),()->{
+            hint("ID suara: "+e.id+"  |  Jenis WEM: "+codec+(replacements.containsKey(e.id)?"  |  Sudah diedit":""));
+            button("Edit Suara...",()->{
                 selected=e;
-                new AlertDialog.Builder(this).setTitle("Sound "+e.id+" · Pilih tindakan")
-                    .setItems(new String[]{"Ekspor suara asli (.wem)","Lanjutan: ganti menggunakan WEM","Impor musik atau audio (disarankan)","Impor audio dan pasang setelah konfirmasi","Batalkan perubahan yang disiapkan","▶ Dengarkan suara ini","Lanjutan: konverter OGG lama (uji coba)","Lanjutan: ekspor WAV/OGG native","Lanjutan: ekspor OGG hasil dekode"},(d,option)->{
+                new AlertDialog.Builder(this).setTitle("Edit suara "+e.id)
+                    .setItems(new String[]{"Ekspor suara asli (.wem)","Lanjutan: ganti menggunakan WEM","Impor musik atau audio (disarankan)","Impor audio dan pasang setelah konfirmasi","Batalkan perubahan yang disiapkan","Dengarkan suara ini","Lanjutan: konverter OGG lama (uji coba)","Lanjutan: ekspor WAV/OGG native","Lanjutan: ekspor OGG hasil dekode"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
