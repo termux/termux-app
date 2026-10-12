@@ -18,7 +18,6 @@ import java.nio.charset.StandardCharsets;
  */
 public final class MLBBAudioConverter {
     private MLBBAudioConverter(){}
-    private static final int MAX_PCM_BYTES=128*1024*1024;
     private static void u16(OutputStream o,int v)throws IOException{
         o.write(v&255);o.write(v>>>8&255);
     }
@@ -53,9 +52,7 @@ public final class MLBBAudioConverter {
             int rate=initial.containsKey(MediaFormat.KEY_SAMPLE_RATE)?initial.getInteger(MediaFormat.KEY_SAMPLE_RATE):48000;
             ByteArrayOutputStream audio=new ByteArrayOutputStream();
             MediaCodec.BufferInfo info=new MediaCodec.BufferInfo();
-            long deadline=System.currentTimeMillis()+120000;
             while(!outputEnded){
-                if(System.currentTimeMillis()>deadline)throw new IOException("Audio conversion timed out");
                 if(!inputEnded){
                     int input=codec.dequeueInputBuffer(10000);
                     if(input>=0){
@@ -83,7 +80,7 @@ public final class MLBBAudioConverter {
                     ByteBuffer output=codec.getOutputBuffer(index);
                     if(output!=null && info.size>0){
                         output.position(info.offset); output.limit(info.offset+info.size);
-                        if((long)audio.size()+info.size>Math.min(MAX_PCM_BYTES,64*1024*1024-44))throw new IOException("Decoded WAV exceeds 64 MiB. Trim audio or convert to lower sample rate/mono first");
+                        if((long)audio.size()+info.size>Integer.MAX_VALUE-44L)throw new IOException("Decoded PCM exceeds Java array address space; streaming conversion is required");
                         byte[] block=new byte[info.size]; output.get(block);
                         audio.write(block);
                     }
