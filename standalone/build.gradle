@@ -15,8 +15,6 @@ android {
     }
     sourceSets {
         main {
-            java { srcDirs '../app/src/main/java'; include 'com/termux/app/MLBB*.java' }
-            aidl { srcDirs '../app/src/main/aidl'; include 'com/termux/app/IMLBBFiles.aidl' }
             assets.srcDirs '../app/src/main/assets'
         }
     }
