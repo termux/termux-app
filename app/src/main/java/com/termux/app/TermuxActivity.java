@@ -1078,11 +1078,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         if (btnDrawer != null) {
             btnDrawer.setOnClickListener(v -> {
-                if (mDrawerLayout != null) {
-                    if (mDrawerLayout.isDrawerOpen(Gravity.START)) {
-                        mDrawerLayout.closeDrawer(Gravity.START);
+                DrawerLayout drawer = getDrawer();
+                if (drawer != null) {
+                    if (drawer.isDrawerOpen(Gravity.START)) {
+                        drawer.closeDrawer(Gravity.START);
                     } else {
-                        mDrawerLayout.openDrawer(Gravity.START);
+                        drawer.openDrawer(Gravity.START);
                     }
                 }
             });
@@ -1498,7 +1499,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         KyzzCommandPalette.show(this, commandId -> {
             switch (commandId) {
                 case "term_new":
-                    addNewSession(false, null);
+                    if (mTermuxTerminalSessionActivityClient != null) {
+                        mTermuxTerminalSessionActivityClient.addNewSession(false, null);
+                    }
                     switchKyzzMode("terminal");
                     break;
                 case "term_clear":
@@ -1507,7 +1510,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                     switchKyzzMode("terminal");
                     break;
                 case "term_rename":
-                    renameSession(getCurrentSession());
+                    TerminalSession current = getCurrentSession();
+                    if (mTermuxTerminalSessionActivityClient != null && current != null) {
+                        mTermuxTerminalSessionActivityClient.renameSession(current);
+                    }
                     break;
                 case "file_new":
                     switchKyzzMode("explorer");
