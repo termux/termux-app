@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23"/>
+    <application
+        android:name="com.termux.app.MLBBApplication"
+        android:label="MLBB Resource Editor"
+        android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="com.farizgd.mlbbeditor.shizuku"
+            android:exported="true"
+            android:multiprocess="false"/>
+        <activity android:name="com.termux.app.MLBBLauncherActivity"
+            android:exported="true"
+            android:label="MLBB Resource Editor">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

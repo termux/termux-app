@@ -1,0 +1,63 @@
+name: Standalone MLBB Editor release
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mlbb-editor-foundation]
+    paths:
+      - 'standalone/**'
+      - 'app/src/main/java/com/termux/app/MLBB*.java'
+      - 'app/src/main/aidl/com/termux/app/IMLBBFiles.aidl'
+      - 'app/src/main/cpp/mlbb_vorbis_jni.cpp'
+      - '.github/workflows/mlbb-standalone-release.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Assert native codec present
+        run: test -s app/src/main/cpp/prebuilt/arm64-v8a/libvorbislib.so
+      - name: Build standalone APK without Termux bootstrap
+        run: ./gradlew :standalone:assembleRelease --stacktrace
+      - name: Verify standalone APK
+        run: |
+          APK=$(find standalone/build/outputs/apk/release -name '*.apk' | head -1)
+          test -n "$APK"
+          unzip -l "$APK" | grep -F 'lib/arm64-v8a/libvorbislib.so'
+          unzip -l "$APK" | grep -F 'lib/arm64-v8a/libmlbb_vorbis_jni.so'
+          if unzip -l "$APK" | grep -E 'bootstrap-(aarch64|arm)|libtermux-bootstrap'; then
+            echo 'Unexpected Termux bootstrap included' >&2
+            exit 1
+          fi
+          AAPT=$(find "${ANDROID_HOME}/build-tools" -name aapt -type f | sort -V | tail -1)
+          "$AAPT" dump badging "$APK" | grep "package: name='com.farizgd.mlbbeditor'"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MLBB-Resource-Editor-standalone-unsigned
+          path: standalone/build/outputs/apk/release/*.apk
+      - name: Publish signed release when signing secrets are configured
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          KEYSTORE_B64: ${{ secrets.MLBB_RELEASE_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.MLBB_RELEASE_KEY_ALIAS }}
+          KEYSTORE_PASS: ${{ secrets.MLBB_RELEASE_KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.MLBB_RELEASE_KEY_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEYSTORE_PASS" ] || [ -z "$KEY_PASS" ]; then
+            echo 'Signing secrets missing. Release NOT published. Add four secrets and re-run manually.' >&2
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          APK=$(find standalone/build/outputs/apk/release -name '*.apk' | head -1)
+          APKSIGNER=$(find "${ANDROID_HOME}/build-tools" -name apksigner -type f | sort -V | tail -1)
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/release.jks" --ks-key-alias "$KEY_ALIAS" --ks-pass env:KEYSTORE_PASS --key-pass env:KEY_PASS --out MLBB-Resource-Editor-v0.1.0-arm64-v8a.apk "$APK"
+          "$APKSIGNER" verify --verbose MLBB-Resource-Editor-v0.1.0-arm64-v8a.apk
+          gh release create v0.1.0 MLBB-Resource-Editor-v0.1.0-arm64-v8a.apk --title "MLBB Resource Editor v0.1.0" --notes "First standalone Android ARM64 release. No Termux bootstrap or terminal modules. Includes Shizuku BNK editing, VorbisLib WEM conversion and per-audio preview. Early release; keep backups and test on device." --prerelease --target "$GITHUB_SHA"
+          rm -f "$RUNNER_TEMP/release.jks"
