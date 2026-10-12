@@ -35,6 +35,8 @@ public class MLBBLauncherActivity extends Activity {
     private boolean autoInstallAfterConversion=false;
     private android.media.MediaPlayer previewPlayer;
     private File previewFile;
+    private volatile int bankPreviewTicket=0;
+    private String previewBankName=null;
     private byte[] nativeConvertedWem=null;
     private byte[] nativeDecodedOgg=null;
     private byte[] experimentalWem=null;
@@ -172,56 +174,129 @@ public class MLBBLauncherActivity extends Activity {
         });
     }
     private void showBankPicker(String[] names){
-        LinearLayout content=new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        int pad=(int)(16*getResources().getDisplayMetrics().density);
-        content.setPadding(pad,0,pad,0);
+        page("Daftar Bank Suara MLBB");
+        button("Kembali ke Editor Audio",this::audio);
+        hint("Cari bank suara, ketuk Buka untuk mengedit, atau Putar untuk mendengarkan audio pertama di dalam BNK. Pratinjau tidak mengubah berkas game.");
         EditText query=new EditText(this);
         query.setSingleLine(true);
-        query.setHint("Cari nama berkas, misalnya bgm_intro");
-        content.addView(query);
+        query.setHint("Cari bank suara, misalnya bgm");
+        query.setTextColor(Color.WHITE);
+        query.setHintTextColor(Color.rgb(164,177,203));
+        root.addView(query);
         TextView count=new TextView(this);
-        count.setTextColor(Color.LTGRAY);
-        content.addView(count);
-        ListView list=new ListView(this);
-        content.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+        count.setTextColor(Color.rgb(191,204,230));
+        count.setPadding(dp(4),dp(8),dp(4),dp(8));
+        root.addView(count);
         final java.util.ArrayList<String> filtered=new java.util.ArrayList<>();
-        final ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,filtered);
+        ListView list=new ListView(this);
+        list.setDividerHeight(dp(5));
+        list.setBackgroundColor(Color.rgb(13,20,35));
+        // Use one scroll container: a bounded list inside the page scroll.
+        root.addView(list,new LinearLayout.LayoutParams(-1,dp(510)));
+        final android.widget.BaseAdapter adapter=new android.widget.BaseAdapter(){
+            @Override public int getCount(){return filtered.size();}
+            @Override public Object getItem(int i){return filtered.get(i);}
+            @Override public long getItemId(int i){return i;}
+            @Override public View getView(int index,View old,android.view.ViewGroup parent){
+                final String name=filtered.get(index);
+                LinearLayout item=new LinearLayout(MLBBLauncherActivity.this);
+                item.setOrientation(LinearLayout.VERTICAL);
+                item.setPadding(dp(12),dp(10),dp(12),dp(10));
+                item.setBackground(shape(Color.rgb(29,43,69),Color.rgb(63,83,120),14));
+                TextView title=new TextView(MLBBLauncherActivity.this);
+                title.setText(name);
+                title.setTextColor(Color.WHITE);
+                title.setTextSize(14);
+                title.setMaxLines(2);
+                item.addView(title);
+                LinearLayout actions=new LinearLayout(MLBBLauncherActivity.this);
+                actions.setOrientation(LinearLayout.HORIZONTAL);
+                Button open=new Button(MLBBLauncherActivity.this);
+                open.setAllCaps(false);open.setText("Buka");
+                actions.addView(open,new LinearLayout.LayoutParams(0,dp(51),1));
+                Button play=new Button(MLBBLauncherActivity.this);
+                play.setAllCaps(false);
+                play.setText(name.equals(previewBankName)?"Hentikan":"Putar");
+                actions.addView(play,new LinearLayout.LayoutParams(0,dp(51),1));
+                item.addView(actions);
+                open.setOnClickListener(v->{bankPreviewTicket++;stopPreview();previewBankName=null;openGameBank(name);});
+                play.setOnClickListener(v->{
+                    if(name.equals(previewBankName)){
+                        bankPreviewTicket++;stopPreview();previewBankName=null;
+                        notifyDataSetChanged();message("Pratinjau dihentikan");
+                    }else{
+                        previewBank(name);
+                        notifyDataSetChanged();
+                    }
+                });
+                return item;
+            }
+        };
         list.setAdapter(adapter);
-        AlertDialog dlg=new AlertDialog.Builder(this)
-            .setTitle("Bank Suara MLBB")
-            .setView(content)
-            .setNegativeButton("Tutup",null).create();
         Runnable refresh=()->{
             String q=query.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
             filtered.clear();
-            int found=0;
+            int total=0;
             for(String name:names){
                 if(name.toLowerCase(java.util.Locale.ROOT).contains(q)){
-                    found++;
+                    total++;
                     if(filtered.size()<200)filtered.add(name);
                 }
             }
-            count.setText(found+" dari "+names.length+" cocok (menampilkan "+filtered.size()+")");
+            count.setText(total+" dari "+names.length+" cocok. Menampilkan "+filtered.size()+" berkas.");
             adapter.notifyDataSetChanged();
         };
         query.addTextChangedListener(new android.text.TextWatcher(){
-            public void beforeTextChanged(CharSequence x,int start,int count,int after){}
-            public void onTextChanged(CharSequence x,int start,int before,int count){refresh.run();}
+            public void beforeTextChanged(CharSequence s,int start,int count,int after){}
+            public void onTextChanged(CharSequence s,int start,int before,int count){refresh.run();}
             public void afterTextChanged(android.text.Editable e){}
         });
-        list.setOnItemClickListener((parent,view,index,id)->{
-            String picked=filtered.get(index);
-            dlg.dismiss();
-            openGameBank(picked);
-        });
-        dlg.setOnShowListener(d->{
-            int height=(int)(440*getResources().getDisplayMetrics().density);
-            list.getLayoutParams().height=height;
-            list.requestLayout();
-        });
         refresh.run();
-        dlg.show();
+    }
+    private void previewBank(String name){
+        if(shizukuFiles==null){message("Hubungkan Shizuku terlebih dahulu");return;}
+        if(!MLBBNativeVorbis.available()){message("VorbisLib tidak tersedia untuk pratinjau");return;}
+        final int ticket=++bankPreviewTicket;
+        stopPreview();
+        previewBankName=name;
+        message("Menyiapkan pratinjau "+name+"...");
+        worker.execute(()->{
+            File temp=null;
+            try(android.os.ParcelFileDescriptor fd=shizukuFiles.openBank(name);
+                InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){
+                MLBBBankReader source=new MLBBBankReader(readLimited(in,Integer.MAX_VALUE));
+                if(source.entries.isEmpty())throw new IOException("BNK tidak memiliki audio untuk diputar");
+                byte[] wem=source.extract(source.entries.get(0));
+                byte[] ogg=MLBBNativeVorbis.decodeToOgg(wem,false);
+                temp=File.createTempFile("mlbb-bank-preview-", ".ogg",getCacheDir());
+                try(FileOutputStream out=new FileOutputStream(temp)){out.write(ogg);}
+                final File ready=temp;
+                runOnUiThread(()->{
+                    if(ticket!=bankPreviewTicket){ready.delete();return;}
+                    try{
+                        stopPreview();previewFile=ready;
+                        previewPlayer=new android.media.MediaPlayer();
+                        previewPlayer.setDataSource(ready.getAbsolutePath());
+                        previewPlayer.setOnCompletionListener(p->{
+                            stopPreview();previewBankName=null;message("Pratinjau selesai");
+                        });
+                        previewPlayer.prepare();previewPlayer.start();
+                        message("Memutar audio pertama dari "+name);
+                    }catch(Exception ex){
+                        stopPreview();previewBankName=null;
+                        message("Gagal memutar pratinjau: "+ex.getMessage());
+                    }
+                });
+            }catch(Exception ex){
+                if(temp!=null)temp.delete();
+                runOnUiThread(()->{
+                    if(ticket==bankPreviewTicket){
+                        previewBankName=null;
+                        message("Gagal memuat pratinjau "+name+": "+ex.getMessage());
+                    }
+                });
+            }
+        });
     }
     private void openGameBank(String name){
         worker.execute(()->{
