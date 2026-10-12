@@ -131,7 +131,7 @@ public class MLBBLauncherActivity extends Activity {
     }
     private void showHelp(){
         new AlertDialog.Builder(this).setTitle("Quick guide")
-            .setMessage("What is a BNK?\\nA Wwise soundbank containing game sounds.\\n\\nWhat is a WEM?\\nOne sound inside a BNK.\\n\\nWhy use Shizuku?\\nAndroid restricts access to the game's audio folder. Shizuku lets the editor use your approved access.\\n\\nCan I undo changes?\\nYes. Select the same game soundbank and tap Restore original backup.\\n\\nWhat files work?\\nCommon audio files supported by Android's decoder. The editor converts them to a compatible WEM.\\n\\nSafe first test?\\nImport audio, preview the queued sound and export the modified BNK before installing.")
+            .setMessage("What is a BNK?\nA Wwise soundbank containing game sounds.\n\nWhat is a WEM?\nOne sound inside a BNK.\n\nWhy use Shizuku?\nAndroid restricts access to the game's audio folder. Shizuku lets the editor use your approved access.\n\nCan I undo changes?\nYes. Select the same game soundbank and tap Restore original backup.\n\nWhat files work?\nCommon audio files supported by Android's decoder. The editor converts them to a compatible WEM.\n\nSafe first test?\nImport audio, preview the queued sound and export the modified BNK before installing.")
             .setPositiveButton("Got it",null).show();
     }
     private void checkShizuku(){
