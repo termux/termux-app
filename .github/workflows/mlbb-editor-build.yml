@@ -24,7 +24,7 @@ jobs:
           node scripts/package-android.cjs
       - name: Detect optional ARM64 VorbisLib
         run: |
-          if [ -s app/src/main/jniLibs/arm64-v8a/libvorbislib.so ] && [ -s app/src/main/cpp/include/vorbislib.h ]; then
+          if [ -s app/src/main/cpp/prebuilt/arm64-v8a/libvorbislib.so ] && [ -s app/src/main/cpp/include/vorbislib.h ]; then
             echo "Native ARM64 VorbisLib found; JNI codec will be compiled"
           else
             echo "::warning::VorbisLib archive not yet installed in repository. APK will NOT contain native Custom Vorbis encoding."
@@ -34,6 +34,16 @@ jobs:
         env:
           TERMUX_SPLIT_APKS_FOR_DEBUG_BUILDS: '0'
         run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --stacktrace
+      - name: Verify native library when supplied
+        run: |
+          LIB=app/src/main/cpp/prebuilt/arm64-v8a/libvorbislib.so
+          if [ -s "$LIB" ]; then
+            APK=$(find app/build/outputs/apk/debug -name '*universal*.apk' | head -n 1)
+            test -n "$APK"
+            unzip -l "$APK" | grep -E 'lib/arm64-v8a/lib(vorbislib|mlbb_vorbis_jni)\\.so'
+            unzip -l "$APK" | grep -F 'lib/arm64-v8a/libvorbislib.so'
+            unzip -l "$APK" | grep -F 'lib/arm64-v8a/libmlbb_vorbis_jni.so'
+          fi
       - name: Verify standalone package ID
         run: |
           APK=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
