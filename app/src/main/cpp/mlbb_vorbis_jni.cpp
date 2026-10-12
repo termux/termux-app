@@ -12,7 +12,7 @@ void raise(JNIEnv* env,const char* text) {
 bool readInput(JNIEnv* env,jbyteArray input,std::vector<uint8_t>& data){
     if(!input){raise(env,"Missing audio bytes");return false;}
     jsize size=env->GetArrayLength(input);
-    if(size<=0||size>64*1024*1024){raise(env,"Input must be 1 byte to 64 MiB");return false;}
+    if(size<=0){raise(env,"Input is empty");return false;}
     data.resize(static_cast<size_t>(size));
     env->GetByteArrayRegion(input,0,size,reinterpret_cast<jbyte*>(data.data()));
     return !env->ExceptionCheck();
@@ -21,7 +21,7 @@ jbyteArray result(JNIEnv* env,vl_status status,vl_buffer& output){
     if(status!=VL_OK) {
         raise(env,vl_last_error());return nullptr;
     }
-    if(!output.data || output.size==0 || output.size>64*1024*1024 ||
+    if(!output.data || output.size==0 ||
        output.size>static_cast<size_t>(std::numeric_limits<jsize>::max())){
         raise(env,"Invalid native Vorbis output size");return nullptr;
     }
@@ -33,7 +33,7 @@ jbyteArray result(JNIEnv* env,vl_status status,vl_buffer& output){
 }
 extern "C" JNIEXPORT jbyteArray JNICALL
 Java_com_termux_app_MLBBNativeVorbis_nativeEncode(JNIEnv* env,jclass,jbyteArray audio,jfloat quality,jint maxFrames){
-    if(maxFrames<=0||maxFrames>48000*60*10||quality < -0.1f || quality>1.0f){
+    if(maxFrames<=0||quality < -0.1f || quality>1.0f){
         raise(env,"Invalid quality or frame count");return nullptr;
     }
     std::vector<uint8_t> source;
