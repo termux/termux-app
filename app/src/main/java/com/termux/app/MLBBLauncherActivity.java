@@ -318,8 +318,22 @@ public class MLBBLauncherActivity extends Activity {
         }
         for(MLBBBankReader.Entry e:bank.entries){
             String codec; try{codec=MLBBBankReader.codecName(bank.originalCodec(e));}catch(IOException ex){codec="Kodek tidak dikenal";}
-            hint("ID suara: "+e.id+"  |  Jenis WEM: "+codec+(replacements.containsKey(e.id)?"  |  Sudah diedit":""));
-            button("Edit Suara...",()->{
+            hint("ID suara: "+e.id+"  |  Jenis WEM: "+codec+(replacements.containsKey(e.id)?"  |  Pengganti disiapkan":""));
+            LinearLayout soundActions=new LinearLayout(this);
+            soundActions.setOrientation(LinearLayout.HORIZONTAL);
+            Button previewButton=new Button(this);
+            previewButton.setAllCaps(false);previewButton.setText("Putar");
+            Button editButton=new Button(this);
+            editButton.setAllCaps(false);editButton.setText("Edit Suara...");
+            LinearLayout.LayoutParams side=new LinearLayout.LayoutParams(0,dp(54),1);
+            soundActions.addView(previewButton,side);
+            soundActions.addView(editButton,new LinearLayout.LayoutParams(0,dp(54),2));
+            root.addView(soundActions);
+            previewButton.setOnClickListener(v->{
+                if(previewPlayer!=null){stopPreview();message("Pratinjau dihentikan");previewButton.setText("Putar");}
+                else {previewWem(e);previewButton.setText("Hentikan");}
+            });
+            editButton.setOnClickListener(v->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Edit suara "+e.id)
                     .setItems(new String[]{"Ekspor suara asli (.wem)","Lanjutan: ganti menggunakan WEM","Impor musik atau audio (disarankan)","Impor audio dan pasang setelah konfirmasi","Batalkan perubahan yang disiapkan","Dengarkan suara ini","Lanjutan: konverter OGG lama (uji coba)","Lanjutan: ekspor WAV/OGG native","Lanjutan: ekspor OGG hasil dekode"},(d,option)->{
@@ -514,6 +528,8 @@ public class MLBBLauncherActivity extends Activity {
             });
         }else if(request==IMPORT_AUDIO && bank!=null && selected!=null){
             final long id=selected.id;
+            final MLBBBankReader.Entry targetEntry=selected;
+            final MLBBBankReader targetBank=bank;
             final boolean install=autoInstallAfterConversion;
             if(install && (gameBankName==null || shizukuFiles==null)){
                 message("Pemasangan memerlukan BNK game yang dibuka melalui Shizuku");
@@ -526,7 +542,8 @@ public class MLBBLauncherActivity extends Activity {
                     byte[] wav=MLBBAudioConverter.decodeToWav(this,uri);
                     message("Mengenkode WAV ke Wwise Custom Vorbis...");
                     byte[] wem=MLBBNativeVorbis.encode(wav,0.4f,Integer.MAX_VALUE);
-                    if(MLBBBankReader.wemCodec(wem)!=bank.originalCodec(selected))
+                    if(bank!=targetBank)throw new IOException("Bank suara telah berubah selama konversi; ulangi impor");
+                    if(MLBBBankReader.wemCodec(wem)!=targetBank.originalCodec(targetEntry))
                         throw new IOException("Kodek WEM hasil enkode tidak cocok dengan kodek bank suara asli");
                     replacements.put(id,wem);
                     runOnUiThread(()->{
@@ -544,8 +561,10 @@ public class MLBBLauncherActivity extends Activity {
             } else convert.run();
         }else if(request==IMPORT_WEM && bank!=null && selected!=null){
             final long id=selected.id;
+            final MLBBBankReader targetBank=bank;
             worker.execute(()->{
                 try(InputStream in=getContentResolver().openInputStream(uri)){
+                    if(bank!=targetBank)throw new IOException("Bank suara berubah, buka kembali berkas WEM");
                     byte[] wem=readLimited(in,Integer.MAX_VALUE);
                     if(wem.length<12 || !(new String(wem,0,4,java.nio.charset.StandardCharsets.US_ASCII).equals("RIFF")))
                         throw new IOException("Bukan berkas RIFF/WEM");
