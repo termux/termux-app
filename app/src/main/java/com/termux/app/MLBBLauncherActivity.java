@@ -33,6 +33,8 @@ public class MLBBLauncherActivity extends Activity {
     private String bankName="soundbank";
     private String gameBankName=null;
     private boolean autoInstallAfterConversion=false;
+    private android.media.MediaPlayer previewPlayer;
+    private File previewFile;
     private byte[] nativeConvertedWem=null;
     private byte[] nativeDecodedOgg=null;
     private byte[] experimentalWem=null;
@@ -60,7 +62,33 @@ public class MLBBLauncherActivity extends Activity {
             .setPositiveButton("OK",null).show());
     }
     @Override protected void onCreate(Bundle state){super.onCreate(state);home();}
-    @Override protected void onDestroy(){worker.shutdown();super.onDestroy();}
+    @Override protected void onDestroy(){stopPreview();worker.shutdown();super.onDestroy();}
+    private void stopPreview(){
+        if(previewPlayer!=null){try{previewPlayer.stop();}catch(Exception ignored){}previewPlayer.release();previewPlayer=null;}
+        if(previewFile!=null){previewFile.delete();previewFile=null;}
+    }
+    private void previewWem(MLBBBankReader.Entry e){
+        if(!MLBBNativeVorbis.available()){message("Native VorbisLib is unavailable on this device");return;}
+        message("Decoding sound "+e.id+" for preview...");
+        worker.execute(()->{
+            try{
+                byte[] source=replacements.containsKey(e.id)?replacements.get(e.id):bank.extract(e);
+                byte[] ogg=MLBBNativeVorbis.decodeToOgg(source,false);
+                File f=File.createTempFile("mlbb-preview-", ".ogg",getCacheDir());
+                try(FileOutputStream out=new FileOutputStream(f)){out.write(ogg);}
+                runOnUiThread(()->{
+                    try{
+                        stopPreview();previewFile=f;
+                        previewPlayer=new android.media.MediaPlayer();
+                        previewPlayer.setDataSource(f.getAbsolutePath());
+                        previewPlayer.setOnCompletionListener(p->{stopPreview();message("Preview finished");});
+                        previewPlayer.prepare();previewPlayer.start();
+                        message("Playing "+e.id+" (tap Stop preview to stop)");
+                    }catch(Exception ex){stopPreview();message("Playback failed: "+ex.getMessage());}
+                });
+            }catch(Exception ex){message("Native preview decode failed: "+ex.getMessage());}
+        });
+    }
     private void home(){
         page("MLBB Resource Editor");
         label("Resource explorer · Development build",15);
@@ -170,6 +198,7 @@ public class MLBBLauncherActivity extends Activity {
         label(bankName+" · "+bank.entries.size()+" audio entries",16);
         label(replacements.size()+" replacements queued",14);
         button("Export modified BNK (does not touch game)",this::savePatchedBank);
+        if(previewPlayer!=null)button("■ Stop preview",()->{stopPreview();audio();message("Preview stopped");});
         if(gameBankName!=null){
             button("Install modified BNK with Shizuku",this::confirmInstall);
             button("Restore original .bak with Shizuku",this::confirmRestore);
@@ -179,7 +208,7 @@ public class MLBBLauncherActivity extends Activity {
             button("WEM ID "+e.id+" · "+codec+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview","Experimental OGG → legacy Vorbis WEM (export only)","Native WAV/OGG → Custom Vorbis WEM (test/export)","Native WEM → OGG (export)"},(d,option)->{
+                    .setItems(new String[]{"Export original WEM","Replace from WEM","Import audio → Custom Vorbis → queue in BNK","Import audio → Custom Vorbis → confirm install","Clear replacement","Preview original/queued WEM (native)","Experimental OGG → legacy Vorbis WEM (export only)","Native WAV/OGG → Custom Vorbis WEM (test/export)","Native WEM → OGG (export)"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -196,6 +225,8 @@ public class MLBBLauncherActivity extends Activity {
                             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("audio/*");
                             i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"audio/mpeg","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/mp4","application/ogg"});
                             startActivityForResult(i,IMPORT_AUDIO);
+                        } else if(option==5){
+                            previewWem(e);
                         } else if(option==4){
                             replacements.remove(e.id);
                             audio();message("Cleared replacement for "+e.id);
@@ -376,12 +407,17 @@ public class MLBBLauncherActivity extends Activity {
             }
             Runnable convert=()->worker.execute(()->{
                 try{
-                    message("Converting audio to 16-bit PCM WEM...");
-                    byte[] wem=MLBBAudioConverter.toPcmWem(this,uri);
+                    if(!MLBBNativeVorbis.available())throw new IOException("Native VorbisLib only supports ARM64 and is missing from this APK");
+                    message("Decoding imported audio to WAV using Android codecs...");
+                    byte[] wav=MLBBAudioConverter.decodeToWav(this,uri);
+                    message("Encoding WAV to Wwise Custom Vorbis...");
+                    byte[] wem=MLBBNativeVorbis.encode(wav,0.4f,48000*300);
+                    if(MLBBBankReader.wemCodec(wem)!=bank.originalCodec(selected))
+                        throw new IOException("Encoded WEM codec does not match original bank codec");
                     replacements.put(id,wem);
                     runOnUiThread(()->{
                         audio();
-                        message("Converted audio for "+id+" ("+(wem.length/1024)+" KiB)");
+                        message("Queued Custom Vorbis audio for "+id+" ("+(wem.length/1024)+" KiB). Preview, export or confirm install.");
                         if(install)confirmInstall();
                     });
                 }catch(Exception ex){message("Audio conversion failed: "+ex.getMessage());}
@@ -389,7 +425,7 @@ public class MLBBLauncherActivity extends Activity {
             if(install){
                 new AlertDialog.Builder(this)
                     .setTitle("Convert and install audio?")
-                    .setMessage("The app converts to PCM WEM. If the original WEM uses Wwise Custom Vorbis, installation will be blocked instead of silently replacing it with incompatible PCM. The converted media can still be exported.")
+                    .setMessage("Decode using Android MediaCodec, encode using native VorbisLib to modern Custom Vorbis, and queue for BNK replacement. If conversion succeeds, a separate Shizuku install confirmation and backup step is required. Ensure your original .bak is preserved.")
                     .setNegativeButton("Cancel",null).setPositiveButton("Convert", (d,w)->convert.run()).show();
             } else convert.run();
         }else if(request==IMPORT_WEM && bank!=null && selected!=null){
