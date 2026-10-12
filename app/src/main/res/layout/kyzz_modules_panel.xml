@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/kyzz_modules_panel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#181824"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:orientation="horizontal"
+        android:background="#12121e"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
+
+        <EditText
+            android:id="@+id/kyzz_module_search_input"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="#1e222d"
+            android:hint="Search packages (git, python, node...)"
+            android:textColorHint="#5c6370"
+            android:textColor="#ffffff"
+            android:textSize="13sp"
+            android:paddingHorizontal="10dp"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/kyzz_module_btn_refresh"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:text="Refresh"
+            android:textSize="11sp"
+            android:textColor="#82aaff"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="10dp"
+            android:layout_marginStart="6dp" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/kyzz_modules_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="#232338"
+        android:dividerHeight="1dp" />
+
+</LinearLayout>

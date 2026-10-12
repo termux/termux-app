@@ -59,6 +59,24 @@ import com.termux.terminal.TerminalSessionClient;
 import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
+import com.termux.app.kyzz.appearance.KyzzAppearanceManager;
+import com.termux.app.kyzz.editor.KyzzCodeEditorView;
+import com.termux.app.kyzz.fonts.KyzzFontManager;
+import com.termux.app.kyzz.modules.KyzzModuleItem;
+import com.termux.app.kyzz.modules.KyzzModuleRegistry;
+import com.termux.app.kyzz.packageadapter.KyzzGitAdapter;
+import com.termux.app.kyzz.packageadapter.KyzzNpmAdapter;
+import com.termux.app.kyzz.packageadapter.KyzzPipAdapter;
+import com.termux.app.kyzz.packageadapter.KyzzPkgAdapter;
+import com.termux.app.kyzz.ui.KyzzCommandPalette;
+import com.termux.app.kyzz.workspace.KyzzWorkspaceManager;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import java.io.File;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -252,6 +270,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         setToggleKeyboardView();
 
         registerForContextMenu(mTerminalView);
+
+        initKyzzFeatures();
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
 
@@ -789,12 +809,54 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }.start();
     }
 
+    public static final int REQUEST_PICK_WALLPAPER = 2001;
+    public static final int REQUEST_PICK_FONT = 2002;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + IntentUtils.getIntentString(data));
         if (requestCode == PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION) {
             requestStoragePermission(true);
+        } else if (requestCode == REQUEST_PICK_WALLPAPER && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            android.net.Uri selectedImageUri = data.getData();
+            try {
+                final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                getContentResolver().takePersistableUriPermission(selectedImageUri, takeFlags);
+            } catch (Exception ignored) {}
+            if (mKyzzAppearanceManager != null) {
+                mKyzzAppearanceManager.setWallpaperUri(selectedImageUri.toString());
+                applyKyzzAppearance();
+                Toast.makeText(this, "Wallpaper applied!", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == REQUEST_PICK_FONT && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            android.net.Uri fontUri = data.getData();
+            try {
+                // Copy font file to app files dir so Typeface can load from file path
+                File fontDir = new File(getFilesDir(), "fonts");
+                fontDir.mkdirs();
+                File targetFontFile = new File(fontDir, "custom_font.ttf");
+                java.io.InputStream in = getContentResolver().openInputStream(fontUri);
+                java.io.FileOutputStream out = new java.io.FileOutputStream(targetFontFile);
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                }
+                in.close();
+                out.close();
+
+                if (mKyzzFontManager != null) {
+                    mKyzzFontManager.setCustomFontPath(targetFontFile.getAbsolutePath());
+                    android.graphics.Typeface tf = mKyzzFontManager.loadTypeface();
+                    if (mTerminalView != null) {
+                        mTerminalView.setTypeface(tf);
+                    }
+                    Toast.makeText(this, "Custom font loaded successfully!", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Failed to load font: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -1010,4 +1072,579 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         return intent;
     }
 
+    /* =========================================================================
+     * KYZZ TERM EXTENDED FEATURES (Code Mode, Explorer, Modules, Appearance)
+     * ========================================================================= */
+    private KyzzAppearanceManager mKyzzAppearanceManager;
+    private KyzzFontManager mKyzzFontManager;
+    private KyzzWorkspaceManager mKyzzWorkspaceManager;
+    private View mKyzzCodePanel;
+    private View mKyzzExplorerPanel;
+    private View mKyzzModulesPanel;
+    private View mKyzzAppearancePanel;
+    private KyzzCodeEditorView mKyzzCodeEditor;
+    private TextView mKyzzEditorFileTitle;
+    private TextView mKyzzExplorerPathText;
+    private ListView mKyzzExplorerList;
+    private ListView mKyzzModulesList;
+    private File mKyzzCurrentExplorerDir;
+    private ImageView mKyzzWallpaperView;
+    private View mKyzzOverlayView;
+
+    private void initKyzzFeatures() {
+        mKyzzAppearanceManager = new KyzzAppearanceManager(this);
+        mKyzzFontManager = new KyzzFontManager(this);
+        mKyzzWorkspaceManager = new KyzzWorkspaceManager(this);
+
+        mKyzzCodePanel = findViewById(R.id.kyzz_code_panel);
+        mKyzzExplorerPanel = findViewById(R.id.kyzz_explorer_panel);
+        mKyzzModulesPanel = findViewById(R.id.kyzz_modules_panel);
+        mKyzzAppearancePanel = findViewById(R.id.kyzz_appearance_panel);
+        mKyzzWallpaperView = findViewById(R.id.kyzz_wallpaper_view);
+        mKyzzOverlayView = findViewById(R.id.kyzz_overlay_view);
+
+        // Top bar navigation tabs
+        Button tabTerminal = findViewById(R.id.kyzz_tab_terminal);
+        Button tabCode = findViewById(R.id.kyzz_tab_code);
+        Button tabExplorer = findViewById(R.id.kyzz_tab_explorer);
+        Button tabModules = findViewById(R.id.kyzz_tab_modules);
+        Button tabAppearance = findViewById(R.id.kyzz_tab_appearance);
+        Button btnPalette = findViewById(R.id.kyzz_btn_palette);
+        ImageButton btnDrawer = findViewById(R.id.kyzz_btn_drawer);
+
+        if (tabTerminal != null) tabTerminal.setOnClickListener(v -> switchKyzzMode("terminal"));
+        if (tabCode != null) tabCode.setOnClickListener(v -> switchKyzzMode("code"));
+        if (tabExplorer != null) tabExplorer.setOnClickListener(v -> switchKyzzMode("explorer"));
+        if (tabModules != null) tabModules.setOnClickListener(v -> switchKyzzMode("modules"));
+        if (tabAppearance != null) tabAppearance.setOnClickListener(v -> switchKyzzMode("appearance"));
+
+        if (btnDrawer != null) {
+            btnDrawer.setOnClickListener(v -> {
+                DrawerLayout drawer = getDrawer();
+                if (drawer != null) {
+                    if (drawer.isDrawerOpen(Gravity.START)) {
+                        drawer.closeDrawer(Gravity.START);
+                    } else {
+                        drawer.openDrawer(Gravity.START);
+                    }
+                }
+            });
+        }
+
+        if (btnPalette != null) {
+            btnPalette.setOnClickListener(v -> openKyzzCommandPalette());
+        }
+
+        setupKyzzCodePanel();
+        setupKyzzExplorerPanel();
+        setupKyzzModulesPanel();
+        setupKyzzAppearancePanel();
+        applyKyzzAppearance();
+    }
+
+    private void switchKyzzMode(String mode) {
+        if (mTerminalView != null) mTerminalView.setVisibility("terminal".equals(mode) ? View.VISIBLE : View.GONE);
+        if (mKyzzCodePanel != null) mKyzzCodePanel.setVisibility("code".equals(mode) ? View.VISIBLE : View.GONE);
+        if (mKyzzExplorerPanel != null) {
+            mKyzzExplorerPanel.setVisibility("explorer".equals(mode) ? View.VISIBLE : View.GONE);
+            if ("explorer".equals(mode)) refreshKyzzExplorerList();
+        }
+        if (mKyzzModulesPanel != null) {
+            mKyzzModulesPanel.setVisibility("modules".equals(mode) ? View.VISIBLE : View.GONE);
+            if ("modules".equals(mode)) refreshKyzzModulesList(null);
+        }
+        if (mKyzzAppearancePanel != null) mKyzzAppearancePanel.setVisibility("appearance".equals(mode) ? View.VISIBLE : View.GONE);
+
+        // Update top bar tab visual active highlight
+        int activeColor = android.graphics.Color.parseColor("#1f1f33");
+        int inactiveColor = android.graphics.Color.parseColor("#12121e");
+        Button tabTerminal = findViewById(R.id.kyzz_tab_terminal);
+        Button tabCode = findViewById(R.id.kyzz_tab_code);
+        Button tabExplorer = findViewById(R.id.kyzz_tab_explorer);
+        Button tabModules = findViewById(R.id.kyzz_tab_modules);
+        Button tabAppearance = findViewById(R.id.kyzz_tab_appearance);
+        if (tabTerminal != null) tabTerminal.setBackgroundColor("terminal".equals(mode) ? activeColor : inactiveColor);
+        if (tabCode != null) tabCode.setBackgroundColor("code".equals(mode) ? activeColor : inactiveColor);
+        if (tabExplorer != null) tabExplorer.setBackgroundColor("explorer".equals(mode) ? activeColor : inactiveColor);
+        if (tabModules != null) tabModules.setBackgroundColor("modules".equals(mode) ? activeColor : inactiveColor);
+        if (tabAppearance != null) tabAppearance.setBackgroundColor("appearance".equals(mode) ? activeColor : inactiveColor);
+    }
+
+    private void setupKyzzCodePanel() {
+        if (mKyzzCodePanel == null) return;
+        mKyzzCodeEditor = findViewById(R.id.kyzz_code_editor);
+        mKyzzEditorFileTitle = findViewById(R.id.kyzz_editor_file_title);
+        Button btnSave = findViewById(R.id.kyzz_editor_btn_save);
+        Button btnFind = findViewById(R.id.kyzz_editor_btn_find);
+        Button btnRun = findViewById(R.id.kyzz_editor_btn_run);
+
+        if (btnSave != null) {
+            btnSave.setOnClickListener(v -> {
+                if (mKyzzCodeEditor != null) {
+                    try {
+                        mKyzzCodeEditor.saveFile();
+                        Toast.makeText(this, "File saved successfully", Toast.LENGTH_SHORT).show();
+                        if (mKyzzEditorFileTitle != null && mKyzzCodeEditor.getCurrentFile() != null) {
+                            mKyzzEditorFileTitle.setText(mKyzzCodeEditor.getCurrentFile().getName());
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Save error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+
+        if (btnFind != null) {
+            btnFind.setOnClickListener(v -> {
+                final EditText input = new EditText(this);
+                input.setHint("Enter line number");
+                input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                new AlertDialog.Builder(this)
+                    .setTitle("Go to Line")
+                    .setView(input)
+                    .setPositiveButton("Go", (d, w) -> {
+                        try {
+                            int line = Integer.parseInt(input.getText().toString().trim());
+                            if (mKyzzCodeEditor != null) mKyzzCodeEditor.goToLine(line);
+                        } catch (Exception ignored) {}
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
+        }
+
+        if (btnRun != null) {
+            btnRun.setOnClickListener(v -> {
+                if (mKyzzCodeEditor != null && mKyzzCodeEditor.getCurrentFile() != null) {
+                    File f = mKyzzCodeEditor.getCurrentFile();
+                    String cmd = "";
+                    String name = f.getName().toLowerCase();
+                    if (name.endsWith(".py")) cmd = "python \"" + f.getAbsolutePath() + "\"\n";
+                    else if (name.endsWith(".js")) cmd = "node \"" + f.getAbsolutePath() + "\"\n";
+                    else if (name.endsWith(".sh")) cmd = "bash \"" + f.getAbsolutePath() + "\"\n";
+                    else cmd = "\"" + f.getAbsolutePath() + "\"\n";
+
+                    switchKyzzMode("terminal");
+                    TerminalSession session = getCurrentSession();
+                    if (session != null && !cmd.isEmpty()) {
+                        session.write(cmd);
+                    }
+                } else {
+                    Toast.makeText(this, "No active saved script to run", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        final TextView statusLang = findViewById(R.id.kyzz_editor_status_lang);
+        final TextView statusPos = findViewById(R.id.kyzz_editor_status_pos);
+        if (mKyzzCodeEditor != null) {
+            mKyzzCodeEditor.setOnCursorChangeListener((line, col, language) -> {
+                if (statusLang != null) statusLang.setText(language != null ? language.toUpperCase() : "PLAIN TEXT");
+                if (statusPos != null) statusPos.setText("Ln " + line + ", Col " + col);
+            });
+        }
+    }
+
+    private void setupKyzzExplorerPanel() {
+        if (mKyzzExplorerPanel == null) return;
+        mKyzzExplorerPathText = findViewById(R.id.kyzz_explorer_path_text);
+        mKyzzExplorerList = findViewById(R.id.kyzz_explorer_list);
+        Button btnUp = findViewById(R.id.kyzz_explorer_btn_up);
+        Button btnNewFile = findViewById(R.id.kyzz_explorer_btn_new_file);
+        Button btnNewDir = findViewById(R.id.kyzz_explorer_btn_new_dir);
+
+        mKyzzCurrentExplorerDir = new File(mKyzzWorkspaceManager.getCurrentWorkspacePath());
+
+        if (btnUp != null) {
+            btnUp.setOnClickListener(v -> {
+                if (mKyzzCurrentExplorerDir != null && mKyzzCurrentExplorerDir.getParentFile() != null) {
+                    mKyzzCurrentExplorerDir = mKyzzCurrentExplorerDir.getParentFile();
+                    refreshKyzzExplorerList();
+                }
+            });
+        }
+
+        if (btnNewFile != null) {
+            btnNewFile.setOnClickListener(v -> {
+                final EditText input = new EditText(this);
+                input.setHint("file name (e.g. main.py)");
+                new AlertDialog.Builder(this)
+                    .setTitle("Create File")
+                    .setView(input)
+                    .setPositiveButton("Create", (d, w) -> {
+                        String name = input.getText().toString().trim();
+                        if (!name.isEmpty() && mKyzzCurrentExplorerDir != null) {
+                            try {
+                                File nf = new File(mKyzzCurrentExplorerDir, name);
+                                nf.createNewFile();
+                                refreshKyzzExplorerList();
+                            } catch (Exception e) {
+                                Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
+        }
+
+        if (btnNewDir != null) {
+            btnNewDir.setOnClickListener(v -> {
+                final EditText input = new EditText(this);
+                input.setHint("directory name");
+                new AlertDialog.Builder(this)
+                    .setTitle("Create Directory")
+                    .setView(input)
+                    .setPositiveButton("Create", (d, w) -> {
+                        String name = input.getText().toString().trim();
+                        if (!name.isEmpty() && mKyzzCurrentExplorerDir != null) {
+                            File nd = new File(mKyzzCurrentExplorerDir, name);
+                            nd.mkdirs();
+                            refreshKyzzExplorerList();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
+        }
+
+        if (mKyzzExplorerList != null) {
+            mKyzzExplorerList.setOnItemClickListener((parent, view, position, id) -> {
+                String itemStr = (String) parent.getItemAtPosition(position);
+                boolean isDir = itemStr.startsWith("[DIR] ");
+                String name = isDir ? itemStr.substring(6) : itemStr.substring(7);
+                File selected = new File(mKyzzCurrentExplorerDir, name);
+                if (selected.isDirectory()) {
+                    mKyzzCurrentExplorerDir = selected;
+                    refreshKyzzExplorerList();
+                } else if (selected.isFile()) {
+                    try {
+                        if (mKyzzCodeEditor != null) {
+                            mKyzzCodeEditor.openFile(selected);
+                            if (mKyzzEditorFileTitle != null) {
+                                mKyzzEditorFileTitle.setText(selected.getName());
+                            }
+                            switchKyzzMode("code");
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Cannot open file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+    }
+
+    private void refreshKyzzExplorerList() {
+        if (mKyzzCurrentExplorerDir == null || !mKyzzCurrentExplorerDir.exists()) {
+            mKyzzCurrentExplorerDir = new File(mKyzzWorkspaceManager.getDefaultWorkspacePath());
+        }
+        if (mKyzzExplorerPathText != null) {
+            mKyzzExplorerPathText.setText(mKyzzCurrentExplorerDir.getAbsolutePath());
+        }
+        File[] files = mKyzzCurrentExplorerDir.listFiles();
+        java.util.List<String> items = new java.util.ArrayList<>();
+        if (files != null) {
+            // Sort: directories first, then files
+            java.util.Arrays.sort(files, (f1, f2) -> {
+                if (f1.isDirectory() && !f2.isDirectory()) return -1;
+                if (!f1.isDirectory() && f2.isDirectory()) return 1;
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            });
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    items.add("[DIR] " + f.getName());
+                } else {
+                    items.add("[FILE] " + f.getName());
+                }
+            }
+        }
+        if (mKyzzExplorerList != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+            mKyzzExplorerList.setAdapter(adapter);
+        }
+    }
+
+    private void setupKyzzModulesPanel() {
+        if (mKyzzModulesPanel == null) return;
+        final EditText searchInput = findViewById(R.id.kyzz_module_search_input);
+        Button btnRefresh = findViewById(R.id.kyzz_module_btn_refresh);
+        mKyzzModulesList = findViewById(R.id.kyzz_modules_list);
+
+        if (searchInput != null) {
+            searchInput.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    refreshKyzzModulesList(s.toString());
+                }
+                @Override
+                public void afterTextChanged(android.text.Editable s) {}
+            });
+        }
+
+        if (btnRefresh != null) {
+            btnRefresh.setOnClickListener(v -> {
+                String query = searchInput != null ? searchInput.getText().toString() : null;
+                refreshKyzzModulesList(query);
+            });
+        }
+
+        if (mKyzzModulesList != null) {
+            mKyzzModulesList.setOnItemClickListener((parent, view, position, id) -> {
+                Object itemObj = parent.getItemAtPosition(position);
+                if (itemObj instanceof KyzzModuleItem) {
+                    KyzzModuleItem module = (KyzzModuleItem) itemObj;
+                    new AlertDialog.Builder(this)
+                        .setTitle(module.getName() + " (" + module.getCategory() + ")")
+                        .setMessage(module.getDescription() + "\n\nCommand: " + module.getInstallCommand())
+                        .setPositiveButton("Install in Terminal", (d, w) -> {
+                            switchKyzzMode("terminal");
+                            TerminalSession session = getCurrentSession();
+                            if (session != null) {
+                                session.write(module.getInstallCommand() + "\n");
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+                }
+            });
+        }
+    }
+
+    private void refreshKyzzModulesList(String query) {
+        String prefix = TermuxConstants.TERMUX_PREFIX_DIR_PATH;
+        java.util.List<KyzzModuleItem> all = KyzzModuleRegistry.getDefaultModules(prefix);
+        final java.util.List<KyzzModuleItem> filtered = new java.util.ArrayList<>();
+        for (KyzzModuleItem item : all) {
+            if (query == null || query.trim().isEmpty() ||
+                item.getName().toLowerCase().contains(query.toLowerCase()) ||
+                item.getCategory().toLowerCase().contains(query.toLowerCase()) ||
+                item.getDescription().toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(item);
+            }
+        }
+        if (mKyzzModulesList != null) {
+            ArrayAdapter<KyzzModuleItem> adapter = new ArrayAdapter<KyzzModuleItem>(this, android.R.layout.simple_list_item_2, android.R.id.text1, filtered) {
+                @NonNull
+                @Override
+                public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                    View view = super.getView(position, convertView, parent);
+                    TextView text1 = view.findViewById(android.R.id.text1);
+                    TextView text2 = view.findViewById(android.R.id.text2);
+                    KyzzModuleItem it = filtered.get(position);
+                    text1.setText(it.getName() + " [" + it.getCategory() + "]" + (it.isInstalled() ? " (Installed)" : ""));
+                    text1.setTextColor(it.isInstalled() ? android.graphics.Color.parseColor("#c3e88d") : android.graphics.Color.parseColor("#ffffff"));
+                    text2.setText(it.getDescription());
+                    text2.setTextColor(android.graphics.Color.parseColor("#a0a8b7"));
+                    return view;
+                }
+            };
+            mKyzzModulesList.setAdapter(adapter);
+        }
+    }
+
+    private void setupKyzzAppearancePanel() {
+        if (mKyzzAppearancePanel == null) return;
+        Button btnKyzz = findViewById(R.id.kyzz_theme_preset_kyzz);
+        Button btnVsCode = findViewById(R.id.kyzz_theme_preset_vscode);
+        Button btnCyberpunk = findViewById(R.id.kyzz_theme_preset_cyberpunk);
+        Button btnPickWall = findViewById(R.id.kyzz_btn_pick_wallpaper);
+        Button btnResetWall = findViewById(R.id.kyzz_btn_reset_wallpaper);
+        Button btnPickFont = findViewById(R.id.kyzz_btn_pick_font);
+        SeekBar seekOpacity = findViewById(R.id.kyzz_seek_opacity);
+        final TextView labelOpacity = findViewById(R.id.kyzz_label_opacity);
+        SeekBar seekFontSize = findViewById(R.id.kyzz_seek_font_size);
+        final TextView labelFontSize = findViewById(R.id.kyzz_label_font_size);
+
+        if (btnPickWall != null) {
+            btnPickWall.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, REQUEST_PICK_WALLPAPER);
+                } catch (Exception e) {
+                    // Fallback to GET_CONTENT
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("image/*");
+                        startActivityForResult(intent, REQUEST_PICK_WALLPAPER);
+                    } catch (Exception ex) {
+                        Toast.makeText(this, "No image picker found: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
+        if (btnPickFont != null) {
+            btnPickFont.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("*/*");
+                    startActivityForResult(intent, REQUEST_PICK_FONT);
+                } catch (Exception e) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("*/*");
+                        startActivityForResult(intent, REQUEST_PICK_FONT);
+                    } catch (Exception ex) {
+                        Toast.makeText(this, "No file picker found: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
+        if (btnKyzz != null) btnKyzz.setOnClickListener(v -> {
+            mKyzzAppearanceManager.setThemeId("kyzz_dark");
+            mKyzzAppearanceManager.setOverlayColor(android.graphics.Color.parseColor("#181824"));
+            applyKyzzAppearance();
+            Toast.makeText(this, "Applied Kyzz Dark theme", Toast.LENGTH_SHORT).show();
+        });
+
+        if (btnVsCode != null) btnVsCode.setOnClickListener(v -> {
+            mKyzzAppearanceManager.setThemeId("vscode_dark");
+            mKyzzAppearanceManager.setOverlayColor(android.graphics.Color.parseColor("#1e1e1e"));
+            applyKyzzAppearance();
+            Toast.makeText(this, "Applied VS Code Dark theme", Toast.LENGTH_SHORT).show();
+        });
+
+        if (btnCyberpunk != null) btnCyberpunk.setOnClickListener(v -> {
+            mKyzzAppearanceManager.setThemeId("cyberpunk");
+            mKyzzAppearanceManager.setOverlayColor(android.graphics.Color.parseColor("#1a0026"));
+            applyKyzzAppearance();
+            Toast.makeText(this, "Applied Cyber Neon theme", Toast.LENGTH_SHORT).show();
+        });
+
+        if (btnResetWall != null) btnResetWall.setOnClickListener(v -> {
+            mKyzzAppearanceManager.setWallpaperUri(null);
+            applyKyzzAppearance();
+            Toast.makeText(this, "Wallpaper reset to pure black", Toast.LENGTH_SHORT).show();
+        });
+
+        if (seekOpacity != null) {
+            seekOpacity.setProgress(mKyzzAppearanceManager.getWallpaperOpacity());
+            seekOpacity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (labelOpacity != null) labelOpacity.setText("Overlay Opacity: " + progress + "%");
+                    if (fromUser) {
+                        mKyzzAppearanceManager.setWallpaperOpacity(progress);
+                        applyKyzzAppearance();
+                    }
+                }
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {}
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {}
+            });
+        }
+
+        if (seekFontSize != null) {
+            int currentSize = mKyzzFontManager.getFontSize();
+            seekFontSize.setProgress(currentSize);
+            seekFontSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    int size = Math.max(8, progress);
+                    if (labelFontSize != null) labelFontSize.setText("Terminal Font Size: " + size + "sp");
+                    if (fromUser) {
+                        mKyzzFontManager.setFontSize(size);
+                        if (mTerminalView != null) mTerminalView.setTextSize(size);
+                    }
+                }
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {}
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {}
+            });
+        }
+    }
+
+    private void applyKyzzAppearance() {
+        if (mKyzzAppearanceManager == null) return;
+        String wallUri = mKyzzAppearanceManager.getWallpaperUri();
+        int opacity = mKyzzAppearanceManager.getWallpaperOpacity();
+        int overlayColor = mKyzzAppearanceManager.getOverlayColor();
+
+        if (wallUri != null && mKyzzWallpaperView != null && mKyzzOverlayView != null) {
+            try {
+                mKyzzWallpaperView.setImageURI(android.net.Uri.parse(wallUri));
+                mKyzzWallpaperView.setVisibility(View.VISIBLE);
+                mKyzzOverlayView.setVisibility(View.VISIBLE);
+                // Calculate alpha from opacity percent 0..100
+                float alpha = (float) opacity / 100f;
+                mKyzzOverlayView.setBackgroundColor(overlayColor);
+                mKyzzOverlayView.setAlpha(alpha);
+            } catch (Exception ignored) {
+                mKyzzWallpaperView.setVisibility(View.GONE);
+                mKyzzOverlayView.setVisibility(View.GONE);
+            }
+        } else {
+            if (mKyzzWallpaperView != null) mKyzzWallpaperView.setVisibility(View.GONE);
+            if (mKyzzOverlayView != null) mKyzzOverlayView.setVisibility(View.GONE);
+        }
+    }
+
+    private void openKyzzCommandPalette() {
+        KyzzCommandPalette.show(this, commandId -> {
+            switch (commandId) {
+                case "term_new":
+                    if (mTermuxTerminalSessionActivityClient != null) {
+                        mTermuxTerminalSessionActivityClient.addNewSession(false, null);
+                    }
+                    switchKyzzMode("terminal");
+                    break;
+                case "term_clear":
+                    TerminalSession s = getCurrentSession();
+                    if (s != null) s.reset();
+                    switchKyzzMode("terminal");
+                    break;
+                case "term_rename":
+                    TerminalSession current = getCurrentSession();
+                    if (mTermuxTerminalSessionActivityClient != null && current != null) {
+                        mTermuxTerminalSessionActivityClient.renameSession(current);
+                    }
+                    break;
+                case "file_new":
+                    switchKyzzMode("explorer");
+                    break;
+                case "file_open":
+                    switchKyzzMode("explorer");
+                    break;
+                case "file_save":
+                    if (mKyzzCodeEditor != null) {
+                        try {
+                            mKyzzCodeEditor.saveFile();
+                            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    break;
+                case "workspace_open":
+                    switchKyzzMode("explorer");
+                    break;
+                case "module_center":
+                    switchKyzzMode("modules");
+                    break;
+                case "pkg_update":
+                    switchKyzzMode("terminal");
+                    TerminalSession ts = getCurrentSession();
+                    if (ts != null) ts.write("pkg update -y\n");
+                    break;
+                case "appearance_theme":
+                case "appearance_wallpaper":
+                case "appearance_font":
+                    switchKyzzMode("appearance");
+                    break;
+                case "app_settings":
+                    ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
+                    break;
+            }
+        });
+    }
+
 }
+

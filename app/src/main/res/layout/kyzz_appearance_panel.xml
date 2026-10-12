@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/kyzz_appearance_panel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#181824"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kyzz Appearance Studio"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingBottom="12dp" />
+
+        <!-- Theme Preset Selection -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Color Theme"
+            android:textColor="#82aaff"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/kyzz_theme_preset_kyzz"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Kyzz Dark"
+                android:textSize="11sp"
+                android:backgroundTint="#7c4dff"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/kyzz_theme_preset_vscode"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="VS Code"
+                android:textSize="11sp"
+                android:backgroundTint="#007acc"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/kyzz_theme_preset_cyberpunk"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Cyber Neon"
+                android:textSize="11sp"
+                android:backgroundTint="#ff007f" />
+        </LinearLayout>
+
+        <!-- Wallpaper & Overlay -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Terminal Wallpaper &amp; Transparency"
+            android:textColor="#82aaff"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingTop="16dp"
+            android:paddingBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/kyzz_btn_pick_wallpaper"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pick Wallpaper"
+                android:textSize="12sp"
+                android:backgroundTint="#2d3748"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/kyzz_btn_reset_wallpaper"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Reset to Pure Black"
+                android:textSize="12sp"
+                android:backgroundTint="#2d3748" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/kyzz_label_opacity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Overlay Opacity: 50%"
+            android:textColor="#e0e6ed"
+            android:textSize="13sp"
+            android:paddingTop="12dp" />
+
+        <SeekBar
+            android:id="@+id/kyzz_seek_opacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="50" />
+
+        <!-- Font Manager -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Font &amp; Typography"
+            android:textColor="#82aaff"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingTop="16dp"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/kyzz_label_font_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Terminal Font Size: 14sp"
+            android:textColor="#e0e6ed"
+            android:textSize="13sp"
+            android:paddingTop="8dp" />
+
+        <SeekBar
+            android:id="@+id/kyzz_seek_font_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="32"
+            android:progress="14" />
+
+        <Button
+            android:id="@+id/kyzz_btn_pick_font"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Import Custom Font (TTF/OTF)"
+            android:textSize="12sp"
+            android:backgroundTint="#2d3748"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</ScrollView>

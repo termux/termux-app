@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/kyzz_explorer_panel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#181824"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:background="#12121e"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
+
+        <TextView
+            android:id="@+id/kyzz_explorer_path_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="/home"
+            android:textColor="#ffcb6b"
+            android:textSize="12sp"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/kyzz_explorer_btn_up"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text=".."
+            android:textSize="12sp"
+            android:textColor="#ffffff"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/kyzz_explorer_btn_new_file"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="+File"
+            android:textSize="11sp"
+            android:textColor="#82aaff"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/kyzz_explorer_btn_new_dir"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="+Dir"
+            android:textSize="11sp"
+            android:textColor="#c3e88d"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/kyzz_explorer_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="#232338"
+        android:dividerHeight="1dp" />
+
+</LinearLayout>

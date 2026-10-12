@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/kyzz_code_panel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#181824"
+    android:visibility="gone">
+
+    <!-- Workspace & File Breadcrumb / Control Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:background="#12121e"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
+
+        <TextView
+            android:id="@+id/kyzz_editor_file_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Untitled (No file loaded)"
+            android:textColor="#82aaff"
+            android:textSize="13sp"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/kyzz_editor_btn_save"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="Save"
+            android:textSize="11sp"
+            android:textColor="#c3e88d"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/kyzz_editor_btn_find"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="Goto"
+            android:textSize="11sp"
+            android:textColor="#ffcb6b"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/kyzz_editor_btn_run"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="Run in Term"
+            android:textSize="11sp"
+            android:textColor="#f78c6c"
+            android:background="#1e222d"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp" />
+    </LinearLayout>
+
+    <!-- Editor Scroll & Content (Horizontal & Vertical 2D Scroll) -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <com.termux.app.kyzz.editor.KyzzCodeEditorView
+                android:id="@+id/kyzz_code_editor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="400dp"
+                android:hint="// Welcome to Kyzz Code Mode\n// Open files from Explorer or start typing here..."
+                android:textColorHint="#4e5579" />
+        </ScrollView>
+    </HorizontalScrollView>
+
+    <!-- Status Bar (Language, Ln, Col, Status) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:orientation="horizontal"
+        android:background="#0f111a"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="10dp">
+
+        <TextView
+            android:id="@+id/kyzz_editor_status_lang"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PLAIN TEXT"
+            android:textSize="11sp"
+            android:textColor="#c792ea"
+            android:paddingEnd="12dp" />
+
+        <TextView
+            android:id="@+id/kyzz_editor_status_pos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Ln 1, Col 1"
+            android:textSize="11sp"
+            android:textColor="#a0a8b7" />
+
+        <TextView
+            android:id="@+id/kyzz_editor_status_encoding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="UTF-8"
+            android:textSize="11sp"
+            android:textColor="#a0a8b7" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -7,14 +7,31 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
+    <include layout="@layout/kyzz_top_bar" />
+
     <RelativeLayout
         android:id="@+id/activity_termux_root_relative_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginHorizontal="3dp"
+        android:layout_marginHorizontal="0dp"
         android:layout_marginVertical="0dp"
         android:orientation="vertical">
+
+        <!-- Kyzz Wallpaper & Overlay Background Layer -->
+        <ImageView
+            android:id="@+id/kyzz_wallpaper_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/kyzz_overlay_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#181824"
+            android:visibility="gone" />
 
         <androidx.drawerlayout.widget.DrawerLayout
             android:id="@+id/drawer_layout"
@@ -23,15 +40,25 @@
             android:layout_above="@+id/terminal_toolbar_view_pager"
             android:layout_height="match_parent">
 
-            <com.termux.view.TerminalView
-                android:id="@+id/terminal_view"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:defaultFocusHighlightEnabled="false"
-                android:focusableInTouchMode="true"
-                android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
-                android:scrollbars="vertical"
-                tools:ignore="UnusedAttribute" />
+                android:layout_height="match_parent">
+
+                <com.termux.view.TerminalView
+                    android:id="@+id/terminal_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:defaultFocusHighlightEnabled="false"
+                    android:focusableInTouchMode="true"
+                    android:scrollbarThumbVertical="@drawable/terminal_scroll_shape"
+                    android:scrollbars="vertical"
+                    tools:ignore="UnusedAttribute" />
+
+                <include layout="@layout/kyzz_code_panel" />
+                <include layout="@layout/kyzz_explorer_panel" />
+                <include layout="@layout/kyzz_modules_panel" />
+                <include layout="@layout/kyzz_appearance_panel" />
+            </FrameLayout>
 
             <LinearLayout
                 android:id="@+id/left_drawer"
