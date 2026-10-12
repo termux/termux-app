@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/kyzz_top_bar"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:orientation="horizontal"
+    android:background="#12121e"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="6dp">
+
+    <ImageButton
+        android:id="@+id/kyzz_btn_drawer"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_settings"
+        android:tint="#a0a8b7"
+        android:contentDescription="Drawer Menu" />
+
+    <TextView
+        android:id="@+id/kyzz_app_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kyzz Term"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:textColor="#ffffff"
+        android:paddingStart="6dp"
+        android:paddingEnd="10dp" />
+
+    <HorizontalScrollView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/kyzz_mode_container"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/kyzz_tab_terminal"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Terminal"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="#ffffff"
+                android:background="#1f1f33"
+                android:layout_marginEnd="4dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp" />
+
+            <Button
+                android:id="@+id/kyzz_tab_code"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Code"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="#a0a8b7"
+                android:background="#12121e"
+                android:layout_marginEnd="4dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp" />
+
+            <Button
+                android:id="@+id/kyzz_tab_explorer"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Explorer"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="#a0a8b7"
+                android:background="#12121e"
+                android:layout_marginEnd="4dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp" />
+
+            <Button
+                android:id="@+id/kyzz_tab_modules"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Modules"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="#a0a8b7"
+                android:background="#12121e"
+                android:layout_marginEnd="4dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp" />
+
+            <Button
+                android:id="@+id/kyzz_tab_appearance"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Themes"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="#a0a8b7"
+                android:background="#12121e"
+                android:layout_marginEnd="4dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/kyzz_btn_palette"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:text="CMD"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="#7c4dff"
+        android:background="#232338"
+        android:minWidth="0dp"
+        android:paddingHorizontal="8dp" />
+
+</LinearLayout>
