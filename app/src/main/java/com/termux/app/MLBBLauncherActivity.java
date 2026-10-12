@@ -39,21 +39,48 @@ public class MLBBLauncherActivity extends Activity {
     private byte[] nativeDecodedOgg=null;
     private byte[] experimentalWem=null;
     private long experimentalId=0;
+    private int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
+    private android.graphics.drawable.GradientDrawable shape(int fill,int stroke,int radius){
+        android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
+        d.setColor(fill);d.setCornerRadius(dp(radius));if(stroke!=0)d.setStroke(dp(1),stroke);return d;
+    }
     private void label(String s,float size){
         TextView t=new TextView(this);t.setText(s);t.setTextSize(size);
-        t.setTextColor(Color.WHITE);t.setPadding(12,16,12,16);root.addView(t);
+        t.setTextColor(Color.rgb(233,238,253));t.setPadding(dp(3),dp(11),dp(3),dp(11));root.addView(t);
+    }
+    private void hint(String s){
+        TextView t=new TextView(this);t.setText(s);t.setTextSize(13);
+        t.setTextColor(Color.rgb(172,183,206));t.setLineSpacing(dp(3),1f);
+        t.setPadding(dp(6),dp(4),dp(6),dp(14));root.addView(t);
+    }
+    private void section(String title,String description){
+        label(title,19);if(description!=null)hint(description);
     }
     private void button(String s,Runnable action){
-        Button b=new Button(this);b.setAllCaps(false);b.setText(s);root.addView(b);
+        Button b=new Button(this);b.setAllCaps(false);b.setText(s);b.setTextSize(15);
+        b.setTextColor(Color.WHITE);
+        b.setBackground(shape(Color.rgb(39,53,84),Color.rgb(74,91,131),15));
+        b.setPadding(dp(14),dp(9),dp(14),dp(9));
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(54));
+        lp.setMargins(0,dp(5),0,dp(7));root.addView(b,lp);
         b.setOnClickListener(v->action.run());
     }
     private void page(String title){
         ScrollView scroll=new ScrollView(this);
+        scroll.setFillViewport(true);
         root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(20,24,20,24);root.setBackgroundColor(Color.rgb(15,17,29));
+        root.setPadding(dp(20),dp(21),dp(20),dp(30));
+        root.setBackgroundColor(Color.rgb(13,20,35));
         scroll.addView(root);setContentView(scroll);
-        label(title,25);status=new TextView(this);status.setTextColor(Color.LTGRAY);
-        status.setPadding(12,8,12,16);root.addView(status);
+        TextView heading=new TextView(this);heading.setText(title);heading.setTextSize(27);
+        heading.setTypeface(null,android.graphics.Typeface.BOLD);
+        heading.setTextColor(Color.WHITE);heading.setPadding(0,dp(8),0,dp(12));
+        root.addView(heading);
+        status=new TextView(this);status.setText("Ready when you are.");
+        status.setTextSize(13);status.setTextColor(Color.rgb(203,219,255));
+        status.setPadding(dp(14),dp(13),dp(14),dp(13));
+        status.setBackground(shape(Color.rgb(27,44,76),Color.rgb(66,89,139),14));
+        root.addView(status);
     }
     private void message(String s){runOnUiThread(()->{if(status!=null)status.setText(s);});}
     private void category(String title){
@@ -91,12 +118,21 @@ public class MLBBLauncherActivity extends Activity {
     }
     private void home(){
         page("MLBB Resource Editor");
-        label("Resource explorer · Development build",15);
-        button("🎵 Audio Editor",this::audio);
-        button("Shizuku: check / request permission",this::checkShizuku);
-        category("Models");category("Emotes");category("Images");category("Other Resources");
-        button("Developer Terminal (requires custom bootstrap)",()->new AlertDialog.Builder(this).setTitle("Terminal not available").setMessage("The standalone app has its own package ID. A matching com.farizgd.mlbbeditor Termux bootstrap must be rebuilt before enabling the shell. Audio BNK and Shizuku features do not need the terminal.").setPositiveButton("OK",null).show());
-        label("This standalone build uses com.farizgd.mlbbeditor. Termux shell runtime is temporarily disabled until the custom bootstrap is rebuilt.",13);
+        section("Make Mobile Legends sound like yours", "Change music and sound effects right on your phone. No PC or Wwise Authoring needed.");
+        section("Get started", "1. Start Shizuku and grant this app permission.\n2. Open the Audio Editor and pick a game soundbank.\n3. Select a sound, import your audio and preview.\n4. Install only after checking your changes.");
+        button("1  Connect Shizuku",this::checkShizuku);
+        button("2  Open Audio Editor",this::audio);
+        section("Good to know","The editor saves an original .bnk.bak backup before replacing a game soundbank. Close MLBB before installing or restoring.");
+        button("Help & frequently asked questions",this::showHelp);
+        button("Experimental tools",()->new AlertDialog.Builder(this).setTitle("Experimental features")
+            .setItems(new String[]{"Models (coming soon)","Emotes (coming soon)","Images (coming soon)","Other resources (coming soon)","Developer terminal (not available)"},
+                (d,i)->new AlertDialog.Builder(this).setMessage(i==4?"The standalone terminal needs a rebuilt matching bootstrap.": "This resource editor is planned for a future update.")
+                    .setPositiveButton("OK",null).show()).show());
+    }
+    private void showHelp(){
+        new AlertDialog.Builder(this).setTitle("Quick guide")
+            .setMessage("What is a BNK?\\nA Wwise soundbank containing game sounds.\\n\\nWhat is a WEM?\\nOne sound inside a BNK.\\n\\nWhy use Shizuku?\\nAndroid restricts access to the game's audio folder. Shizuku lets the editor use your approved access.\\n\\nCan I undo changes?\\nYes. Select the same game soundbank and tap Restore original backup.\\n\\nWhat files work?\\nCommon audio files supported by Android's decoder. The editor converts them to a compatible WEM.\\n\\nSafe first test?\\nImport audio, preview the queued sound and export the modified BNK before installing.")
+            .setPositiveButton("Got it",null).show();
     }
     private void checkShizuku(){
         try {
@@ -113,15 +149,17 @@ public class MLBBLauncherActivity extends Activity {
     }
     private void audio(){
         page("Audio Editor");
-        button("← Home",this::home);
-        button("Browse MLBB game files via Shizuku",this::browseGameBanks);
-        button("Open BNK using Android file picker",()->{
+        button("← Back to home",this::home);
+        section("Step 1 · Choose a soundbank", "A soundbank (BNK) contains the music or sounds you want to replace.");
+        if(shizukuFiles==null)button("Connect Shizuku first",this::checkShizuku);
+        button("Browse Mobile Legends soundbanks",this::browseGameBanks);
+        button("Open a BNK file from storage",()->{
             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
             startActivityForResult(i,OPEN_BNK);
         });
         if(bank!=null)showEntries();
-        else label("Browse game BNKs through Shizuku or import a local BNK file.",14);
+        else hint("Tip: Use the search box in the soundbank picker to find lobby or BGM files. You can also open a downloaded BNK without Shizuku.");
     }
     private void browseGameBanks(){
         if(shizukuFiles==null){checkShizuku();message("Connect Shizuku, then tap Browse again");return;}
@@ -195,20 +233,20 @@ public class MLBBLauncherActivity extends Activity {
         });
     }
     private void showEntries(){
-        label(bankName+" · "+bank.entries.size()+" audio entries",16);
-        label(replacements.size()+" replacements queued",14);
-        button("Export modified BNK (does not touch game)",this::savePatchedBank);
+        section("Step 2 · Select a sound", bankName+" · "+bank.entries.size()+" sounds found. Tap a sound to import music, preview, or export.");
+        hint(replacements.size()+" replacement(s) queued. Nothing is installed until you confirm.");
+        button("Save edited BNK to a file (safe)",this::savePatchedBank);
         if(previewPlayer!=null)button("■ Stop preview",()->{stopPreview();audio();message("Preview stopped");});
         if(gameBankName!=null){
-            button("Install modified BNK with Shizuku",this::confirmInstall);
-            button("Restore original .bak with Shizuku",this::confirmRestore);
+            if(!replacements.isEmpty())button("Step 3 · Install edited soundbank",this::confirmInstall);
+            button("Restore original game soundbank",this::confirmRestore);
         }
         for(MLBBBankReader.Entry e:bank.entries){
             String codec; try{codec=MLBBBankReader.codecName(bank.originalCodec(e));}catch(IOException ex){codec="Unknown codec";}
-            button("WEM ID "+e.id+" · "+codec+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
+            button("♫ Sound "+e.id+" · "+codec+(replacements.containsKey(e.id)?"  ✓ Edited":""),()->{
                 selected=e;
-                new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","Replace from WEM","Import audio → Custom Vorbis → queue in BNK","Import audio → Custom Vorbis → confirm install","Clear replacement","Preview original/queued WEM (native)","Experimental OGG → legacy Vorbis WEM (export only)","Native WAV/OGG → Custom Vorbis WEM (test/export)","Native WEM → OGG (export)"},(d,option)->{
+                new AlertDialog.Builder(this).setTitle("Sound "+e.id+" · Choose an action")
+                    .setItems(new String[]{"Export original sound (.wem)","Advanced: replace with existing WEM","Import music or audio (recommended)","Import audio and install after confirmation","Remove queued edit","▶ Preview this sound","Advanced: legacy OGG converter (test only)","Advanced: native WAV/OGG export","Advanced: export decoded OGG"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
