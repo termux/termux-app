@@ -25,17 +25,17 @@ public class MLBBLauncherActivity extends Activity {
     private IMLBBFiles shizukuFiles;
     private final android.content.ServiceConnection shizukuConnection=new android.content.ServiceConnection(){
         @Override public void onServiceConnected(android.content.ComponentName name,android.os.IBinder binder){
-            shizukuFiles=IMLBBFiles.Stub.asInterface(binder);message("Shizuku game file service connected");
+            shizukuFiles=IMLBBFiles.Stub.asInterface(binder);message("Layanan berkas game Shizuku terhubung");
         }
-        @Override public void onServiceDisconnected(android.content.ComponentName name){shizukuFiles=null;message("Shizuku service disconnected");}
+        @Override public void onServiceDisconnected(android.content.ComponentName name){shizukuFiles=null;message("Layanan Shizuku terputus");}
     };
     private MLBBBankReader.Entry selected;
     private String bankName="soundbank";
     private String gameBankName=null;
-    private boolean autoInstallAfterConversion=false;
+    private boolean autoPasangAfterConversion=false;
     private android.media.MediaPlayer previewPlayer;
     private File previewFile;
-    private byte[] nativeConvertedWem=null;
+    private byte[] nativeKonversiedWem=null;
     private byte[] nativeDecodedOgg=null;
     private byte[] experimentalWem=null;
     private long experimentalId=0;
@@ -76,7 +76,7 @@ public class MLBBLauncherActivity extends Activity {
         heading.setTypeface(null,android.graphics.Typeface.BOLD);
         heading.setTextColor(Color.WHITE);heading.setPadding(0,dp(8),0,dp(12));
         root.addView(heading);
-        status=new TextView(this);status.setText("Ready when you are.");
+        status=new TextView(this);status.setText("Siap digunakan.");
         status.setTextSize(13);status.setTextColor(Color.rgb(203,219,255));
         status.setPadding(dp(14),dp(13),dp(14),dp(13));
         status.setBackground(shape(Color.rgb(27,44,76),Color.rgb(66,89,139),14));
@@ -84,8 +84,8 @@ public class MLBBLauncherActivity extends Activity {
     }
     private void message(String s){runOnUiThread(()->{if(status!=null)status.setText(s);});}
     private void category(String title){
-        button(title+" · Coming soon",()->new AlertDialog.Builder(this)
-            .setTitle(title).setMessage("This editor is planned but not yet implemented.")
+        button(title+" · Segera hadir",()->new AlertDialog.Builder(this)
+            .setTitle(title).setMessage("Fitur ini masih dalam pengembangan.")
             .setPositiveButton("OK",null).show());
     }
     @Override protected void onCreate(Bundle state){super.onCreate(state);home();}
@@ -95,8 +95,8 @@ public class MLBBLauncherActivity extends Activity {
         if(previewFile!=null){previewFile.delete();previewFile=null;}
     }
     private void previewWem(MLBBBankReader.Entry e){
-        if(!MLBBNativeVorbis.available()){message("Native VorbisLib is unavailable on this device");return;}
-        message("Decoding sound "+e.id+" for preview...");
+        if(!MLBBNativeVorbis.available()){message("VorbisLib tidak tersedia di perangkat ini");return;}
+        message("Mengurai audio "+e.id+" untuk pratinjau...");
         worker.execute(()->{
             try{
                 byte[] source=replacements.containsKey(e.id)?replacements.get(e.id):bank.extract(e);
@@ -108,67 +108,67 @@ public class MLBBLauncherActivity extends Activity {
                         stopPreview();previewFile=f;
                         previewPlayer=new android.media.MediaPlayer();
                         previewPlayer.setDataSource(f.getAbsolutePath());
-                        previewPlayer.setOnCompletionListener(p->{stopPreview();message("Preview finished");});
+                        previewPlayer.setOnCompletionListener(p->{stopPreview();message("Pratinjau selesai");});
                         previewPlayer.prepare();previewPlayer.start();
-                        message("Playing "+e.id+" (tap Stop preview to stop)");
-                    }catch(Exception ex){stopPreview();message("Playback failed: "+ex.getMessage());}
+                        message("Memutar "+e.id+" (ketuk Hentikan pratinjau untuk berhenti)");
+                    }catch(Exception ex){stopPreview();message("Gagal memutar audio: "+ex.getMessage());}
                 });
-            }catch(Exception ex){message("Native preview decode failed: "+ex.getMessage());}
+            }catch(Exception ex){message("Gagal mengurai audio untuk pratinjau: "+ex.getMessage());}
         });
     }
     private void home(){
         page("MLBB Resource Editor");
-        section("Make Mobile Legends sound like yours", "Change music and sound effects right on your phone. No PC or Wwise Authoring needed.");
-        section("Get started", "1. Start Shizuku and grant this app permission.\n2. Open the Audio Editor and pick a game soundbank.\n3. Select a sound, import your audio and preview.\n4. Install only after checking your changes.");
-        button("1  Connect Shizuku",this::checkShizuku);
-        button("2  Open Audio Editor",this::audio);
-        section("Good to know","The editor saves an original .bnk.bak backup before replacing a game soundbank. Close MLBB before installing or restoring.");
-        button("Help & frequently asked questions",this::showHelp);
-        button("Experimental tools",()->new AlertDialog.Builder(this).setTitle("Experimental features")
-            .setItems(new String[]{"Models (coming soon)","Emotes (coming soon)","Images (coming soon)","Other resources (coming soon)","Developer terminal (not available)"},
-                (d,i)->new AlertDialog.Builder(this).setMessage(i==4?"The standalone terminal needs a rebuilt matching bootstrap.": "This resource editor is planned for a future update.")
+        section("Ubah suara Mobile Legends sesukamu", "Ganti musik dan efek suara langsung dari HP. Tidak perlu PC atau Wwise Authoring.");
+        section("Panduan memulai", "1. Jalankan Shizuku dan izinkan aplikasi ini.\n2. Buka Editor Audio, lalu pilih bank suara game.\n3. Pilih suara, impor audio, kemudian dengarkan pratinjau.\n4. Pasang perubahan setelah memeriksa hasilnya.");
+        button("1  Hubungkan Shizuku",this::checkShizuku);
+        button("2  Buka Editor Audio",this::audio);
+        section("Perlu diketahui","Aplikasi membuat cadangan asli .bnk.bak sebelum mengganti bank suara. Tutup MLBB sebelum memasang atau memulihkan audio.");
+        button("Bantuan dan pertanyaan umum",this::showHelp);
+        button("Alat eksperimental",()->new AlertDialog.Builder(this).setTitle("Fitur eksperimental")
+            .setItems(new String[]{"Model (segera hadir)","Emote (segera hadir)","Gambar (segera hadir)","Sumber daya lain (segera hadir)","Terminal pengembang (belum tersedia)"},
+                (d,i)->new AlertDialog.Builder(this).setMessage(i==4?"Terminal mandiri memerlukan bootstrap yang dibangun ulang untuk aplikasi ini.": "Fitur editor ini direncanakan untuk pembaruan berikutnya.")
                     .setPositiveButton("OK",null).show()).show());
     }
     private void showHelp(){
-        new AlertDialog.Builder(this).setTitle("Quick guide")
-            .setMessage("What is a BNK?\nA Wwise soundbank containing game sounds.\n\nWhat is a WEM?\nOne sound inside a BNK.\n\nWhy use Shizuku?\nAndroid restricts access to the game's audio folder. Shizuku lets the editor use your approved access.\n\nCan I undo changes?\nYes. Select the same game soundbank and tap Restore original backup.\n\nWhat files work?\nCommon audio files supported by Android's decoder. The editor converts them to a compatible WEM.\n\nSafe first test?\nImport audio, preview the queued sound and export the modified BNK before installing.")
-            .setPositiveButton("Got it",null).show();
+        new AlertDialog.Builder(this).setTitle("Panduan singkat")
+            .setMessage("Apa itu BNK?\nBank suara Wwise yang berisi audio game.\n\nApa itu WEM?\nSatu file suara di dalam BNK.\n\nMengapa perlu Shizuku?\nAndroid membatasi akses ke folder audio game. Shizuku memberikan akses sesuai izin pengguna.\n\nBisakah perubahan dibatalkan?\nBisa. Pilih bank suara yang sama, lalu ketuk Pulihkan bank suara asli.\n\nFormat apa yang didukung?\nFormat audio umum yang dapat dibaca dekoder Android. Audio akan dikonversi menjadi WEM yang sesuai.\n\nCara mencoba dengan aman?\nImpor audio, dengarkan pratinjau, lalu ekspor BNK hasil edit sebelum memasangnya.")
+            .setPositiveButton("Mengerti",null).show();
     }
     private void checkShizuku(){
         try {
-            if(!Shizuku.pingBinder()){message("Start Shizuku first");return;}
+            if(!Shizuku.pingBinder()){message("Jalankan Shizuku terlebih dahulu");return;}
             if(Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED){
                 Shizuku.UserServiceArgs args=new Shizuku.UserServiceArgs(new android.content.ComponentName(this,MLBBFilesService.class))
                     .daemon(false).processNameSuffix("mlbb_files").debuggable(false).version(1);
                 Shizuku.bindUserService(args,shizukuConnection);
-                message("Connecting to Shizuku game file service");return;
+                message("Menghubungkan layanan akses berkas game melalui Shizuku");return;
             }
             Shizuku.requestPermission(4238);
-            message("Shizuku permission requested");
+            message("Izin Shizuku telah diminta");
         }catch(Exception e){message("Shizuku: "+e.getMessage());}
     }
     private void audio(){
-        page("Audio Editor");
-        button("← Back to home",this::home);
-        section("Step 1 · Choose a soundbank", "A soundbank (BNK) contains the music or sounds you want to replace.");
-        if(shizukuFiles==null)button("Connect Shizuku first",this::checkShizuku);
-        button("Browse Mobile Legends soundbanks",this::browseGameBanks);
-        button("Open a BNK file from storage",()->{
+        page("Editor Audio");
+        button("← Kembali ke beranda",this::home);
+        section("Langkah 1 · Pilih bank suara", "Bank suara (BNK) berisi musik atau efek suara yang dapat diganti.");
+        if(shizukuFiles==null)button("Hubungkan Shizuku dahulu",this::checkShizuku);
+        button("Jelajahi bank suara Mobile Legends",this::browseGameBanks);
+        button("Buka berkas BNK dari penyimpanan",()->{
             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
             startActivityForResult(i,OPEN_BNK);
         });
         if(bank!=null)showEntries();
-        else hint("Tip: Use the search box in the soundbank picker to find lobby or BGM files. You can also open a downloaded BNK without Shizuku.");
+        else hint("Tips: Cari nama seperti lobby atau BGM untuk menemukan musik utama. BNK yang tersimpan di HP juga bisa dibuka tanpa Shizuku.");
     }
     private void browseGameBanks(){
-        if(shizukuFiles==null){checkShizuku();message("Connect Shizuku, then tap Browse again");return;}
-        message("Loading MLBB soundbanks...");
+        if(shizukuFiles==null){checkShizuku();message("Hubungkan Shizuku, lalu ketuk Jelajahi lagi");return;}
+        message("Memuat bank suara MLBB...");
         worker.execute(()->{
             try{
                 String[] names=shizukuFiles.listBanks();
                 runOnUiThread(()->showBankPicker(names));
-            }catch(Exception e){message("Browse failed: "+e.getMessage());}
+            }catch(Exception e){message("Gagal menjelajah: "+e.getMessage());}
         });
     }
     private void showBankPicker(String[] names){
@@ -178,7 +178,7 @@ public class MLBBLauncherActivity extends Activity {
         content.setPadding(pad,0,pad,0);
         EditText query=new EditText(this);
         query.setSingleLine(true);
-        query.setHint("Filter by filename, e.g. bgm_intro");
+        query.setHint("Cari nama berkas, misalnya bgm_intro");
         content.addView(query);
         TextView count=new TextView(this);
         count.setTextColor(Color.LTGRAY);
@@ -189,9 +189,9 @@ public class MLBBLauncherActivity extends Activity {
         final ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,filtered);
         list.setAdapter(adapter);
         AlertDialog dlg=new AlertDialog.Builder(this)
-            .setTitle("MLBB Soundbanks")
+            .setTitle("Bank Suara MLBB")
             .setView(content)
-            .setNegativeButton("Close",null).create();
+            .setNegativeButton("Tutup",null).create();
         Runnable refresh=()->{
             String q=query.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
             filtered.clear();
@@ -202,7 +202,7 @@ public class MLBBLauncherActivity extends Activity {
                     if(filtered.size()<200)filtered.add(name);
                 }
             }
-            count.setText(found+" of "+names.length+" matching (showing first "+filtered.size()+")");
+            count.setText(found+" dari "+names.length+" cocok (menampilkan "+filtered.size()+")");
             adapter.notifyDataSetChanged();
         };
         query.addTextChangedListener(new android.text.TextWatcher(){
@@ -226,27 +226,27 @@ public class MLBBLauncherActivity extends Activity {
     private void openGameBank(String name){
         worker.execute(()->{
             try(android.os.ParcelFileDescriptor fd=shizukuFiles.openBank(name);
-                InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){
+                InputStream in=new android.os.ParcelFileDescriptor.AutoTutupInputStream(fd)){
                 MLBBBankReader parsed=new MLBBBankReader(readLimited(in,Integer.MAX_VALUE));
-                runOnUiThread(()->{bank=parsed;replacements.clear();gameBankName=name;bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
-            }catch(Exception e){message("Cannot open "+name+": "+e.getMessage());}
+                runOnUiThread(()->{bank=parsed;replacements.clear();gameBankName=name;bankName=name;selected=null;audio();message("Berhasil memuat "+parsed.entries.size()+" suara melalui Shizuku");});
+            }catch(Exception e){message("Tidak dapat membuka "+name+": "+e.getMessage());}
         });
     }
     private void showEntries(){
-        section("Step 2 · Select a sound", bankName+" · "+bank.entries.size()+" sounds found. Tap a sound to import music, preview, or export.");
-        hint(replacements.size()+" replacement(s) queued. Nothing is installed until you confirm.");
-        button("Save edited BNK to a file (safe)",this::savePatchedBank);
-        if(previewPlayer!=null)button("■ Stop preview",()->{stopPreview();audio();message("Preview stopped");});
+        section("Langkah 2 · Pilih suara", bankName+" · "+bank.entries.size()+" suara ditemukan. Ketuk salah satu untuk impor musik, pratinjau, atau ekspor.");
+        hint(replacements.size()+" audio pengganti disiapkan. Belum ada perubahan yang dipasang tanpa konfirmasi.");
+        button("Simpan hasil edit BNK sebagai berkas (aman)",this::savePatchedBank);
+        if(previewPlayer!=null)button("■ Hentikan pratinjau",()->{stopPreview();audio();message("Pratinjau dihentikan");});
         if(gameBankName!=null){
-            if(!replacements.isEmpty())button("Step 3 · Install edited soundbank",this::confirmInstall);
-            button("Restore original game soundbank",this::confirmRestore);
+            if(!replacements.isEmpty())button("Langkah 3 · Pasang bank suara hasil edit",this::confirmPasang);
+            button("Pulihkan bank suara asli",this::confirmPulihkan);
         }
         for(MLBBBankReader.Entry e:bank.entries){
-            String codec; try{codec=MLBBBankReader.codecName(bank.originalCodec(e));}catch(IOException ex){codec="Unknown codec";}
-            button("♫ Sound "+e.id+" · "+codec+(replacements.containsKey(e.id)?"  ✓ Edited":""),()->{
+            String codec; try{codec=MLBBBankReader.codecName(bank.originalCodec(e));}catch(IOException ex){codec="Kodek tidak dikenal";}
+            button("♫ Suara "+e.id+" · "+codec+(replacements.containsKey(e.id)?"  ✓ Diubah":""),()->{
                 selected=e;
-                new AlertDialog.Builder(this).setTitle("Sound "+e.id+" · Choose an action")
-                    .setItems(new String[]{"Export original sound (.wem)","Advanced: replace with existing WEM","Import music or audio (recommended)","Import audio and install after confirmation","Remove queued edit","▶ Preview this sound","Advanced: legacy OGG converter (test only)","Advanced: native WAV/OGG export","Advanced: export decoded OGG"},(d,option)->{
+                new AlertDialog.Builder(this).setTitle("Sound "+e.id+" · Pilih tindakan")
+                    .setItems(new String[]{"Ekspor suara asli (.wem)","Lanjutan: ganti menggunakan WEM","Impor musik atau audio (disarankan)","Impor audio dan pasang setelah konfirmasi","Batalkan perubahan yang disiapkan","▶ Dengarkan suara ini","Lanjutan: konverter OGG lama (uji coba)","Lanjutan: ekspor WAV/OGG native","Lanjutan: ekspor OGG hasil dekode"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -258,7 +258,7 @@ public class MLBBLauncherActivity extends Activity {
                             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
                             startActivityForResult(i,IMPORT_WEM);
                         } else if(option==2 || option==3){
-                            autoInstallAfterConversion=(option==3);
+                            autoPasangAfterConversion=(option==3);
                             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("audio/*");
                             i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"audio/mpeg","audio/ogg","audio/wav","audio/x-wav","audio/flac","audio/mp4","application/ogg"});
@@ -267,14 +267,14 @@ public class MLBBLauncherActivity extends Activity {
                             previewWem(e);
                         } else if(option==4){
                             replacements.remove(e.id);
-                            audio();message("Cleared replacement for "+e.id);
+                            audio();message("Penggantian dibatalkan untuk "+e.id);
                         } else if(option==7){
-                            if(!MLBBNativeVorbis.available()){message("Native VorbisLib not bundled. Add ARM64 library and rebuild APK.");return;}
+                            if(!MLBBNativeVorbis.available()){message("VorbisLib native belum disertakan. Tambahkan pustaka ARM64 dan bangun ulang APK.");return;}
                             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
                             startActivityForResult(i,IMPORT_NATIVE_AUDIO);
                         } else if(option==8){
-                            if(!MLBBNativeVorbis.available()){message("Native VorbisLib unavailable");return;}
+                            if(!MLBBNativeVorbis.available()){message("VorbisLib native tidak tersedia");return;}
                             worker.execute(()->{
                                 try{
                                     byte[] ogg=MLBBNativeVorbis.decodeToOgg(bank.extract(e),false);
@@ -286,7 +286,7 @@ public class MLBBLauncherActivity extends Activity {
                                         i.putExtra(Intent.EXTRA_TITLE,e.id+"_decoded.ogg");
                                         startActivityForResult(i,SAVE_NATIVE_OGG);
                                     });
-                                }catch(Exception ex){message("Native decoder failed: "+ex.getMessage());}
+                                }catch(Exception ex){message("Dekoder native gagal: "+ex.getMessage());}
                             });
                         } else if(option==6){
                             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -294,27 +294,27 @@ public class MLBBLauncherActivity extends Activity {
                             i.setType("*/*");
                             startActivityForResult(i,IMPORT_OGG_TS);
                         } else {
-                            new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis requires a compatible encoder and vgmstream validation. Our experimental TypeScript legacy writer does not yet target MLBB's modern packet format.")
+                            new AlertDialog.Builder(this).setMessage("Wwise Custom Vorbis memerlukan enkoder yang kompatibel dan validasi vgmstream. Konverter TypeScript eksperimental belum mendukung format paket modern MLBB.")
                                 .setPositiveButton("OK",null).show();
                         }
                     }).show();
             });
         }
     }
-    private void confirmInstall(){
+    private void confirmPasang(){
         final String name=gameBankName;
-        if(name==null||shizukuFiles==null){message("Select game bank through Shizuku first");return;}
-        if(replacements.isEmpty()){message("Select at least one replacement WEM");return;}
+        if(name==null||shizukuFiles==null){message("Pilih bank suara game melalui Shizuku dahulu");return;}
+        if(replacements.isEmpty()){message("Siapkan minimal satu WEM pengganti");return;}
         try {bank.validateReplacementCodecs(new java.util.HashMap<>(replacements));}
         catch(IOException incompatible){
-            new AlertDialog.Builder(this).setTitle("Incompatible Wwise codec")
-                .setMessage(incompatible.getMessage()+"\n\nOriginal soundbank left unchanged. Use a matching Wwise encoder before installing.")
+            new AlertDialog.Builder(this).setTitle("Kodek Wwise tidak kompatibel")
+                .setMessage(incompatible.getMessage()+"\n\nBank suara asli tidak berubah. Gunakan enkoder Wwise dengan kodek yang sesuai sebelum memasang.")
                 .setPositiveButton("OK",null).show();return;
         }
-        new AlertDialog.Builder(this).setTitle("Install edited "+name+"?")
-            .setMessage("Close Mobile Legends before continuing. Original .bak is retained and never overwritten. Different Wwise codecs may fail in-game.")
-            .setNegativeButton("Cancel",null)
-            .setPositiveButton("Install", (dialog,which)->worker.execute(()->{
+        new AlertDialog.Builder(this).setTitle("Pasang hasil edit "+name+"?")
+            .setMessage("Tutup Mobile Legends before continuing. Original .bak is retained and never overwritten. Different Wwise codecs may fail in-game.")
+            .setNegativeButton("Batal",null)
+            .setPositiveButton("Pasang", (dialog,which)->worker.execute(()->{
                 try{
                     byte[] encoded=bank.repack(new java.util.HashMap<>(replacements));
                     java.io.File stage=new java.io.File(getCacheDir(),"mlbb-patch.bnk");
@@ -322,22 +322,22 @@ public class MLBBLauncherActivity extends Activity {
                     try(android.os.ParcelFileDescriptor fd=android.os.ParcelFileDescriptor.open(stage,android.os.ParcelFileDescriptor.MODE_READ_ONLY)){
                         message(shizukuFiles.installBank(name,fd));
                     }finally{stage.delete();}
-                }catch(Exception ex){message("Install failed: "+ex.getMessage());}
+                }catch(Exception ex){message("Pasang failed: "+ex.getMessage());}
             })).show();
     }
-    private void confirmRestore(){
+    private void confirmPulihkan(){
         final String name=gameBankName;
-        if(name==null||shizukuFiles==null){message("Select a game bank through Shizuku");return;}
-        new AlertDialog.Builder(this).setTitle("Restore original "+name+"?")
-            .setMessage("Restore the .bak original and retain backup file? Close MLBB before restoring.")
-            .setNegativeButton("Cancel",null)
-            .setPositiveButton("Restore",(dialog,which)->worker.execute(()->{
+        if(name==null||shizukuFiles==null){message("Pilih bank suara game melalui Shizuku");return;}
+        new AlertDialog.Builder(this).setTitle("Pulihkan versi asli "+name+"?")
+            .setMessage("Pulihkan the .bak original and retain backup file? Tutup MLBB before restoring.")
+            .setNegativeButton("Batal",null)
+            .setPositiveButton("Pulihkan",(dialog,which)->worker.execute(()->{
                 try{message(shizukuFiles.restoreBank(name));}
-                catch(Exception ex){message("Restore failed: "+ex.getMessage());}
+                catch(Exception ex){message("Pulihkan failed: "+ex.getMessage());}
             })).show();
     }
     private void savePatchedBank(){
-        if(bank==null){message("Select a BNK");return;}
+        if(bank==null){message("Pilih berkas BNK");return;}
         Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("application/octet-stream");
         i.putExtra(Intent.EXTRA_TITLE,"patched_"+bankName);
@@ -347,7 +347,7 @@ public class MLBBLauncherActivity extends Activity {
         ByteArrayOutputStream out=new ByteArrayOutputStream();
         byte[] tmp=new byte[65536];int n;
         while((n=in.read(tmp))!=-1){
-            if(out.size()+(long)n>limit)throw new IOException("File exceeds the JVM array address space; streaming file support is needed");
+            if(out.size()+(long)n>limit)throw new IOException("Berkas melebihi kapasitas array Java; diperlukan pemrosesan berkas bertahap");
             out.write(tmp,0,n);
         }
         return out.toByteArray();
@@ -357,34 +357,34 @@ public class MLBBLauncherActivity extends Activity {
         if(result!=RESULT_OK || data==null || data.getData()==null)return;
         Uri uri=data.getData();
         if(request==OPEN_BNK){
-            message("Reading BNK...");
+            message("Membaca BNK...");
             worker.execute(()->{
                 try{
                     byte[] bytes;
                     try(InputStream in=getContentResolver().openInputStream(uri)){bytes=readLimited(in,128*1024*1024);}
                     MLBBBankReader parsed=new MLBBBankReader(bytes);
                     runOnUiThread(()->{
-                        bank=parsed;replacements.clear();gameBankName=null;selected=null;bankName="Imported BNK.bnk";audio();
-                        message("Parsed "+parsed.entries.size()+" WEM entries");
+                        bank=parsed;replacements.clear();gameBankName=null;selected=null;bankName="BNK yang diimpor.bnk";audio();
+                        message("Berhasil membaca "+parsed.entries.size()+" entri WEM");
                     });
-                }catch(Exception e){message("Import failed: "+e.getMessage());}
+                }catch(Exception e){message("Impor gagal: "+e.getMessage());}
             });
         }else if(request==IMPORT_NATIVE_AUDIO && selected!=null){
             final long id=selected.id;
             worker.execute(()->{
                 try(InputStream in=getContentResolver().openInputStream(uri)){
                     byte[] audioBytes=readLimited(in,Integer.MAX_VALUE);
-                    message("Encoding modern Wwise Custom Vorbis via native ARM64 library...");
+                    message("Mengenkode Wwise Custom Vorbis menggunakan pustaka ARM64 native...");
                     byte[] wem=MLBBNativeVorbis.encode(audioBytes,0.4f,Integer.MAX_VALUE);
                     if(MLBBBankReader.wemCodec(wem)!=0xffff)
-                        throw new IOException("Native output has wrong codec tag");
+                        throw new IOException("Hasil enkode memiliki kodek yang tidak sesuai");
                     runOnUiThread(()->{
-                        nativeConvertedWem=wem;
+                        nativeKonversiedWem=wem;
                         new AlertDialog.Builder(this)
-                            .setTitle("Custom Vorbis encoded")
-                            .setMessage("Generated "+wem.length+"-byte WEM for ID "+id+". It is NOT queued or installed. Export and validate with vgmstream before attempting game replacement.")
-                            .setNegativeButton("Cancel",null)
-                            .setPositiveButton("Export test WEM",(d,w)->{
+                            .setTitle("Custom Vorbis berhasil dienkode")
+                            .setMessage("Menghasilkan WEM sebesar "+wem.length+" byte untuk ID "+id+". Berkas ini BELUM disiapkan atau dipasang. Ekspor dan uji menggunakan vgmstream sebelum mengganti audio game.")
+                            .setNegativeButton("Batal",null)
+                            .setPositiveButton("Ekspor WEM uji coba",(d,w)->{
                                 Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                                 i.addCategory(Intent.CATEGORY_OPENABLE);
                                 i.setType("application/octet-stream");
@@ -392,34 +392,34 @@ public class MLBBLauncherActivity extends Activity {
                                 startActivityForResult(i,SAVE_NATIVE_WEM);
                             }).show();
                     });
-                }catch(Exception ex){message("Native encoding failed: "+ex.getMessage());}
+                }catch(Exception ex){message("Enkoder native gagal: "+ex.getMessage());}
             });
-        }else if(request==SAVE_NATIVE_WEM && nativeConvertedWem!=null){
-            final byte[] bytes=nativeConvertedWem;
+        }else if(request==SAVE_NATIVE_WEM && nativeKonversiedWem!=null){
+            final byte[] bytes=nativeKonversiedWem;
             worker.execute(()->{
                 try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                    out.write(bytes);message("Native test WEM exported; MLBB files unchanged.");
-                }catch(Exception ex){message("Export failed: "+ex.getMessage());}
+                    out.write(bytes);message("WEM uji coba berhasil diekspor; berkas MLBB tidak berubah.");
+                }catch(Exception ex){message("Ekspor gagal: "+ex.getMessage());}
             });
         }else if(request==SAVE_NATIVE_OGG && nativeDecodedOgg!=null){
             final byte[] bytes=nativeDecodedOgg;
             worker.execute(()->{
                 try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                    out.write(bytes);message("Decoded OGG exported.");
-                }catch(Exception ex){message("OGG export failed: "+ex.getMessage());}
+                    out.write(bytes);message("OGG hasil dekode berhasil diekspor.");
+                }catch(Exception ex){message("Ekspor OGG gagal: "+ex.getMessage());}
             });
         }else if(request==IMPORT_OGG_TS && selected!=null){
             final long id=selected.id;
-            message("Running experimental TypeScript Ogg Vorbis encoder...");
+            message("Menjalankan enkoder Ogg Vorbis TypeScript eksperimental...");
             MLBBOggWemBridge.encode(this,uri,new MLBBOggWemBridge.Listener(){
                 @Override public void completed(byte[] wem){
                     experimentalWem=wem;experimentalId=id;
-                    message("Legacy Vorbis WEM generated ("+wem.length+" bytes). Export for external decoder testing. Not queued for installation.");
+                    message("WEM Vorbis lama berhasil dibuat ("+wem.length+" byte). Ekspor untuk pengujian dekoder luar. Tidak disiapkan untuk pemasangan.");
                     new AlertDialog.Builder(MLBBLauncherActivity.this)
-                        .setTitle("Experimental WEM created")
-                        .setMessage("This file has NOT passed vgmstream or MLBB decoding validation. Save for external testing. It will NOT be installed into the game.")
-                        .setNegativeButton("Cancel",null)
-                        .setPositiveButton("Export WEM",(d,w)->{
+                        .setTitle("WEM eksperimental berhasil dibuat")
+                        .setMessage("Berkas ini BELUM lolos pemeriksaan vgmstream atau dekode MLBB. Simpan untuk pengujian dan jangan pasang ke game.")
+                        .setNegativeButton("Batal",null)
+                        .setPositiveButton("Ekspor WEM",(d,w)->{
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
                             i.setType("application/octet-stream");
@@ -433,38 +433,38 @@ public class MLBBLauncherActivity extends Activity {
             final byte[] candidate=experimentalWem;
             worker.execute(()->{
                 try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                    out.write(candidate);message("Experimental WEM exported for validation. Game unchanged.");
-                }catch(Exception ex){message("Cannot export WEM: "+ex.getMessage());}
+                    out.write(candidate);message("WEM eksperimental diekspor untuk pemeriksaan. Game tidak berubah.");
+                }catch(Exception ex){message("Tidak dapat mengekspor WEM: "+ex.getMessage());}
             });
         }else if(request==IMPORT_AUDIO && bank!=null && selected!=null){
             final long id=selected.id;
-            final boolean install=autoInstallAfterConversion;
+            final boolean install=autoPasangAfterConversion;
             if(install && (gameBankName==null || shizukuFiles==null)){
-                message("Auto-install needs a game BNK opened via Shizuku");
+                message("Pemasangan memerlukan BNK game yang dibuka melalui Shizuku");
                 return;
             }
             Runnable convert=()->worker.execute(()->{
                 try{
-                    if(!MLBBNativeVorbis.available())throw new IOException("Native VorbisLib only supports ARM64 and is missing from this APK");
-                    message("Decoding imported audio to WAV using Android codecs...");
-                    byte[] wav=MLBBAudioConverter.decodeToWav(this,uri);
-                    message("Encoding WAV to Wwise Custom Vorbis...");
+                    if(!MLBBNativeVorbis.available())throw new IOException("VorbisLib native hanya mendukung ARM64 dan tidak ditemukan di APK ini");
+                    message("Mendekode audio impor ke WAV dengan kodek Android...");
+                    byte[] wav=MLBBAudioKonversier.decodeToWav(this,uri);
+                    message("Mengenkode WAV ke Wwise Custom Vorbis...");
                     byte[] wem=MLBBNativeVorbis.encode(wav,0.4f,Integer.MAX_VALUE);
                     if(MLBBBankReader.wemCodec(wem)!=bank.originalCodec(selected))
-                        throw new IOException("Encoded WEM codec does not match original bank codec");
+                        throw new IOException("Kodek WEM hasil enkode tidak cocok dengan kodek bank suara asli");
                     replacements.put(id,wem);
                     runOnUiThread(()->{
                         audio();
-                        message("Queued Custom Vorbis audio for "+id+" ("+(wem.length/1024)+" KiB). Preview, export or confirm install.");
-                        if(install)confirmInstall();
+                        message("Audio Custom Vorbis disiapkan untuk "+id+" ("+(wem.length/1024)+" KiB). Dengarkan, ekspor, atau konfirmasi pemasangan.");
+                        if(install)confirmPasang();
                     });
-                }catch(Exception ex){message("Audio conversion failed: "+ex.getMessage());}
+                }catch(Exception ex){message("Konversi audio gagal: "+ex.getMessage());}
             });
             if(install){
                 new AlertDialog.Builder(this)
-                    .setTitle("Convert and install audio?")
-                    .setMessage("Decode using Android MediaCodec, encode using native VorbisLib to modern Custom Vorbis, and queue for BNK replacement. If conversion succeeds, a separate Shizuku install confirmation and backup step is required. Ensure your original .bak is preserved.")
-                    .setNegativeButton("Cancel",null).setPositiveButton("Convert", (d,w)->convert.run()).show();
+                    .setTitle("Konversi dan pasang audio?")
+                    .setMessage("Audio akan didekode menggunakan Android MediaCodec, lalu dienkode oleh VorbisLib ke Custom Vorbis dan dimasukkan ke BNK. Sebelum dipasang melalui Shizuku, Anda tetap diminta mengonfirmasi. Pastikan cadangan asli .bak tersimpan.")
+                    .setNegativeButton("Batal",null).setPositiveButton("Konversi", (d,w)->convert.run()).show();
             } else convert.run();
         }else if(request==IMPORT_WEM && bank!=null && selected!=null){
             final long id=selected.id;
@@ -472,25 +472,25 @@ public class MLBBLauncherActivity extends Activity {
                 try(InputStream in=getContentResolver().openInputStream(uri)){
                     byte[] wem=readLimited(in,Integer.MAX_VALUE);
                     if(wem.length<12 || !(new String(wem,0,4,java.nio.charset.StandardCharsets.US_ASCII).equals("RIFF")))
-                        throw new IOException("Not a RIFF/WEM");
+                        throw new IOException("Bukan berkas RIFF/WEM");
                     replacements.put(id,wem);
-                    runOnUiThread(()->{audio();message("Queued replacement for ID "+id);});
-                }catch(Exception ex){message("Import WEM failed: "+ex.getMessage());}
+                    runOnUiThread(()->{audio();message("Audio pengganti disiapkan untuk ID "+id);});
+                }catch(Exception ex){message("Impor WEM gagal: "+ex.getMessage());}
             });
         }else if(request==SAVE_BNK && bank!=null){
             worker.execute(()->{
                 try{
                     byte[] rebuilt=bank.repack(new java.util.HashMap<>(replacements));
                     try(OutputStream out=getContentResolver().openOutputStream(uri)){out.write(rebuilt);}
-                    message("Repacked BNK exported. Original game file was not modified.");
-                }catch(Exception ex){message("Repack failed: "+ex.getMessage());}
+                    message("BNK hasil edit berhasil diekspor. Berkas asli game tidak diubah.");
+                }catch(Exception ex){message("Gagal mengemas ulang BNK: "+ex.getMessage());}
             });
         }else if(request==SAVE_WEM && bank!=null && selected!=null){
             MLBBBankReader.Entry e=selected;
             worker.execute(()->{
                 try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                    out.write(bank.extract(e));message("Exported "+e.id+".wem");
-                }catch(Exception ex){message("Export failed: "+ex.getMessage());}
+                    out.write(bank.extract(e));message("Berhasil mengekspor "+e.id+".wem");
+                }catch(Exception ex){message("Ekspor gagal: "+ex.getMessage());}
             });
         }
     }
