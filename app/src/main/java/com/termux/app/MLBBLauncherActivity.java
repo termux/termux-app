@@ -189,7 +189,7 @@ public class MLBBLauncherActivity extends Activity {
         worker.execute(()->{
             try(android.os.ParcelFileDescriptor fd=shizukuFiles.openBank(name);
                 InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){
-                MLBBBankReader parsed=new MLBBBankReader(readLimited(in,128*1024*1024));
+                MLBBBankReader parsed=new MLBBBankReader(readLimited(in,Integer.MAX_VALUE));
                 runOnUiThread(()->{bank=parsed;replacements.clear();gameBankName=name;bankName=name;selected=null;audio();message("Loaded "+parsed.entries.size()+" sounds via Shizuku");});
             }catch(Exception e){message("Cannot open "+name+": "+e.getMessage());}
         });
@@ -309,7 +309,7 @@ public class MLBBLauncherActivity extends Activity {
         ByteArrayOutputStream out=new ByteArrayOutputStream();
         byte[] tmp=new byte[65536];int n;
         while((n=in.read(tmp))!=-1){
-            if(out.size()+(long)n>limit)throw new IOException("BNK too large for in-memory preview (128 MB cap)");
+            if(out.size()+(long)n>limit)throw new IOException("File exceeds the JVM array address space; streaming file support is needed");
             out.write(tmp,0,n);
         }
         return out.toByteArray();
@@ -335,9 +335,9 @@ public class MLBBLauncherActivity extends Activity {
             final long id=selected.id;
             worker.execute(()->{
                 try(InputStream in=getContentResolver().openInputStream(uri)){
-                    byte[] audioBytes=readLimited(in,32*1024*1024);
+                    byte[] audioBytes=readLimited(in,Integer.MAX_VALUE);
                     message("Encoding modern Wwise Custom Vorbis via native ARM64 library...");
-                    byte[] wem=MLBBNativeVorbis.encode(audioBytes,0.4f,48000*120);
+                    byte[] wem=MLBBNativeVorbis.encode(audioBytes,0.4f,Integer.MAX_VALUE);
                     if(MLBBBankReader.wemCodec(wem)!=0xffff)
                         throw new IOException("Native output has wrong codec tag");
                     runOnUiThread(()->{
@@ -411,7 +411,7 @@ public class MLBBLauncherActivity extends Activity {
                     message("Decoding imported audio to WAV using Android codecs...");
                     byte[] wav=MLBBAudioConverter.decodeToWav(this,uri);
                     message("Encoding WAV to Wwise Custom Vorbis...");
-                    byte[] wem=MLBBNativeVorbis.encode(wav,0.4f,48000*300);
+                    byte[] wem=MLBBNativeVorbis.encode(wav,0.4f,Integer.MAX_VALUE);
                     if(MLBBBankReader.wemCodec(wem)!=bank.originalCodec(selected))
                         throw new IOException("Encoded WEM codec does not match original bank codec");
                     replacements.put(id,wem);
@@ -432,7 +432,7 @@ public class MLBBLauncherActivity extends Activity {
             final long id=selected.id;
             worker.execute(()->{
                 try(InputStream in=getContentResolver().openInputStream(uri)){
-                    byte[] wem=readLimited(in,64*1024*1024);
+                    byte[] wem=readLimited(in,Integer.MAX_VALUE);
                     if(wem.length<12 || !(new String(wem,0,4,java.nio.charset.StandardCharsets.US_ASCII).equals("RIFF")))
                         throw new IOException("Not a RIFF/WEM");
                     replacements.put(id,wem);
