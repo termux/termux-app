@@ -27,6 +27,10 @@ public final class MLBBAudioConverter {
         o.write((int)(v>>>16)&255);o.write((int)(v>>>24)&255);
     }
     public static byte[] toPcmWem(Context context,Uri source)throws Exception {
+        return decodeToWav(context, source);
+    }
+    /** Decode via Android MediaCodec to a standard RIFF PCM16 WAV for native VorbisLib. */
+    public static byte[] decodeToWav(Context context,Uri source)throws Exception {
         MediaExtractor extractor=new MediaExtractor();
         MediaCodec codec=null;
         try(ParcelFileDescriptor fd=context.getContentResolver().openFileDescriptor(source,"r")){
@@ -79,7 +83,7 @@ public final class MLBBAudioConverter {
                     ByteBuffer output=codec.getOutputBuffer(index);
                     if(output!=null && info.size>0){
                         output.position(info.offset); output.limit(info.offset+info.size);
-                        if((long)audio.size()+info.size>MAX_PCM_BYTES)throw new IOException("Decoded audio exceeds 128 MiB limit");
+                        if((long)audio.size()+info.size>Math.min(MAX_PCM_BYTES,64*1024*1024-44))throw new IOException("Decoded WAV exceeds 64 MiB. Trim audio or convert to lower sample rate/mono first");
                         byte[] block=new byte[info.size]; output.get(block);
                         audio.write(block);
                     }
@@ -87,7 +91,7 @@ public final class MLBBAudioConverter {
                     if((info.flags&MediaCodec.BUFFER_FLAG_END_OF_STREAM)!=0)outputEnded=true;
                 }
             }
-            if(channels<1||channels>8||rate<8000||rate>192000)throw new IOException("Unsupported channel count or sample rate");
+            if(channels<1||channels>2||rate<8000||rate>48000)throw new IOException("VorbisLib requires mono/stereo audio at 8–48 kHz; convert sample rate/channels before importing.");
             byte[] pcm=audio.toByteArray();
             int align=channels*2;
             if(pcm.length%align!=0)throw new IOException("Misaligned PCM samples");
