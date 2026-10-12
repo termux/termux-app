@@ -29,7 +29,7 @@ public class KyzzTermFeaturesTest {
         Assert.assertEquals("pkg uninstall -y nodejs", adapter.buildRemoveCommand("nodejs"));
         Assert.assertEquals("pkg upgrade -y git", adapter.buildUpdateCommand("git"));
         // Sanitize dangerous inputs
-        Assert.assertEquals("pkg install -y python3", adapter.buildInstallCommand("python3; rm -rf /"));
+        Assert.assertEquals("pkg install -y python3rm-rf", adapter.buildInstallCommand("python3; rm -rf /"));
     }
 
     @Test

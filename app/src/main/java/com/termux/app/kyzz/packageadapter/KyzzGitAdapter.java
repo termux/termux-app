@@ -37,6 +37,6 @@ public class KyzzGitAdapter implements KyzzPackageManagerAdapter {
 
     private String sanitize(String input) {
         if (input == null) return "";
-        return input.replaceAll("[^a-zA-Z0-9_.-]", "");
+        return input.replaceAll("[^a-zA-Z0-9_./-]", "");
     }
 }
