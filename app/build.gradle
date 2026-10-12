@@ -67,6 +67,7 @@ android {
 
         externalNativeBuild {
             ndkBuild {
+                arguments "NDK_APPLICATION_MK=" + file("src/main/cpp/Application.mk").absolutePath
                 cFlags "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
             }
         }
