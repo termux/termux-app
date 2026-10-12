@@ -40,9 +40,9 @@ jobs:
           if [ -s "$LIB" ]; then
             APK=$(find app/build/outputs/apk/debug -name '*universal*.apk' | head -n 1)
             test -n "$APK"
-            unzip -l "$APK" | grep -E 'lib/arm64-v8a/lib(vorbislib|mlbb_vorbis_jni)\\.so'
-            unzip -l "$APK" | grep -F 'lib/arm64-v8a/libvorbislib.so'
-            unzip -l "$APK" | grep -F 'lib/arm64-v8a/libmlbb_vorbis_jni.so'
+            unzip -l "$APK" | tee /tmp/mlbb-apk-files.txt
+            grep -F 'lib/arm64-v8a/libvorbislib.so' /tmp/mlbb-apk-files.txt
+            grep -F 'lib/arm64-v8a/libmlbb_vorbis_jni.so' /tmp/mlbb-apk-files.txt
           fi
       - name: Verify standalone package ID
         run: |
