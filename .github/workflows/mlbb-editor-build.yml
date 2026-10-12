@@ -22,6 +22,13 @@ jobs:
           npm install --no-audit --no-fund
           npm test
           node scripts/package-android.cjs
+      - name: Detect optional ARM64 VorbisLib
+        run: |
+          if [ -s app/src/main/jniLibs/arm64-v8a/libvorbislib.so ] && [ -s app/src/main/cpp/include/vorbislib.h ]; then
+            echo "Native ARM64 VorbisLib found; JNI codec will be compiled"
+          else
+            echo "::warning::VorbisLib archive not yet installed in repository. APK will NOT contain native Custom Vorbis encoding."
+          fi
       - uses: gradle/actions/setup-gradle@v4
       - name: Build universal debug APK
         env:
