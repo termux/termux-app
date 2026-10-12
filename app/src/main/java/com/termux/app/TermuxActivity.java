@@ -809,12 +809,54 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }.start();
     }
 
+    public static final int REQUEST_PICK_WALLPAPER = 2001;
+    public static final int REQUEST_PICK_FONT = 2002;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Logger.logVerbose(LOG_TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: "  + resultCode + ", data: "  + IntentUtils.getIntentString(data));
         if (requestCode == PermissionUtils.REQUEST_GRANT_STORAGE_PERMISSION) {
             requestStoragePermission(true);
+        } else if (requestCode == REQUEST_PICK_WALLPAPER && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            android.net.Uri selectedImageUri = data.getData();
+            try {
+                final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                getContentResolver().takePersistableUriPermission(selectedImageUri, takeFlags);
+            } catch (Exception ignored) {}
+            if (mKyzzAppearanceManager != null) {
+                mKyzzAppearanceManager.setWallpaperUri(selectedImageUri.toString());
+                applyKyzzAppearance();
+                Toast.makeText(this, "Wallpaper applied!", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == REQUEST_PICK_FONT && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            android.net.Uri fontUri = data.getData();
+            try {
+                // Copy font file to app files dir so Typeface can load from file path
+                File fontDir = new File(getFilesDir(), "fonts");
+                fontDir.mkdirs();
+                File targetFontFile = new File(fontDir, "custom_font.ttf");
+                java.io.InputStream in = getContentResolver().openInputStream(fontUri);
+                java.io.FileOutputStream out = new java.io.FileOutputStream(targetFontFile);
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                }
+                in.close();
+                out.close();
+
+                if (mKyzzFontManager != null) {
+                    mKyzzFontManager.setCustomFontPath(targetFontFile.getAbsolutePath());
+                    android.graphics.Typeface tf = mKyzzFontManager.loadTypeface();
+                    if (mTerminalView != null) {
+                        mTerminalView.setTypeface(tf);
+                    }
+                    Toast.makeText(this, "Custom font loaded successfully!", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Failed to load font: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -1192,6 +1234,15 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                 }
             });
         }
+
+        final TextView statusLang = findViewById(R.id.kyzz_editor_status_lang);
+        final TextView statusPos = findViewById(R.id.kyzz_editor_status_pos);
+        if (mKyzzCodeEditor != null) {
+            mKyzzCodeEditor.setOnCursorChangeListener((line, col, language) -> {
+                if (statusLang != null) statusLang.setText(language != null ? language.toUpperCase() : "PLAIN TEXT");
+                if (statusPos != null) statusPos.setText("Ln " + line + ", Col " + col);
+            });
+        }
     }
 
     private void setupKyzzExplorerPanel() {
@@ -1398,11 +1449,52 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         Button btnKyzz = findViewById(R.id.kyzz_theme_preset_kyzz);
         Button btnVsCode = findViewById(R.id.kyzz_theme_preset_vscode);
         Button btnCyberpunk = findViewById(R.id.kyzz_theme_preset_cyberpunk);
+        Button btnPickWall = findViewById(R.id.kyzz_btn_pick_wallpaper);
         Button btnResetWall = findViewById(R.id.kyzz_btn_reset_wallpaper);
+        Button btnPickFont = findViewById(R.id.kyzz_btn_pick_font);
         SeekBar seekOpacity = findViewById(R.id.kyzz_seek_opacity);
         final TextView labelOpacity = findViewById(R.id.kyzz_label_opacity);
         SeekBar seekFontSize = findViewById(R.id.kyzz_seek_font_size);
         final TextView labelFontSize = findViewById(R.id.kyzz_label_font_size);
+
+        if (btnPickWall != null) {
+            btnPickWall.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, REQUEST_PICK_WALLPAPER);
+                } catch (Exception e) {
+                    // Fallback to GET_CONTENT
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("image/*");
+                        startActivityForResult(intent, REQUEST_PICK_WALLPAPER);
+                    } catch (Exception ex) {
+                        Toast.makeText(this, "No image picker found: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
+        if (btnPickFont != null) {
+            btnPickFont.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("*/*");
+                    startActivityForResult(intent, REQUEST_PICK_FONT);
+                } catch (Exception e) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.setType("*/*");
+                        startActivityForResult(intent, REQUEST_PICK_FONT);
+                    } catch (Exception ex) {
+                        Toast.makeText(this, "No file picker found: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
 
         if (btnKyzz != null) btnKyzz.setOnClickListener(v -> {
             mKyzzAppearanceManager.setThemeId("kyzz_dark");

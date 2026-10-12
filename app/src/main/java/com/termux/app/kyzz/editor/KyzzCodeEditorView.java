@@ -4,12 +4,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
@@ -25,7 +26,7 @@ public class KyzzCodeEditorView extends AppCompatEditText {
     private File mCurrentFile;
     private boolean mIsModified = false;
     private String mLanguage = "text";
-    private boolean mIsSyntaxHighlighting = false;
+    private boolean mIsFormatting = false;
 
     // Syntax highlighting patterns
     private static final Pattern PATTERN_KEYWORDS = Pattern.compile(
@@ -34,6 +35,12 @@ public class KyzzCodeEditorView extends AppCompatEditText {
     private static final Pattern PATTERN_NUMBERS = Pattern.compile("\\b(\\d+(\\.\\d+)?)\\b");
     private static final Pattern PATTERN_STRINGS = Pattern.compile("\"(\\\\.|[^\"])*\"|'(\\\\.|[^'])*'");
     private static final Pattern PATTERN_COMMENTS = Pattern.compile("(//.*$|#.*$|/\\*.*?\\*/)", Pattern.MULTILINE);
+
+    public interface OnCursorChangeListener {
+        void onCursorChanged(int line, int col, String language);
+    }
+
+    private OnCursorChangeListener mCursorListener;
 
     public KyzzCodeEditorView(Context context) {
         super(context);
@@ -47,11 +54,18 @@ public class KyzzCodeEditorView extends AppCompatEditText {
 
     private void init() {
         setTypeface(Typeface.MONOSPACE);
-        setTextSize(14f);
+        setTextSize(13f);
         setTextColor(Color.parseColor("#e0e6ed"));
-        setBackgroundColor(Color.parseColor("#181824"));
+        setBackgroundColor(Color.TRANSPARENT);
         setGravity(Gravity.TOP | Gravity.START);
-        setPadding(24, 24, 24, 24);
+        setPadding(20, 20, 20, 20);
+
+        // Enable multi-line code editing without soft keyboard auto-correct mangling code
+        setInputType(InputType.TYPE_CLASS_TEXT |
+                     InputType.TYPE_TEXT_FLAG_MULTI_LINE |
+                     InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN);
+        setHorizontallyScrolling(true);
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -59,15 +73,34 @@ public class KyzzCodeEditorView extends AppCompatEditText {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mIsModified = true;
+                if (!mIsFormatting) {
+                    mIsModified = true;
+                }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (mIsSyntaxHighlighting) return;
+                if (mIsFormatting) return;
                 applySyntaxHighlighting(s);
+                notifyCursorChanged();
             }
         });
+    }
+
+    public void setOnCursorChangeListener(OnCursorChangeListener listener) {
+        mCursorListener = listener;
+    }
+
+    @Override
+    protected void onSelectionChanged(int selStart, int selEnd) {
+        super.onSelectionChanged(selStart, selEnd);
+        notifyCursorChanged();
+    }
+
+    private void notifyCursorChanged() {
+        if (mCursorListener != null) {
+            mCursorListener.onCursorChanged(getCurrentLineNumber(), getCurrentColumnNumber(), mLanguage);
+        }
     }
 
     public void openFile(File file) throws IOException {
@@ -83,8 +116,12 @@ public class KyzzCodeEditorView extends AppCompatEditText {
         fis.close();
 
         String content = new String(data, 0, Math.max(0, read), StandardCharsets.UTF_8);
+        mIsFormatting = true;
         setText(content);
+        mIsFormatting = false;
         mIsModified = false;
+        applySyntaxHighlighting(getText());
+        notifyCursorChanged();
     }
 
     public void saveFile() throws IOException {
@@ -104,62 +141,57 @@ public class KyzzCodeEditorView extends AppCompatEditText {
         mCurrentFile = target;
         detectLanguage(target.getName());
         mIsModified = false;
+        notifyCursorChanged();
     }
 
     public void detectLanguage(String fileName) {
         String lower = fileName.toLowerCase();
-        if (lower.endsWith(".java")) mLanguage = "java";
-        else if (lower.endsWith(".kt") || lower.endsWith(".kts")) mLanguage = "kotlin";
-        else if (lower.endsWith(".py")) mLanguage = "python";
-        else if (lower.endsWith(".js") || lower.endsWith(".jsx")) mLanguage = "javascript";
-        else if (lower.endsWith(".ts") || lower.endsWith(".tsx")) mLanguage = "typescript";
-        else if (lower.endsWith(".html") || lower.endsWith(".htm")) mLanguage = "html";
-        else if (lower.endsWith(".css")) mLanguage = "css";
-        else if (lower.endsWith(".json")) mLanguage = "json";
-        else if (lower.endsWith(".xml")) mLanguage = "xml";
-        else if (lower.endsWith(".sh") || lower.endsWith(".bash")) mLanguage = "shell";
-        else if (lower.endsWith(".c") || lower.endsWith(".cpp") || lower.endsWith(".h")) mLanguage = "c/c++";
-        else if (lower.endsWith(".php")) mLanguage = "php";
-        else if (lower.endsWith(".sql")) mLanguage = "sql";
-        else if (lower.endsWith(".md")) mLanguage = "markdown";
-        else mLanguage = "text";
+        if (lower.endsWith(".java")) mLanguage = "Java";
+        else if (lower.endsWith(".kt") || lower.endsWith(".kts")) mLanguage = "Kotlin";
+        else if (lower.endsWith(".py")) mLanguage = "Python";
+        else if (lower.endsWith(".js") || lower.endsWith(".jsx")) mLanguage = "JavaScript";
+        else if (lower.endsWith(".ts") || lower.endsWith(".tsx")) mLanguage = "TypeScript";
+        else if (lower.endsWith(".html") || lower.endsWith(".htm")) mLanguage = "HTML";
+        else if (lower.endsWith(".css")) mLanguage = "CSS";
+        else if (lower.endsWith(".json")) mLanguage = "JSON";
+        else if (lower.endsWith(".xml")) mLanguage = "XML";
+        else if (lower.endsWith(".sh") || lower.endsWith(".bash")) mLanguage = "Shell";
+        else if (lower.endsWith(".c") || lower.endsWith(".cpp") || lower.endsWith(".h")) mLanguage = "C/C++";
+        else if (lower.endsWith(".php")) mLanguage = "PHP";
+        else if (lower.endsWith(".sql")) mLanguage = "SQL";
+        else if (lower.endsWith(".md")) mLanguage = "Markdown";
+        else mLanguage = "Plain Text";
     }
 
     public void applySyntaxHighlighting(Editable editable) {
-        if (editable == null || editable.length() > 200000) {
-            // Guard against massive files for smooth Android low-end performance
+        if (editable == null || editable.length() > 100000) {
             return;
         }
-        mIsSyntaxHighlighting = true;
+        mIsFormatting = true;
         try {
-            // Remove previous ForegroundColorSpans
             ForegroundColorSpan[] spans = editable.getSpans(0, editable.length(), ForegroundColorSpan.class);
             for (ForegroundColorSpan span : spans) {
                 editable.removeSpan(span);
             }
 
-            // Highlight keywords - Purple/Cyan VS Code-style
             Matcher mKeyword = PATTERN_KEYWORDS.matcher(editable);
             while (mKeyword.find()) {
                 editable.setSpan(new ForegroundColorSpan(Color.parseColor("#c792ea")),
                         mKeyword.start(), mKeyword.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
-            // Highlight numbers - Orange
             Matcher mNumber = PATTERN_NUMBERS.matcher(editable);
             while (mNumber.find()) {
                 editable.setSpan(new ForegroundColorSpan(Color.parseColor("#f78c6c")),
                         mNumber.start(), mNumber.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
-            // Highlight strings - Green
             Matcher mString = PATTERN_STRINGS.matcher(editable);
             while (mString.find()) {
                 editable.setSpan(new ForegroundColorSpan(Color.parseColor("#c3e88d")),
                         mString.start(), mString.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
-            // Highlight comments - Grey
             Matcher mComment = PATTERN_COMMENTS.matcher(editable);
             while (mComment.find()) {
                 editable.setSpan(new ForegroundColorSpan(Color.parseColor("#676e95")),
@@ -167,7 +199,7 @@ public class KyzzCodeEditorView extends AppCompatEditText {
             }
         } catch (Exception ignored) {
         } finally {
-            mIsSyntaxHighlighting = false;
+            mIsFormatting = false;
         }
     }
 

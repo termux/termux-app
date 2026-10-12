@@ -65,20 +65,27 @@
             android:paddingHorizontal="8dp" />
     </LinearLayout>
 
-    <!-- Editor Scroll & Content -->
-    <ScrollView
+    <!-- Editor Scroll & Content (Horizontal & Vertical 2D Scroll) -->
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true">
 
-        <com.termux.app.kyzz.editor.KyzzCodeEditorView
-            android:id="@+id/kyzz_code_editor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="// Welcome to Kyzz Code Mode\n// Open files or start coding here..."
-            android:textColorHint="#4e5579" />
-    </ScrollView>
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <com.termux.app.kyzz.editor.KyzzCodeEditorView
+                android:id="@+id/kyzz_code_editor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="400dp"
+                android:hint="// Welcome to Kyzz Code Mode\n// Open files from Explorer or start typing here..."
+                android:textColorHint="#4e5579" />
+        </ScrollView>
+    </HorizontalScrollView>
 
     <!-- Status Bar (Language, Ln, Col, Status) -->
     <LinearLayout
