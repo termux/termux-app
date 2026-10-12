@@ -1,23 +1,54 @@
-# Termux application
+# Kyzz Term — Modern Android Terminal & Code Workspace
 
-[![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
-[![Testing status](https://github.com/termux/termux-app/workflows/Unit%20tests/badge.svg)](https://github.com/termux/termux-app/actions)
-[![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
-[![Join the Termux discord server](https://img.shields.io/discord/641256914684084234.svg?label=&logo=discord&logoColor=ffffff&color=5865F2)](https://discord.gg/HXpF69X)
-[![Termux library releases at Jitpack](https://jitpack.io/v/termux/termux-app.svg)](https://jitpack.io/#termux/termux-app)
+[![Kyzz Term CI Build](https://github.com/KyuuX444/kyzz-term/actions/workflows/kyzz-term-debug.yml/badge.svg)](https://github.com/KyuuX444/kyzz-term/actions/workflows/kyzz-term-debug.yml)
+[![Latest Release](https://img.shields.io/github/v/release/KyuuX444/kyzz-term?color=blue&label=Kyzz%20Term%20Release)](https://github.com/KyuuX444/kyzz-term/releases/tag/v1.0.0-kyzz)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-green.svg)](LICENSE.md)
 
+**Kyzz Term** adalah fork modern dari [Termux](https://github.com/termux/termux-app) yang mempertahankan 100% kapabilitas dan kompatibilitas Linux Terminal Android asli, dilengkapi dengan antarmuka profesional bertema modern, **VS Code-like Code Workspace**, **Integrated File Explorer**, **Module Center**, serta **Appearance Studio**.
 
-[Termux](https://termux.dev) is an Android terminal application and Linux environment.
+---
 
-Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages).
+## ⚡ Fitur Unggulan Kyzz Term
 
-Quick how-to about Termux package management is available at [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management). It also has info on how to fix **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands.
+### 1. 😈 Kyzz Code Mode (VS Code-like Workspace)
+- **Editor Kode Modern**: Editor teks dengan syntax highlighting untuk 15+ bahasa pemrograman (Python, JavaScript, TypeScript, Java, Kotlin, C/C++, HTML, CSS, JSON, XML, Markdown, Shell/Bash, PHP, SQL).
+- **Tooling Editor**: Line numbers, status bar interaktif (bahasa, nomor baris, nomor kolom, encoding UTF-8), deteksi modifikasi file belum tersimpan, Go to Line dialog, dan tombol shortcut *Run in Term*.
+- **Integrated Terminal**: Beralih instan antara editor kode dan terminal tanpa memutus proses yang sedang berjalan.
 
-**We are looking for Termux Android application maintainers.**
+### 2. 📂 Integrated File Explorer
+- Navigasi file system lokal Termux dengan breadcrumb path navigation.
+- Tombol aksi cepat: Buat File (`+File`), Buat Folder (`+Dir`), dan navigasi ke folder induk (`..`).
+- Buka file langsung ke Kyzz Code Editor hanya dengan satu sentuhan.
 
-***
+### 3. 📦 Kyzz Module Center
+- Pusat pencarian dan instalasi paket Termux (`pkg`/`apt`), modul Node.js (`npm`), Python packages (`pip`), dan Git repository.
+- Tombol satu klik **"Install in Terminal"** yang secara otomatis mengeksekusi perintah di sesi terminal aktif.
+- Proteksi keamanan sanitasi parameter terhadap potensi *command injection*.
 
-**NOTICE: Termux may be unstable on Android 12+.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive cpu usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, specially if you are not rooted.
+### 4. 🎨 Appearance Studio
+- **Preset Tema**: Kyzz Dark (Charcoal/Purple), VS Code Dark, dan Cyber Neon.
+- **Terminal Wallpaper & Transparency**: Dukungan wallpaper kustom dengan slider transparansi overlay (0–100%) dan warna overlay yang dapat disesuaikan.
+- **Font Manager**: Pengaturan ukuran font terminal (slider real-time) dan dukungan impor font custom TTF/OTF dengan fallback otomatis.
+
+### 5. ⌨️ Command Palette (CMD)
+- Pintasan perintah cepat (Terminal baru, Clear screen, Rename session, Open folder, Install package, Change theme) yang mudah diakses melalui tombol **CMD** di header atau shortcut keyboard.
+
+---
+
+## 📥 Download & Instalasi APK
+Unduh file APK siap pakai versi terbaru di:
+👉 **[Kyzz Term v1.0.0 Release](https://github.com/KyuuX444/kyzz-term/releases/tag/v1.0.0-kyzz)**
+
+Pilihan varian file APK:
+- `termux-app_v0.118.0+e866d93-apt-android-7-github-debug_universal.apk` — Kompatibel untuk semua tipe perangkat Android.
+- `termux-app_v0.118.0+e866d93-apt-android-7-github-debug_arm64-v8a.apk` — Rekomendasi untuk smartphone Android modern (64-bit).
+- `termux-app_v0.118.0+e866d93-apt-android-7-github-debug_armeabi-v7a.apk` — Untuk perangkat Android 32-bit.
+- `termux-app_v0.118.0+e866d93-apt-android-7-github-debug_x86_64.apk` / `x86.apk` — Untuk emulator Android di PC.
+
+---
+
+## 🛠️ Atribusi & Upstream
+Kyzz Term dibangun di atas basis kode resmi [Termux App](https://github.com/termux/termux-app). Seluruh hak cipta, lisensi GPLv3, dan atribusi pengembang asli Termux tetap dipertahankan sepenuhnya.
 
 ***
 
