@@ -50,40 +50,40 @@ public class MLBBFilesService extends IMLBBFiles.Stub {
     }
     private static void verifiedCopy(File source,File dest)throws Exception{
         try(InputStream in=new FileInputStream(source)){copy(in,dest);}
-        if(!Arrays.equals(sha(source),sha(dest)))throw new IOException("Backup hash verification failed");
+        if(!Arrays.equals(sha(source),sha(dest)))throw new IOException("Verifikasi checksum cadangan gagal");
     }
     private static void atomicInstall(File stage,File destination)throws IOException{
         try{
             Files.move(stage.toPath(),destination.toPath(),
                 StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
         }catch(AtomicMoveNotSupportedException ex){
-            throw new IOException("Storage does not support safe atomic replace. Original left unchanged.",ex);
+            throw new IOException("Penyimpanan tidak mendukung penggantian atomik yang aman. Berkas asli tidak diubah.",ex);
         }
     }
     @Override public String installBank(String name,ParcelFileDescriptor replacement){
         File stage=null,backupStage=null;
         try{
             File dest=resolve(name);
-            if(!dest.isFile())throw new IOException("Original game BNK not found");
+            if(!dest.isFile())throw new IOException("BNK asli game tidak ditemukan");
             File backup=new File(dest.getPath()+".bak");
             if(!backup.exists()){
                 backupStage=new File(dest.getPath()+".bak-pending");
                 verifiedCopy(dest,backupStage);
-                if(!backupStage.renameTo(backup))throw new IOException("Cannot commit original backup");
+                if(!backupStage.renameTo(backup))throw new IOException("Gagal menyimpan cadangan asli");
             }
-            if(!backup.isFile()||backup.length()<16)throw new IOException("Backup missing or invalid");
+            if(!backup.isFile()||backup.length()<16)throw new IOException("Cadangan tidak ditemukan atau tidak valid");
             stage=new File(dest.getPath()+".new-pending");
             try(InputStream in=new FileInputStream(replacement.getFileDescriptor())){copy(in,stage);}
-            if(stage.length()<16)throw new IOException("Empty replacement");
+            if(stage.length()<16)throw new IOException("Berkas pengganti kosong");
             try(InputStream in=new FileInputStream(stage)){
                 byte[] header=new byte[4];
                 if(in.read(header)!=4||!Arrays.equals(header,new byte[]{'B','K','H','D'}))
-                    throw new IOException("Replacement is not a BNK");
+                    throw new IOException("Berkas pengganti bukan BNK");
             }
             byte[] expected=sha(stage);
             atomicInstall(stage,dest);
-            if(!Arrays.equals(expected,sha(dest)))throw new IOException("Installed BNK checksum mismatch; restore .bak immediately");
-            return "Installed "+name+"; original .bak retained and installed SHA-256 verified";
+            if(!Arrays.equals(expected,sha(dest)))throw new IOException("Checksum BNK yang terpasang tidak cocok; segera pulihkan dari .bak");
+            return "Berhasil memasang "+name+"; cadangan .bak disimpan dan SHA-256 pemasangan terverifikasi";
         }catch(Exception ex){throw new IllegalStateException("Install refused: "+ex.getMessage(),ex);}
         finally{
             try{replacement.close();}catch(Exception ignored){}
@@ -96,12 +96,12 @@ public class MLBBFilesService extends IMLBBFiles.Stub {
         try{
             File dest=resolve(name);
             File backup=new File(dest.getPath()+".bak");
-            if(!backup.isFile())throw new IOException("No original .bak exists");
+            if(!backup.isFile())throw new IOException("Cadangan asli .bak tidak ditemukan");
             stage=new File(dest.getPath()+".restore-pending");
             verifiedCopy(backup,stage);
             atomicInstall(stage,dest);
-            if(!Arrays.equals(sha(backup),sha(dest)))throw new IOException("Restore hash mismatch");
-            return "Original "+name+" restored from verified backup";
+            if(!Arrays.equals(sha(backup),sha(dest)))throw new IOException("Checksum pemulihan tidak cocok");
+            return "Berkas asli "+name+" berhasil dipulihkan dari cadangan terverifikasi";
         }catch(Exception ex){throw new IllegalStateException("Restore failed: "+ex.getMessage(),ex);}
         finally{if(stage!=null)stage.delete();}
     }
