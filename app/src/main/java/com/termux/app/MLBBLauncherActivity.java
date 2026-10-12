@@ -16,7 +16,7 @@ import android.content.pm.PackageManager;
 
 /** Local BNK explorer. The protected-game Shizuku broker is a separate milestone. */
 public class MLBBLauncherActivity extends Activity {
-    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103, IMPORT_AUDIO=104, IMPORT_OGG_TS=105, SAVE_TS_WEM=106;
+    private static final int OPEN_BNK=100, SAVE_WEM=101, IMPORT_WEM=102, SAVE_BNK=103, IMPORT_AUDIO=104, IMPORT_OGG_TS=105, SAVE_TS_WEM=106, IMPORT_NATIVE_AUDIO=107, SAVE_NATIVE_WEM=108, SAVE_NATIVE_OGG=109;
     private final java.util.concurrent.ExecutorService worker=Executors.newSingleThreadExecutor();
     private LinearLayout root;
     private TextView status;
@@ -33,6 +33,8 @@ public class MLBBLauncherActivity extends Activity {
     private String bankName="soundbank";
     private String gameBankName=null;
     private boolean autoInstallAfterConversion=false;
+    private byte[] nativeConvertedWem=null;
+    private byte[] nativeDecodedOgg=null;
     private byte[] experimentalWem=null;
     private long experimentalId=0;
     private void label(String s,float size){
@@ -177,7 +179,7 @@ public class MLBBLauncherActivity extends Activity {
             button("WEM ID "+e.id+" · "+codec+" ("+e.size+" bytes)"+(replacements.containsKey(e.id)?"  • REPLACED":""),()->{
                 selected=e;
                 new AlertDialog.Builder(this).setTitle("Audio ID "+e.id)
-                    .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview","Experimental OGG → legacy Vorbis WEM (export only)"},(d,option)->{
+                    .setItems(new String[]{"Export original WEM","Replace from WEM","Replace from MP3/OGG/WAV","Replace and auto-install MP3/OGG/WAV","Clear replacement","About audio preview","Experimental OGG → legacy Vorbis WEM (export only)","Native WAV/OGG → Custom Vorbis WEM (test/export)","Native WEM → OGG (export)"},(d,option)->{
                         if(option==0){
                             Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -197,6 +199,26 @@ public class MLBBLauncherActivity extends Activity {
                         } else if(option==4){
                             replacements.remove(e.id);
                             audio();message("Cleared replacement for "+e.id);
+                        } else if(option==7){
+                            if(!MLBBNativeVorbis.available()){message("Native VorbisLib not bundled. Add ARM64 library and rebuild APK.");return;}
+                            Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                            i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");
+                            startActivityForResult(i,IMPORT_NATIVE_AUDIO);
+                        } else if(option==8){
+                            if(!MLBBNativeVorbis.available()){message("Native VorbisLib unavailable");return;}
+                            worker.execute(()->{
+                                try{
+                                    byte[] ogg=MLBBNativeVorbis.decodeToOgg(bank.extract(e),false);
+                                    runOnUiThread(()->{
+                                        nativeDecodedOgg=ogg;
+                                        Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                                        i.addCategory(Intent.CATEGORY_OPENABLE);
+                                        i.setType("application/ogg");
+                                        i.putExtra(Intent.EXTRA_TITLE,e.id+"_decoded.ogg");
+                                        startActivityForResult(i,SAVE_NATIVE_OGG);
+                                    });
+                                }catch(Exception ex){message("Native decoder failed: "+ex.getMessage());}
+                            });
                         } else if(option==6){
                             Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
                             i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -277,6 +299,45 @@ public class MLBBLauncherActivity extends Activity {
                         message("Parsed "+parsed.entries.size()+" WEM entries");
                     });
                 }catch(Exception e){message("Import failed: "+e.getMessage());}
+            });
+        }else if(request==IMPORT_NATIVE_AUDIO && selected!=null){
+            final long id=selected.id;
+            worker.execute(()->{
+                try(InputStream in=getContentResolver().openInputStream(uri)){
+                    byte[] audioBytes=readLimited(in,32*1024*1024);
+                    message("Encoding modern Wwise Custom Vorbis via native ARM64 library...");
+                    byte[] wem=MLBBNativeVorbis.encode(audioBytes,0.4f,48000*120);
+                    if(MLBBBankReader.wemCodec(wem)!=0xffff)
+                        throw new IOException("Native output has wrong codec tag");
+                    runOnUiThread(()->{
+                        nativeConvertedWem=wem;
+                        new AlertDialog.Builder(this)
+                            .setTitle("Custom Vorbis encoded")
+                            .setMessage("Generated "+wem.length+"-byte WEM for ID "+id+". It is NOT queued or installed. Export and validate with vgmstream before attempting game replacement.")
+                            .setNegativeButton("Cancel",null)
+                            .setPositiveButton("Export test WEM",(d,w)->{
+                                Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                                i.addCategory(Intent.CATEGORY_OPENABLE);
+                                i.setType("application/octet-stream");
+                                i.putExtra(Intent.EXTRA_TITLE,id+"_native_custom_vorbis.wem");
+                                startActivityForResult(i,SAVE_NATIVE_WEM);
+                            }).show();
+                    });
+                }catch(Exception ex){message("Native encoding failed: "+ex.getMessage());}
+            });
+        }else if(request==SAVE_NATIVE_WEM && nativeConvertedWem!=null){
+            final byte[] bytes=nativeConvertedWem;
+            worker.execute(()->{
+                try(OutputStream out=getContentResolver().openOutputStream(uri)){
+                    out.write(bytes);message("Native test WEM exported; MLBB files unchanged.");
+                }catch(Exception ex){message("Export failed: "+ex.getMessage());}
+            });
+        }else if(request==SAVE_NATIVE_OGG && nativeDecodedOgg!=null){
+            final byte[] bytes=nativeDecodedOgg;
+            worker.execute(()->{
+                try(OutputStream out=getContentResolver().openOutputStream(uri)){
+                    out.write(bytes);message("Decoded OGG exported.");
+                }catch(Exception ex){message("OGG export failed: "+ex.getMessage());}
             });
         }else if(request==IMPORT_OGG_TS && selected!=null){
             final long id=selected.id;
