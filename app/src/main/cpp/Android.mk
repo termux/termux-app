@@ -19,6 +19,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := mlbb_vorbis_jni
 LOCAL_SRC_FILES := mlbb_vorbis_jni.cpp
 LOCAL_CPPFLAGS := -std=c++17
+LOCAL_CPP_FEATURES := exceptions rtti
+LOCAL_CXX_STL := c++_shared
 LOCAL_CONLYFLAGS := -std=c11
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 LOCAL_SHARED_LIBRARIES := vorbislib
