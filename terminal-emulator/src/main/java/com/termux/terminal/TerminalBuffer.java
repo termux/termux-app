@@ -176,7 +176,9 @@ public final class TerminalBuffer {
         // is called with y=5, then y1 would be set to 4 and y2 would be set to 6.
         int y1 = y;
         int y2 = y;
-        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
+        // y1 may expand into transcript rows (negative external rows) so that
+        // tapping the visible tail of a wrapped line still finds its head.
+        while (y1 > -getActiveTranscriptRows() && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
             y1--;
         }
         while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {

@@ -62,4 +62,13 @@ public class ScreenBufferTest extends TerminalTestCase {
 		assertEquals("", mTerminal.getScreen().getWordAtLocation(1, 2));
 		assertEquals("", mTerminal.getScreen().getWordAtLocation(2, 2));
 	}
+
+	public void testGetWordAtLocationAcrossTranscriptBoundary() {
+		// A wrapped word whose head has scrolled into the transcript must
+		// still be returned whole when tapping its visible tail (#5368).
+		String url = "https://www.google.com/search?q=termux+terminal+onclick+url+open+wrapped+long+url+tap+opens+only+first+line";
+		withTerminalSized(80, 3).enterString("pad1\r\npad2\r\npad3\r\npad4\r\n" + url + "\r\n$ \r\nlast");
+		assertEquals(url, mTerminal.getScreen().getWordAtLocation(5, 0));
+		assertEquals(url, mTerminal.getScreen().getWordAtLocation(10, -1));
+	}
 }
