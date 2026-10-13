@@ -9,6 +9,7 @@ on:
     branches:
       - master
       - android-10
+  workflow_dispatch:
 
 jobs:
   validation:
@@ -16,4 +17,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: gradle/actions/wrapper-validation@5
+      - uses: gradle/actions/wrapper-validation@v6
