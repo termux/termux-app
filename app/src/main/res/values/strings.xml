@@ -61,6 +61,7 @@
 
     <!-- Terminal Popup -->
     <string name="action_select_url">Select URL</string>
+    <string name="action_paste">Paste</string>
     <string name="title_select_url_dialog">Click URL to copy or long press to open</string>
     <string name="title_select_url_none_found">No URL found in the terminal.</string>
     <string name="msg_select_url_copied_to_clipboard">URL copied to clipboard</string>

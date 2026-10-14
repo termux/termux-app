@@ -178,6 +178,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
+    private static final int CONTEXT_MENU_PASTE_ID = 12;
     private static final int CONTEXT_MENU_SHARE_SELECTED_TEXT = 10;
     private static final int CONTEXT_MENU_AUTOFILL_USERNAME = 11;
     private static final int CONTEXT_MENU_AUTOFILL_PASSWORD = 2;
@@ -634,6 +635,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         boolean autoFillEnabled = mTerminalView.isAutoFillEnabled();
 
         menu.add(Menu.NONE, CONTEXT_MENU_SELECT_URL_ID, Menu.NONE, R.string.action_select_url);
+        menu.add(Menu.NONE, CONTEXT_MENU_PASTE_ID, Menu.NONE, R.string.action_paste);
         menu.add(Menu.NONE, CONTEXT_MENU_SHARE_TRANSCRIPT_ID, Menu.NONE, R.string.action_share_transcript);
         if (!DataUtils.isNullOrEmpty(mTerminalView.getStoredSelectedText()))
             menu.add(Menu.NONE, CONTEXT_MENU_SHARE_SELECTED_TEXT, Menu.NONE, R.string.action_share_selected_text);
@@ -664,6 +666,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         switch (item.getItemId()) {
             case CONTEXT_MENU_SELECT_URL_ID:
                 mTermuxTerminalViewClient.showUrlSelection();
+                return true;
+            case CONTEXT_MENU_PASTE_ID:
+                mTermuxTerminalViewClient.doPaste();
                 return true;
             case CONTEXT_MENU_SHARE_TRANSCRIPT_ID:
                 mTermuxTerminalViewClient.shareSessionTranscript();
