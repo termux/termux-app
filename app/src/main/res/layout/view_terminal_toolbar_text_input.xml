@@ -8,7 +8,7 @@
     android:maxLines="1"
     android:inputType="text"
     android:importantForAutofill="no"
-    android:textColor="@android:color/white"
+    android:textColor="?attr/extraKeysButtonTextColor"
     android:textColorHighlight="@android:color/darker_gray"
     android:paddingTop="0dp"
     android:textCursorDrawable="@null"
