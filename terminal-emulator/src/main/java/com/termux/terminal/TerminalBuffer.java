@@ -355,21 +355,32 @@ public final class TerminalBuffer {
                     lastNonSpaceIndex = oldLine.getSpaceUsed();
                     if (cursorAtThisRow) justToCursor = true;
                 } else {
-                    for (int i = 0; i < oldLine.getSpaceUsed(); i++)
-                        // NEWLY INTRODUCED BUG! Should not index oldLine.mStyle with char indices
-                        if (oldLine.mText[i] != ' '/* || oldLine.mStyle[i] != currentStyle */)
-                            lastNonSpaceIndex = i + 1;
+                    int column = 0;
+                    for (int i = 0; i < oldLine.getSpaceUsed();) {
+                        int codePoint = Character.codePointAt(oldLine.mText, i, oldLine.getSpaceUsed());
+                        i += Character.charCount(codePoint);
+                        // Hyperlinks occupy cells even when their labels are spaces. Track
+                        // terminal columns separately from UTF-16 indices and combining marks.
+                        if (codePoint != ' ' || oldLine.getHyperlink(column) != 0)
+                            lastNonSpaceIndex = i;
+                        column += Math.max(0, WcWidth.width(codePoint));
+                    }
                 }
 
                 int currentOldCol = 0;
                 long styleAtCol = 0;
+                int linkAtCol = 0;
                 for (int i = 0; i < lastNonSpaceIndex; i++) {
                     // Note that looping over java character, not cells.
                     char c = oldLine.mText[i];
                     int codePoint = (Character.isHighSurrogate(c)) ? Character.toCodePoint(c, oldLine.mText[++i]) : c;
                     int displayWidth = WcWidth.width(codePoint);
                     // Use the last style if this is a zero-width character:
-                    if (displayWidth > 0) styleAtCol = oldLine.getStyle(currentOldCol);
+                    if (displayWidth > 0) {
+                        styleAtCol = oldLine.getStyle(currentOldCol);
+                        // An OSC 8 hyperlink reflows with its cell, as the style does.
+                        linkAtCol = oldLine.getHyperlink(currentOldCol);
+                    }
 
                     // Line wrap as necessary:
                     if (currentOutputExternalColumn + displayWidth > mColumns) {
@@ -385,7 +396,7 @@ public final class TerminalBuffer {
 
                     int offsetDueToCombiningChar = ((displayWidth <= 0 && currentOutputExternalColumn > 0) ? 1 : 0);
                     int outputColumn = currentOutputExternalColumn - offsetDueToCombiningChar;
-                    setChar(outputColumn, currentOutputExternalRow, codePoint, styleAtCol);
+                    setChar(outputColumn, currentOutputExternalRow, codePoint, styleAtCol, linkAtCol);
 
                     if (displayWidth > 0) {
                         if (oldCursorRow == externalOldRow && oldCursorColumn == currentOldCol) {
@@ -522,10 +533,15 @@ public final class TerminalBuffer {
     }
 
     public void setChar(int column, int row, int codePoint, long style) {
+        setChar(column, row, codePoint, style, 0);
+    }
+
+    /** as {@link #setChar(int, int, int, long)}, printed under the OSC 8 hyperlink {@code link} (0 for none). */
+    public void setChar(int column, int row, int codePoint, long style, int link) {
         if (row  < 0 || row >= mScreenRows || column < 0 || column >= mColumns)
             throw new IllegalArgumentException("TerminalBuffer.setChar(): row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
         row = externalToInternalRow(row);
-        allocateFullLineIfNecessary(row).setChar(column, codePoint, style);
+        allocateFullLineIfNecessary(row).setChar(column, codePoint, style, link);
     }
 
     public long getStyleAt(int externalRow, int column) {

@@ -4,6 +4,7 @@ import android.util.Base64;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Stack;
@@ -432,6 +433,26 @@ public final class TerminalEmulator {
 
     /** If automatic scrolling of terminal is disabled */
     private boolean mAutoScrollDisabled;
+
+    // OSC 8 hyperlinks. An open gives the link a nonzero id that every cell printed until the close carries
+    // (TerminalRow#getHyperlink), and getHyperlinkUri resolves it. Opens sharing an explicit id= and URI share one id,
+    // as the OSC 8 convention asks, so a link a program printed in pieces is one link; an open without one is always
+    // a new link. The table is bounded: an id is only ever reused once no cell of either buffer holds it, so a cell
+    // can never resolve to another link's address, and while every slot is live a new open prints with no link.
+    static final int MAX_HYPERLINKS = 1024;
+    private final String[] mHyperlinkUris = new String[MAX_HYPERLINKS + 1];
+    private final String[] mHyperlinkKeys = new String[MAX_HYPERLINKS + 1];
+    private final HashMap<String, Integer> mHyperlinkIds = new HashMap<>();
+    /** The link cells are printed under now, 0 for none. Not part of the pen SGR resets or DECSC saves. */
+    private int mHyperlink = 0;
+    private int mNextHyperlink = 1;
+    /** Opens since the table was last swept. */
+    private int mHyperlinkOpensSinceSweep = 0;
+
+    /** The URI of an OSC 8 hyperlink id a cell carries, or null. */
+    public String getHyperlinkUri(int id) {
+        return id > 0 && id <= MAX_HYPERLINKS ? mHyperlinkUris[id] : null;
+    }
 
     private byte mUtf8ToFollow, mUtf8Index;
     private final byte[] mUtf8InputBuffer = new byte[4];
@@ -2847,6 +2868,9 @@ public final class TerminalEmulator {
                     }
                 }
                 break;
+            case 8: // hyperlink. "8;params;URI" opens one over the cells printed until "8;;" closes it.
+                setHyperlink(textParameter);
+                break;
             case 52: // Manipulate Selection Data. Skip the optional first selection parameter(s).
                 int startIndex = textParameter.indexOf(";") + 1;
                 try {
@@ -3012,6 +3036,68 @@ public final class TerminalEmulator {
         }
 
         finishSequence();
+    }
+
+    /**
+     * OSC 8. {@code parameters} is everything after "8;": "params;URI", where params is a ':'-separated list
+     * of key=value pairs and only id= means anything. An empty URI closes the link. A sequence with no URI field at all
+     * is malformed and also closes it, so a link never runs on past a sequence meant to end it.
+     */
+    private void setHyperlink(String parameters) {
+        int split = parameters.indexOf(';');
+        String uri = split < 0 ? "" : parameters.substring(split + 1);
+        if (uri.isEmpty()) {
+            mHyperlink = 0;
+            return;
+        }
+        String id = null;
+        for (String parameter : parameters.substring(0, split).split(":", -1))
+            if (parameter.startsWith("id=") && parameter.length() > 3) id = parameter.substring(3);
+        String key = id == null ? null : id + '\u0000' + uri;
+        Integer existing = key == null ? null : mHyperlinkIds.get(key);
+        mHyperlink = existing != null ? existing : allocateHyperlink(key, uri);
+    }
+
+    private int allocateHyperlink(String key, String uri) {
+        mHyperlinkOpensSinceSweep++;
+        int id = freeHyperlink();
+        // A sweep reads every cell of both buffers, so a table still full after one waits a quarter of its size in
+        // opens before the next: bounded work however many links are live.
+        if (id == 0 && mHyperlinkOpensSinceSweep >= MAX_HYPERLINKS / 4) {
+            mHyperlinkOpensSinceSweep = 0;
+            sweepHyperlinks();
+            id = freeHyperlink();
+        }
+        if (id == 0) return 0;
+        mHyperlinkUris[id] = uri;
+        mHyperlinkKeys[id] = key;
+        if (key != null) mHyperlinkIds.put(key, id);
+        mNextHyperlink = id % MAX_HYPERLINKS + 1;
+        return id;
+    }
+
+    private int freeHyperlink() {
+        for (int step = 0; step < MAX_HYPERLINKS; step++) {
+            int id = (mNextHyperlink - 1 + step) % MAX_HYPERLINKS + 1;
+            if (mHyperlinkUris[id] == null) return id;
+        }
+        return 0;
+    }
+
+    /** Frees every id no cell of either buffer holds, and that is not the link being printed now. */
+    private void sweepHyperlinks() {
+        boolean[] live = new boolean[MAX_HYPERLINKS + 1];
+        live[mHyperlink] = true;
+        for (TerminalBuffer buffer : new TerminalBuffer[]{mMainBuffer, mAltBuffer})
+            for (TerminalRow row : buffer.mLines)
+                if (row != null && row.mLinks != null)
+                    for (int link : row.mLinks) live[link] = true;
+        for (int id = 1; id <= MAX_HYPERLINKS; id++) {
+            if (live[id] || mHyperlinkUris[id] == null) continue;
+            if (mHyperlinkKeys[id] != null) mHyperlinkIds.remove(mHyperlinkKeys[id]);
+            mHyperlinkUris[id] = null;
+            mHyperlinkKeys[id] = null;
+        }
     }
 
     private void blockClear(int sx, int sy, int w) {
@@ -3425,7 +3511,7 @@ public final class TerminalEmulator {
         // so was mCursorCol changed after the offsetDueToCombiningChar conditional by another thread?
         // TODO: Check if there are thread synchronization issues with mCursorCol and mCursorRow, possibly causing others bugs too.
         if (column < 0) column = 0;
-        mScreen.setChar(column, mCursorRow, codePoint, getStyle());
+        mScreen.setChar(column, mCursorRow, codePoint, getStyle(), mHyperlink);
 
         if (autoWrap && displayWidth > 0)
             mAboutToAutoWrap = (mCursorCol == mRightMargin - displayWidth);
@@ -3484,6 +3570,7 @@ public final class TerminalEmulator {
 
     /** Reset terminal state so user can interact with it regardless of present state. */
     public void reset() {
+        mHyperlink = 0;
         setCursorStyle();
         mArgIndex = 0;
         mContinueSequence = false;
