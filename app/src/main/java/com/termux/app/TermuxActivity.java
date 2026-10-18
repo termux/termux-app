@@ -175,6 +175,12 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private float mTerminalToolbarDefaultHeight;
 
+    /**
+     * The terminal foreground color used for the terminal toolbar text, or 0 if not set yet by
+     * {@link #updateTerminalToolbarTextColor(int)}.
+     */
+    private int mTerminalToolbarTextColor;
+
 
     private static final int CONTEXT_MENU_SELECT_URL_ID = 0;
     private static final int CONTEXT_MENU_SHARE_TRANSCRIPT_ID = 1;
@@ -844,6 +850,29 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     public float getTerminalToolbarDefaultHeight() {
         return mTerminalToolbarDefaultHeight;
+    }
+
+    public int getTerminalToolbarTextColor() {
+        return mTerminalToolbarTextColor;
+    }
+
+    /**
+     * Use the terminal foreground color for the extra keys and text input of the terminal toolbar,
+     * so that they stay readable with light terminal color schemes. The toolbar background is
+     * transparent and shows the terminal background color set on the window decor view.
+     */
+    public void updateTerminalToolbarTextColor(int textColor) {
+        if (mTerminalToolbarTextColor == textColor) return;
+        mTerminalToolbarTextColor = textColor;
+
+        if (mExtraKeysView != null && mTermuxTerminalExtraKeys != null) {
+            mExtraKeysView.setButtonTextColor(textColor);
+            mExtraKeysView.reload(mTermuxTerminalExtraKeys.getExtraKeysInfo(), mTerminalToolbarDefaultHeight);
+        }
+
+        EditText textInput = findViewById(R.id.terminal_toolbar_text_input);
+        if (textInput != null)
+            textInput.setTextColor(textColor);
     }
 
     public boolean isTerminalViewSelected() {
