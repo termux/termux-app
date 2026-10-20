@@ -212,7 +212,9 @@ public final class KeyHandler {
                 return transformForModifiers("\033[24", keyMode, '~');
 
             case KEYCODE_SYSRQ:
-                return "\033[32~"; // Sys Request / Print
+                // Do not intercept Print Screen so the OS can take a screenshot.
+                // Previously mapped to "\033[32~" (Shift+F6), which broke system function.
+                return null;
             // Is this Scroll lock? case Cancel: return "\033[33~";
             case KEYCODE_BREAK:
                 return "\033[34~"; // Pause/Break
