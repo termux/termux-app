@@ -573,6 +573,9 @@ public abstract class TermuxSharedProperties {
 
 
 
+    public boolean isTerminalViewScalingDisabled() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_DISABLE_TERMINAL_VIEW_SCALING, true);
+    }
 
     public boolean shouldAllowExternalApps() {
         return (boolean) getInternalPropertyValue(TermuxConstants.PROP_ALLOW_EXTERNAL_APPS, true);
