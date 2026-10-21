@@ -1,6 +1,7 @@
 package com.termux.shared.shell.command.runner.app;
 
 import android.content.Context;
+import android.os.Handler;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
@@ -246,6 +247,37 @@ public final class AppShell {
     }
 
     /**
+     * Terminate this {@link AppShell} by sending a {@link OsConstants#SIGTERM} to its {@link #mProcess}
+     * if it is still executing. After {@code sigkillDelayOnStop} milliseconds {@link OsConstants#SIGTERM} is
+     * signalled.
+     *
+     * @param context The {@link Context} for operations.
+     * @param sigkillDelayOnStop The delay after which a SIGKILL is send.
+     * @param processResult If set to {@code true}, then the {@link #processAppShellResult(AppShell, ExecutionCommand)}
+     *                      will be called to process the failure.
+     */
+    public void terminateIfExecuting(@NonNull final Context context, long sigkillDelayOnStop, boolean processResult) {
+        if (sigkillDelayOnStop == 0) {
+            killIfExecuting(context, processResult);
+            return;
+        }
+
+        // If execution command has already finished executing, then no need to process results or sending any signals
+        if (mExecutionCommand.hasExecuted()) {
+            Logger.logDebug(LOG_TAG, "Ignoring sending SIGTERM or SIGKILL to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell since it has already finished executing");
+            return;
+        }
+
+        Logger.logDebug(LOG_TAG, "Send SIGTERM to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell");
+
+        if (mExecutionCommand.isExecuting()) {
+            term();
+        }
+
+        (new Handler()).postDelayed(() -> killIfExecuting(context, processResult), sigkillDelayOnStop);
+    }
+
+    /**
      * Kill this {@link AppShell} by sending a {@link OsConstants#SIGILL} to its {@link #mProcess}
      * if its still executing.
      *
@@ -271,6 +303,20 @@ public final class AppShell {
 
         if (mExecutionCommand.isExecuting()) {
             kill();
+        }
+    }
+
+
+    /**
+     * Terminate this {@link AppShell} by sending a {@link OsConstants#SIGTERM} to its {@link #mProcess}.
+     */
+    public void term() {
+        int pid = ShellUtils.getPid(mProcess);
+        try {
+            // Send SIGTERM to process
+            Os.kill(pid, OsConstants.SIGTERM);
+        } catch (ErrnoException e) {
+            Logger.logWarn(LOG_TAG, "Failed to send SIGTERM to \"" + mExecutionCommand.getCommandIdAndLabelLogString() + "\" AppShell with pid " + pid + ": " + e.getMessage());
         }
     }
 
