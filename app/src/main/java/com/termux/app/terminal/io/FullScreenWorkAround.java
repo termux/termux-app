@@ -1,8 +1,12 @@
 package com.termux.app.terminal.io;
 
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+
+import androidx.core.view.WindowInsetsCompat;
 
 import com.termux.app.TermuxActivity;
 
@@ -31,7 +35,24 @@ public class FullScreenWorkAround {
         mChildOfContent = content.getChildAt(0);
         mViewGroupLayoutParams = mChildOfContent.getLayoutParams();
         mNavBarHeight = activity.getNavBarHeight();
-        mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            mChildOfContent.setOnApplyWindowInsetsListener((v, insets) -> {
+                WindowInsetsCompat insetsCompat = WindowInsetsCompat.toWindowInsetsCompat(insets);
+                int imeHeight = insetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+                int navBarHeight = insetsCompat.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+
+                if (imeHeight > 0) {
+                    mViewGroupLayoutParams.height = v.getRootView().getHeight() - imeHeight + navBarHeight;
+                } else {
+                    mViewGroupLayoutParams.height = v.getRootView().getHeight();
+                }
+                v.setLayoutParams(mViewGroupLayoutParams);
+                return insets;
+            });
+        } else {
+            mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this::possiblyResizeChildOfContent);
+        }
     }
 
     private void possiblyResizeChildOfContent() {
