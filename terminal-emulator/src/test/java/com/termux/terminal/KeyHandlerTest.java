@@ -198,6 +198,7 @@ public class KeyHandlerTest extends TestCase {
         assertKeysEquals("\033[A", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_8, 0, false, false));
         assertKeysEquals("\033[5~", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_9, 0, false, false));
         assertKeysEquals("\033[3~", KeyHandler.getCode(KeyEvent.KEYCODE_NUMPAD_DOT, 0, false, false));
+        assertNull(KeyHandler.getCode(KeyEvent.KEYCODE_SYSRQ, 0, false, false));
 	}
 
 }
