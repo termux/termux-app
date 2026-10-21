@@ -26,7 +26,8 @@ public class ThemeUtils {
 
     /** Will return true if mode is set to {@link NightMode#TRUE}, otherwise will return true if
      * mode is set to {@link NightMode#SYSTEM} and night mode is enabled by system. */
-    public static boolean shouldEnableDarkTheme(Context context, String name) {
+    public static boolean shouldEnableDarkTheme(Context context) {
+        String name = NightMode.getAppNightMode().getName();
         if (NightMode.TRUE.getName().equals(name))
             return true;
         else if (NightMode.FALSE.getName().equals(name))

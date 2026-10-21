@@ -69,11 +69,29 @@ public final class TerminalColorScheme {
         System.arraycopy(DEFAULT_COLORSCHEME, 0, mDefaultColors, 0, TextStyle.NUM_INDEXED_COLORS);
     }
 
-    public void updateWith(Properties props) {
+    void logEx(Exception e) {
+        throw new IllegalArgumentException(e.toString()+e.getMessage());
+    }
+
+    public void updateWith(Properties props, boolean isDay) {
         reset();
         boolean cursorPropExists = false;
         for (Map.Entry<Object, Object> entries : props.entrySet()) {
             String key = (String) entries.getKey();
+
+try {
+            if (key.contains(".")) {
+                String prefix = key.split("\\.")[0];
+            boolean useDay = isDay && prefix.equals("day");
+            boolean useNight = !isDay && prefix.equals("night");
+
+            if (useDay || useNight)
+                key = key.split("\\.")[1];
+            else
+                continue;
+            }
+} catch (Exception e) { logEx(e); }
+
             String value = (String) entries.getValue();
             int colorIndex;
 
