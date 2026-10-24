@@ -110,6 +110,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE, value, false);
     }
 
+    public boolean isToolbarEnabledOnlyIfNoHardware() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_TOOLBAR_ENABLED_ONLY_IF_NO_HARDWARE, TERMUX_APP.DEFAULT_VALUE_KEY_TOOLBAR_ENABLED_ONLY_IF_NO_HARDWARE);
+    }
+
+    public void setToolbarEnabledOnlyIfNoHardware(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TOOLBAR_ENABLED_ONLY_IF_NO_HARDWARE, value, false);
+    }
+
 
 
     public boolean shouldKeepScreenOn() {
@@ -250,7 +258,7 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
     public boolean areCrashReportNotificationsEnabled(boolean readFromFile) {
         if (readFromFile)
             return SharedPreferenceUtils.getBoolean(mMultiProcessSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED);
-       else
+        else
             return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, TERMUX_APP.DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED);
     }
 

@@ -188,6 +188,13 @@
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
                     no hardware keyboard is connected.</string>
 
+                <!-- Toolbar Only If No Hardware-->
+                <string name="termux_toolbar_enabled_only_if_no_hardware_title">Toolbar Only If No Hardware</string>
+                <string name="termux_toolbar_enabled_only_if_no_hardware_off">Toolbar will be enabled even if
+                                            hardware keyboard is connected. (Default)</string>
+                <string name="termux_toolbar_enabled_only_if_no_hardware_on">Toolbar will be enabled only if
+                                            no hardware keyboard is connected.</string>
+
 
         <!-- Terminal View Preferences -->
         <string name="termux_terminal_view_preferences_title">Terminal View</string>

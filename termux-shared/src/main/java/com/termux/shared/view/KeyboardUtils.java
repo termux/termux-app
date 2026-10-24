@@ -195,4 +195,21 @@ public class KeyboardUtils {
         }
     }
 
+    /**
+     * Check if toolbar should be disabled based on user configuration.
+     *
+     * @param context The Context for operations.
+     * @return Returns {@code true} if device has toolbar should be disabled, otherwise {@code false}.
+     */
+    public static boolean shouldToolbarBeDisabled(final Context context, final boolean isToolbarEnabledOnlyIfNoHardware) {
+        // If toolbar is disabled by user only if hardware keyboard is connected
+        if(isToolbarEnabledOnlyIfNoHardware) {
+            boolean isHardKeyboardConnected = KeyboardUtils.isHardKeyboardConnected(context);
+            Logger.logVerbose(LOG_TAG, "Hardware keyboard connected=" + isHardKeyboardConnected);
+            return isHardKeyboardConnected;
+        } else {
+            return false;
+        }
+    }
+
 }
