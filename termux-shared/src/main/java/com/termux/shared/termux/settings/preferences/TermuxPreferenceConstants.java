@@ -117,6 +117,13 @@ public final class TermuxPreferenceConstants {
         public static final String KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = "soft_keyboard_enabled_only_if_no_hardware";
         public static final boolean DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED_ONLY_IF_NO_HARDWARE = false;
 
+        /**
+         * Defines the key for whether the toolbar will be enabled only if no hardware keyboard
+         * attached, for cases where users want to use a hardware keyboard instead.
+         */
+        public static final String KEY_TOOLBAR_ENABLED_ONLY_IF_NO_HARDWARE = "toolbar_enabled_only_if_no_hardware";
+        public static final boolean DEFAULT_VALUE_KEY_TOOLBAR_ENABLED_ONLY_IF_NO_HARDWARE = false;
+
 
         /**
          * Defines the key for whether to always keep screen on.

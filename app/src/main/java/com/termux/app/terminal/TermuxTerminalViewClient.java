@@ -112,6 +112,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public void onResume() {
         // Show the soft keyboard if required
         setSoftKeyboardState(true, mActivity.isActivityRecreated());
+        setToolbarState();
 
         mTerminalCursorBlinkerStateAlreadySet = false;
 
@@ -146,6 +147,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public void onReloadActivityStyling() {
         // Show the soft keyboard if required
         setSoftKeyboardState(false, true);
+        setToolbarState();
 
         // Start terminal cursor blinking if enabled
         setTerminalCursorBlinkerState(true);
@@ -447,9 +449,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
                 // Writing mode:
                 case 'q':
                 case 'k':
-                    mActivity.toggleTerminalToolbar();
-                    mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes termux/termux-app#1420
-                    break;
+                    if (!(mActivity.getPreferences().isToolbarEnabledOnlyIfNoHardware() && KeyboardUtils.isHardKeyboardConnected(mActivity))) {
+                        mActivity.toggleTerminalToolbar();
+                        mVirtualFnKeyDown=false; // force disable fn key down to restore keyboard input into terminal view, fixes termux/termux-app#1420
+                        break;
+                    }
             }
 
             if (resultingKeyCode != -1) {
@@ -642,6 +646,14 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             Logger.logVerbose(LOG_TAG, "Requesting TerminalView focus and showing soft keyboard");
             mActivity.getTerminalView().requestFocus();
             mActivity.getTerminalView().postDelayed(getShowSoftKeyboardRunnable(), 300);
+        }
+    }
+
+    public void setToolbarState() {
+        if (KeyboardUtils.shouldToolbarBeDisabled(mActivity, mActivity.getPreferences().isToolbarEnabledOnlyIfNoHardware())) {
+            mActivity.setShowTerminalToolbar(false);
+        } else {
+            mActivity.setShowTerminalToolbar(true);
         }
     }
 

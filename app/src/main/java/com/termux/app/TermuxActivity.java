@@ -551,6 +551,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
     }
 
+    public void setShowTerminalToolbar(final boolean show) {
+        final ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
+        if (terminalToolbarViewPager == null) return;
+
+        terminalToolbarViewPager.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (show && isTerminalToolbarTextInputViewSelected()) {
+            // Focus the text input view if just revealed.
+            findViewById(R.id.terminal_toolbar_text_input).requestFocus();
+        }
+    }
+
     private void saveTerminalToolbarTextInput(Bundle savedInstanceState) {
         if (savedInstanceState == null) return;
 
