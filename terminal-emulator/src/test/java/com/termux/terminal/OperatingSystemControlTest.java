@@ -142,6 +142,38 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		enterString("\033]52;c;" + Base64.encodeToString("Hello, world".getBytes(), 0) + "\007");
 	}
 
+	public void testOsc52SmallPayloadIsConsumed() {
+		// Small OSC 52 payload (reporter's working case in
+		// https://github.com/termux/termux-app/issues/5324) must be consumed
+		// as OSC and must not leak onto the screen.
+		byte[] payload = new byte[6000];
+		for (int i = 0; i < payload.length; i++) payload[i] = 'X';
+		String base64 = java.util.Base64.getEncoder().encodeToString(payload);
+
+		withTerminalSized(10, 5);
+		enterString("\033]52;c;" + base64 + "\007");
+		assertLinesAre("          ", "          ", "          ", "          ", "          ");
+	}
+
+	public void testOsc52LargePayloadIsNotTruncated() {
+		// OSC 52 payload larger than the default max terminal control args
+		// length (16384) must be collected in full instead of being truncated
+		// and leaked onto the screen. See
+		// https://github.com/termux/termux-app/issues/5324.
+		// 20000 bytes -> 26668 base64 chars: over the 16384 default, under
+		// the ~100KB limit set for OSC 52. Uses java.util.Base64 since
+		// android.util.Base64 is not available in unit tests.
+		byte[] payload = new byte[20000];
+		for (int i = 0; i < payload.length; i++) payload[i] = 'X';
+		String base64 = java.util.Base64.getEncoder().encodeToString(payload);
+
+		withTerminalSized(10, 5);
+		enterString("\033]52;c;" + base64 + "\007");
+		// The whole sequence must be consumed as OSC: none of the payload
+		// may leak onto the screen.
+		assertLinesAre("          ", "          ", "          ", "          ", "          ");
+	}
+
 	public void testResettingTerminalResetsColor() throws Exception {
 		// "OSC 4; $INDEX; $COLORSPEC BEL" => Change color $INDEX to the color specified by $COLORSPEC.
 		withTerminalSized(4, 4).enterString("\033]4;5;#00FF00\007");

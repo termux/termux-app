@@ -2678,7 +2678,13 @@ public final class TerminalEmulator {
      */
     void setOscTypeVariables() {
         if (mOscType >= 0) return;
-        if (mTerminalControlArgs.indexOf(":") < 0) return;
+        // Wait until the first `;` has been received so that the initial `$value`
+        // can be parsed from the initial `$value;...` string below. Waiting for a
+        // `:` instead left OSC 52 without its max length, since an OSC 52 sequence
+        // (`52;c;<base64>`) never contains a `:`, so its payload was truncated at
+        // the default max length instead of the ~100KB limit set for it below.
+        // See https://github.com/termux/termux-app/issues/5324.
+        if (mTerminalControlArgs.indexOf(";") < 0) return;
 
         int value = -1;
         int argsLength = mTerminalControlArgs.length();
