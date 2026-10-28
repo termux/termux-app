@@ -39,11 +39,11 @@
         <item name="termuxActivityDrawerBackground">@color/white</item>
         <item name="termuxActivityDrawerImageTint">@color/black</item>
 
-        <!-- Extra keys colors. -->
-        <item name="extraKeysButtonTextColor">@color/white</item>
-        <item name="extraKeysButtonActiveTextColor">@color/red_400</item>
-        <item name="extraKeysButtonBackgroundColor">@color/black</item>
-        <item name="extraKeysButtonActiveBackgroundColor">@color/grey_500</item>
+        <!-- Extra keys colors (light): dark-on-light to match light terminal. -->
+        <item name="extraKeysButtonTextColor">@color/black</item>
+        <item name="extraKeysButtonActiveTextColor">@color/red_800</item>
+        <item name="extraKeysButtonBackgroundColor">@color/white</item>
+        <item name="extraKeysButtonActiveBackgroundColor">@color/grey_400</item>
     </style>
 
 </resources>
