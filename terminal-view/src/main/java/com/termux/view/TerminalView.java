@@ -138,6 +138,7 @@ public final class TerminalView extends View {
         mGestureRecognizer = new GestureAndScaleRecognizer(context, new GestureAndScaleRecognizer.Listener() {
 
             boolean scrolledWithFinger;
+            boolean scrolledHorizontally;
 
             @Override
             public boolean onUp(MotionEvent event) {
@@ -150,6 +151,7 @@ public final class TerminalView extends View {
                     return true;
                 }
                 scrolledWithFinger = false;
+                scrolledHorizontally = false;
                 return false;
             }
 
@@ -176,11 +178,25 @@ public final class TerminalView extends View {
                     // which we do not do for touch input, only mouse in onTouchEvent().
                     sendMouseEventCode(e, TerminalEmulator.MOUSE_LEFT_BUTTON_MOVED, true);
                 } else {
+                    if (!scrolledWithFinger) {
+                        // Lock the axis at the first scroll, after GestureDetector's touch slop.
+                        scrolledHorizontally = mEmulator.isMouseTrackingActive() && !isSelectingText()
+                            && Math.abs(distanceX) > Math.abs(distanceY);
+                    }
                     scrolledWithFinger = true;
-                    distanceY += mScrollRemainder;
-                    int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
-                    mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
-                    doScroll(e, deltaRows);
+                    if (scrolledHorizontally && !mEmulator.isMouseTrackingActive()) {
+                        scrolledHorizontally = false;
+                        mScrollRemainder = 0.0f;
+                    }
+                    float cellSize = scrolledHorizontally ? mRenderer.mFontWidth : mRenderer.mFontLineSpacing;
+                    float distance = (scrolledHorizontally ? distanceX : distanceY) + mScrollRemainder;
+                    int delta = (int) (distance / cellSize);
+                    mScrollRemainder = distance - delta * cellSize;
+                    if (scrolledHorizontally) {
+                        doMouseScroll(e, delta, TerminalEmulator.MOUSE_WHEELLEFT_BUTTON, TerminalEmulator.MOUSE_WHEELRIGHT_BUTTON);
+                    } else {
+                        doScroll(e, delta);
+                    }
                 }
                 return true;
             }
@@ -195,7 +211,7 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onFling(final MotionEvent e2, float velocityX, float velocityY) {
-                if (mEmulator == null) return true;
+                if (mEmulator == null || scrolledHorizontally) return true;
                 // Do not start scrolling until last fling has been taken care of:
                 if (!mScroller.isFinished()) return true;
 
@@ -231,6 +247,10 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onDown(float x, float y) {
+                // Also reset after a cancelled gesture or a long press, which skips onUp().
+                mScrollRemainder = 0.0f;
+                scrolledWithFinger = false;
+                scrolledHorizontally = false;
                 // Why is true not returned here?
                 // https://developer.android.com/training/gestures/detector.html#detect-a-subset-of-supported-gestures
                 // Although setting this to true still does not solve the following errors when long pressing in terminal view text area
@@ -558,7 +578,7 @@ public final class TerminalView extends View {
         int[] columnAndRow = getColumnAndRow(e, false);
         int x = columnAndRow[0] + 1;
         int y = columnAndRow[1] + 1;
-        if (pressed && (button == TerminalEmulator.MOUSE_WHEELDOWN_BUTTON || button == TerminalEmulator.MOUSE_WHEELUP_BUTTON)) {
+        if (pressed && button >= TerminalEmulator.MOUSE_WHEELUP_BUTTON && button <= TerminalEmulator.MOUSE_WHEELRIGHT_BUTTON) {
             if (mMouseStartDownTime == e.getDownTime()) {
                 x = mMouseScrollStartX;
                 y = mMouseScrollStartY;
@@ -573,12 +593,14 @@ public final class TerminalView extends View {
 
     /** Perform a scroll, either from dragging the screen or by scrolling a mouse wheel. */
     void doScroll(MotionEvent event, int rowsDown) {
+        if (mEmulator.isMouseTrackingActive()) {
+            doMouseScroll(event, rowsDown, TerminalEmulator.MOUSE_WHEELUP_BUTTON, TerminalEmulator.MOUSE_WHEELDOWN_BUTTON);
+            return;
+        }
         boolean up = rowsDown < 0;
         int amount = Math.abs(rowsDown);
         for (int i = 0; i < amount; i++) {
-            if (mEmulator.isMouseTrackingActive()) {
-                sendMouseEventCode(event, up ? TerminalEmulator.MOUSE_WHEELUP_BUTTON : TerminalEmulator.MOUSE_WHEELDOWN_BUTTON, true);
-            } else if (mEmulator.isAlternateBufferActive()) {
+            if (mEmulator.isAlternateBufferActive()) {
                 // Send up and down key events for scrolling, which is what some terminals do to make scroll work in
                 // e.g. less, which shifts to the alt screen without mouse handling.
                 handleKeyCode(up ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN, 0);
@@ -586,6 +608,14 @@ public final class TerminalView extends View {
                 setTopRow(Math.min(0, Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1))));
                 if (!awakenScrollBars()) invalidate();
             }
+        }
+    }
+
+    /** Both wheel axes use the same encoder and gesture-origin cell. */
+    void doMouseScroll(MotionEvent event, int steps, int negativeButton, int positiveButton) {
+        int button = steps < 0 ? negativeButton : positiveButton;
+        for (int i = 0; i < Math.abs(steps); i++) {
+            sendMouseEventCode(event, button, true);
         }
     }
 
