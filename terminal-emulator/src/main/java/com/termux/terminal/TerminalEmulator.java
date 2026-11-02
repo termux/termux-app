@@ -39,6 +39,8 @@ public final class TerminalEmulator {
     public static final int MOUSE_LEFT_BUTTON_MOVED = 32;
     public static final int MOUSE_WHEELUP_BUTTON = 64;
     public static final int MOUSE_WHEELDOWN_BUTTON = 65;
+    public static final int MOUSE_WHEELLEFT_BUTTON = 66;
+    public static final int MOUSE_WHEELRIGHT_BUTTON = 67;
 
     /** Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
     public static final int UNICODE_REPLACEMENT_CHAR = 0xFFFD;
