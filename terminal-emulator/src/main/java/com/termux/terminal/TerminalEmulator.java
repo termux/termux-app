@@ -34,6 +34,7 @@ public final class TerminalEmulator {
     private static final boolean LOG_ESCAPE_SEQUENCES = false;
 
     public static final int MOUSE_LEFT_BUTTON = 0;
+    public static final int MOUSE_RIGHT_BUTTON = 2;
 
     /** Mouse moving while having left mouse button pressed. */
     public static final int MOUSE_LEFT_BUTTON_MOVED = 32;

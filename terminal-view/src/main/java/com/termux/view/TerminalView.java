@@ -249,6 +249,12 @@ public final class TerminalView extends View {
             @Override
             public void onLongPress(MotionEvent event) {
                 if (mGestureRecognizer.isInProgress()) return;
+                if (mEmulator != null && mEmulator.isMouseTrackingActive()
+                    && !event.isFromSource(InputDevice.SOURCE_MOUSE) && !isSelectingText()) {
+                    sendMouseEventCode(event, TerminalEmulator.MOUSE_RIGHT_BUTTON, true);
+                    sendMouseEventCode(event, TerminalEmulator.MOUSE_RIGHT_BUTTON, false);
+                    return;
+                }
                 if (mClient.onLongPress(event)) return;
                 if (!isSelectingText()) {
                     performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
