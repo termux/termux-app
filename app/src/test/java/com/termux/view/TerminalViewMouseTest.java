@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.Shadows;
 
@@ -29,6 +30,7 @@ import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, manifest = Config.NONE, application = Application.class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @LooperMode(LooperMode.Mode.PAUSED)
 public class TerminalViewMouseTest {
     private final RecordingOutput output = new RecordingOutput();
@@ -40,6 +42,8 @@ public class TerminalViewMouseTest {
         view = new TerminalView(RuntimeEnvironment.getApplication(), null);
         view.setTerminalViewClient(client);
         view.setTextSize(16);
+        assertTrue("Gesture coordinates require real font width", view.mRenderer.mFontWidth > 0);
+        assertTrue("Gesture coordinates require real line spacing", view.mRenderer.mFontLineSpacing > 0);
         view.mEmulator = new TerminalEmulator(output, 80, 24, 8, 16, null,
             new TermuxTerminalSessionClientBase());
     }
