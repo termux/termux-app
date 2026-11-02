@@ -207,6 +207,11 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     }
 
     @Override
+    public boolean shouldSendRightClickOnLongPress() {
+        return mActivity.getProperties().shouldSendRightClickOnLongPress();
+    }
+
+    @Override
     public boolean shouldBackButtonBeMappedToEscape() {
         return mActivity.getProperties().isBackKeyTheEscapeKey();
     }
