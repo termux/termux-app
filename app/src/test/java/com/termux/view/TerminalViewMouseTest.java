@@ -1,6 +1,8 @@
 package com.termux.view;
 
+import android.app.Activity;
 import android.app.Application;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -10,29 +12,37 @@ import com.termux.shared.termux.terminal.TermuxTerminalViewClientBase;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalOutput;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.LooperMode;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, manifest = Config.NONE, application = Application.class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@LooperMode(LooperMode.Mode.PAUSED)
 public class TerminalViewMouseTest {
     private final RecordingOutput output = new RecordingOutput();
     private TerminalView view;
+    private ActivityController<Activity> activity;
 
     @Before
     public void setUp() {
-        view = new TerminalView(RuntimeEnvironment.getApplication(), null);
+        activity = Robolectric.buildActivity(Activity.class).setup().visible();
+        view = new TerminalView(activity.get(), null);
         view.setTerminalViewClient(new TermuxTerminalViewClientBase());
         view.setTextSize(16);
         assertTrue("Gesture coordinates require real font width", view.mRenderer.mFontWidth > 0);
@@ -40,6 +50,13 @@ public class TerminalViewMouseTest {
         view.mEmulator = new TerminalEmulator(output, 80, 24, 8, 16, null,
             new TermuxTerminalSessionClientBase());
         view.mGestureRecognizer.mListener.onDown(0, 0);
+        activity.get().setContentView(view);
+    }
+
+    @After
+    public void tearDown() {
+        view.mScroller.abortAnimation();
+        activity.pause().stop().destroy();
     }
 
     private void input(String text) {
@@ -115,6 +132,56 @@ public class TerminalViewMouseTest {
         event.recycle();
         assertTrue(view.mScroller.isFinished());
         assertEquals("\033[<67;3;4M\033[<67;3;4M", output.text());
+    }
+
+    private void assertTrackedVerticalReleaseStops(int mode) {
+        input("\033[?" + mode + "h\033[?1006h");
+        scroll(0, 2);
+        String actualRows = "\033[<65;3;4M\033[<65;3;4M";
+        assertEquals(actualRows, output.text());
+        MotionEvent up = event(1, MotionEvent.ACTION_UP, 2.5f, 3.5f, InputDevice.SOURCE_TOUCHSCREEN);
+        view.mGestureRecognizer.mListener.onFling(up, 0, -2000);
+        up.recycle();
+        assertTrue(view.mScroller.isFinished());
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(1, TimeUnit.SECONDS);
+        assertEquals(actualRows, output.text());
+    }
+
+    @Test
+    public void tracked1000VerticalReleaseDoesNotAddWheelRows() { assertTrackedVerticalReleaseStops(1000); }
+
+    @Test
+    public void tracked1002VerticalReleaseDoesNotAddWheelRows() { assertTrackedVerticalReleaseStops(1002); }
+
+    private void prepareScrollback() {
+        for (int i = 0; i < 60; i++) input("row\r\n");
+        view.onScreenUpdated();
+        assertTrue(view.mEmulator.getScreen().getActiveTranscriptRows() > 0);
+    }
+
+    @Test
+    public void trackingOffScrollbackStillStartsFling() {
+        prepareScrollback();
+        MotionEvent up = event(1, MotionEvent.ACTION_UP, 2.5f, 3.5f, InputDevice.SOURCE_TOUCHSCREEN);
+        view.mGestureRecognizer.mListener.onFling(up, 0, 2000);
+        up.recycle();
+        try {
+            assertFalse(view.mScroller.isFinished());
+        } finally {
+            view.mScroller.abortAnimation();
+        }
+    }
+
+    @Test
+    public void enablingTrackingAbortsAnUntrackedFlingWithoutWheelReports() {
+        prepareScrollback();
+        MotionEvent up = event(1, MotionEvent.ACTION_UP, 2.5f, 3.5f, InputDevice.SOURCE_TOUCHSCREEN);
+        view.mGestureRecognizer.mListener.onFling(up, 0, 2000);
+        up.recycle();
+        input("\033[?1000h\033[?1006h");
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(1, TimeUnit.MILLISECONDS);
+        assertTrue(view.mScroller.isFinished());
+        assertEquals("", output.text());
     }
 
     @Test

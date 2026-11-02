@@ -211,33 +211,26 @@ public final class TerminalView extends View {
 
             @Override
             public boolean onFling(final MotionEvent e2, float velocityX, float velocityY) {
-                if (mEmulator == null || scrolledHorizontally) return true;
+                // Tracked applications already received every gesture row; do not invent wheel
+                // reports after release. Preserve kinetic scrolling when tracking is off.
+                if (mEmulator == null || scrolledHorizontally || mEmulator.isMouseTrackingActive()) return true;
                 // Do not start scrolling until last fling has been taken care of:
                 if (!mScroller.isFinished()) return true;
 
-                final boolean mouseTrackingAtStartOfFling = mEmulator.isMouseTrackingActive();
                 float SCALE = 0.25f;
-                if (mouseTrackingAtStartOfFling) {
-                    mScroller.fling(0, 0, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.mRows / 2, mEmulator.mRows / 2);
-                } else {
-                    mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), 0);
-                }
+                mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), 0);
 
                 post(new Runnable() {
-                    private int mLastY = 0;
-
                     @Override
                     public void run() {
-                        if (mouseTrackingAtStartOfFling != mEmulator.isMouseTrackingActive()) {
+                        if (mEmulator == null || mEmulator.isMouseTrackingActive()) {
                             mScroller.abortAnimation();
                             return;
                         }
                         if (mScroller.isFinished()) return;
                         boolean more = mScroller.computeScrollOffset();
                         int newY = mScroller.getCurrY();
-                        int diff = mouseTrackingAtStartOfFling ? (newY - mLastY) : (newY - mTopRow);
-                        doScroll(e2, diff);
-                        mLastY = newY;
+                        doScroll(e2, newY - mTopRow);
                         if (more) post(this);
                     }
                 });
