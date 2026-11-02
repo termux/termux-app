@@ -2,12 +2,14 @@ package com.termux.view;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.res.XmlResourceParser;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import com.termux.R;
 import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
 import com.termux.shared.termux.settings.properties.TermuxSharedProperties;
 import com.termux.shared.termux.terminal.TermuxTerminalSessionClientBase;
@@ -19,6 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xmlpull.v1.XmlPullParser;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
@@ -45,9 +48,19 @@ public class TerminalViewMouseTest {
     private ActivityController<Activity> activity;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         activity = Robolectric.buildActivity(Activity.class).setup().visible();
-        view = new TerminalView(activity.get(), null);
+        try (XmlResourceParser layout = activity.get().getResources().getLayout(R.layout.activity_termux)) {
+            while (layout.next() != XmlPullParser.END_DOCUMENT) {
+                if (layout.getEventType() == XmlPullParser.START_TAG
+                    && layout.getIdAttributeResourceValue(0) == R.id.terminal_view) {
+                    view = new TerminalView(activity.get(), layout);
+                    break;
+                }
+            }
+        }
+        assertNotNull("The app layout must declare the terminal view", view);
+        assertTrue("Native selection requires the app's touch focusability", view.isFocusableInTouchMode());
         activity.get().setContentView(view);
         view.setTerminalViewClient(client);
         view.setTextSize(16);
