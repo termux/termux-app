@@ -28,6 +28,9 @@ public interface TerminalViewClient {
      */
     void onSingleTapUp(MotionEvent e);
 
+    /** Request the client's soft keyboard, subject to its visibility and keyboard preferences. */
+    default void onRequestSoftKeyboard() { }
+
     boolean shouldBackButtonBeMappedToEscape();
 
     boolean shouldEnforceCharBasedInput();

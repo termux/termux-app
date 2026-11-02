@@ -199,11 +199,17 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         }
 
         if (!term.isMouseTrackingActive() && !e.isFromSource(InputDevice.SOURCE_MOUSE)) {
-            if (!KeyboardUtils.areDisableSoftKeyboardFlagsSet(mActivity))
-                KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
-            else
-                Logger.logVerbose(LOG_TAG, "Not showing soft keyboard onSingleTapUp since its disabled");
+            onRequestSoftKeyboard();
         }
+    }
+
+    @Override
+    public void onRequestSoftKeyboard() {
+        if (!mActivity.isVisible()) return;
+        if (!KeyboardUtils.areDisableSoftKeyboardFlagsSet(mActivity))
+            KeyboardUtils.showSoftKeyboard(mActivity, mActivity.getTerminalView());
+        else
+            Logger.logVerbose(LOG_TAG, "Not showing soft keyboard since its disabled");
     }
 
     @Override
