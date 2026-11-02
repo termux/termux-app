@@ -46,6 +46,9 @@ public interface TerminalViewClient {
 
     boolean onKeyUp(int keyCode, KeyEvent e);
 
+    /** Keep text selection by default; clients may explicitly opt into tracked finger right-click. */
+    default boolean shouldSendRightClickOnLongPress() { return false; }
+
     boolean onLongPress(MotionEvent event);
 
 

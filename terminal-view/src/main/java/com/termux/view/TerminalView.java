@@ -250,6 +250,7 @@ public final class TerminalView extends View {
             public void onLongPress(MotionEvent event) {
                 if (mGestureRecognizer.isInProgress()) return;
                 if (mEmulator != null && mEmulator.isMouseTrackingActive()
+                    && mClient.shouldSendRightClickOnLongPress()
                     && !event.isFromSource(InputDevice.SOURCE_MOUSE) && !isSelectingText()) {
                     sendMouseEventCode(event, TerminalEmulator.MOUSE_RIGHT_BUTTON, true);
                     sendMouseEventCode(event, TerminalEmulator.MOUSE_RIGHT_BUTTON, false);

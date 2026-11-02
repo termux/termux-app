@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Version: v0.18.0
+ * Version: v0.19.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -80,6 +80,10 @@ import java.util.Set;
  *
  * - 0.18.0 (2022-06-13)
  *      - Add `KEY_DISABLE_FILE_SHARE_RECEIVER` and `KEY_DISABLE_FILE_VIEW_RECEIVER`.
+ *
+ * - 0.19.0 (2026-11-02)
+ *      - Add `KEY_MOUSE_RIGHT_CLICK_ON_LONG_PRESS`, default false.
+ *      - Derive loaded boolean keys from their declared default-behaviour sets.
  */
 
 /**
@@ -129,6 +133,9 @@ public final class TermuxPropertyConstants {
 
     /** Defines the key for whether to hide soft keyboard when termux app is started */
     public static final String KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP =  "hide-soft-keyboard-on-startup"; // Default: "hide-soft-keyboard-on-startup"
+
+    /** Opt into RIGHT for tracked finger long press; otherwise retain native text selection. */
+    public static final String KEY_MOUSE_RIGHT_CLICK_ON_LONG_PRESS = "mouse-right-click-on-long-press";
 
 
 
@@ -390,21 +397,6 @@ public final class TermuxPropertyConstants {
      * Setting this to {@code null} will make {@link SharedProperties} throw an exception.
      * */
     public static final Set<String> TERMUX_APP_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
-        /* boolean */
-        KEY_DISABLE_FILE_SHARE_RECEIVER,
-        KEY_DISABLE_FILE_VIEW_RECEIVER,
-        KEY_DISABLE_HARDWARE_KEYBOARD_SHORTCUTS,
-        KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
-        KEY_ENFORCE_CHAR_BASED_INPUT,
-        KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
-        KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
-        KEY_RUN_TERMUX_AM_SOCKET_SERVER,
-        KEY_TERMINAL_ONCLICK_URL_OPEN,
-        KEY_USE_CTRL_SPACE_WORKAROUND,
-        KEY_USE_FULLSCREEN,
-        KEY_USE_FULLSCREEN_WORKAROUND,
-        TermuxConstants.PROP_ALLOW_EXTERNAL_APPS,
-
         /* int */
         KEY_BELL_BEHAVIOUR,
         KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT,
@@ -445,6 +437,7 @@ public final class TermuxPropertyConstants {
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
+        KEY_MOUSE_RIGHT_CLICK_ON_LONG_PRESS,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
@@ -477,5 +470,10 @@ public final class TermuxPropertyConstants {
      */
     public static final Set<String> TERMUX_DEFAULT_INVERETED_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
     ));
+
+    static {
+        TERMUX_APP_PROPERTIES_LIST.addAll(TERMUX_DEFAULT_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST);
+        TERMUX_APP_PROPERTIES_LIST.addAll(TERMUX_DEFAULT_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST);
+    }
 
 }
