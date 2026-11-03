@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_APP_NAME "Termux">
+    <!ENTITY TERMUX_API_APP_NAME "Termux:API">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "Termux:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "Termux:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "Termux:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "Termux:Widget">
+    ]>
+
+<resources>
+    <string name="application_name">&TERMUX_APP_NAME;</string>
+    <string name="shared_user_label">&TERMUX_APP_NAME;-användare</string>
+
+    <string name="permission_run_command_label">Kör kommandon i &TERMUX_APP_NAME;-miljön</string>
+    <string name="permission_run_command_description">kör godtyckliga kommandon i &TERMUX_APP_NAME;-miljön och får åtkomst till filer</string>
+
+    <string name="bootstrap_installer_body">Installerar startpaket…</string>
+    <string name="bootstrap_error_title">Det går inte att installera startpaketet</string>
+    <string name="bootstrap_error_body">&TERMUX_APP_NAME; kunde inte installera startpaketen.</string>
+    <string name="bootstrap_error_abort">Avbryt</string>
+    <string name="bootstrap_error_try_again">Försök igen</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; kan endast köras av den primära användaren.
+        \nStartprogrammen som har kompilerats för &TERMUX_APP_NAME; har en hårdkodad $PREFIX-sökväg och kan inte installeras
+        under någon annan sökväg än:\n%1$s.</string>
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; kan inte installeras på
+        ett portabelt, externt eller flyttbart SD-kort på enheten.
+        \nStartprogrammen som har kompilerats för &TERMUX_APP_NAME; har en hårdkodad $PREFIX-sökväg och kan inte installeras
+        under någon annan sökväg än:\n%1$s.</string>
+
+    <string name="action_new_session">Ny session</string>
+    <string name="action_new_session_failsafe">Felsäkert läge</string>
+    <string name="title_max_terminals_reached">Maximalt antal terminaler uppnått</string>
+    <string name="msg_max_terminals_reached">Stäng befintliga terminaler innan du skapar en ny.</string>
+    <string name="title_rename_session">Ange sessionsnamn</string>
+    <string name="action_rename_session_confirm">Ange</string>
+    <string name="title_create_named_session">Ny namngiven session</string>
+    <string name="action_create_named_session_confirm">Skapa</string>
+    <string name="action_toggle_soft_keyboard">Tangentbord</string>
+    <string name="msg_enabling_terminal_toolbar">Aktiverar terminalverktygsfältet</string>
+    <string name="msg_disabling_terminal_toolbar">Inaktiverar terminalverktygsfältet</string>
+
+    <string name="action_select_url">Välj URL</string>
+    <string name="title_select_url_dialog">Tryck på en URL för att kopiera den eller håll ned för att öppna den</string>
+    <string name="title_select_url_none_found">Ingen URL hittades i terminalen.</string>
+    <string name="msg_select_url_copied_to_clipboard">URL kopierad till urklipp</string>
+    <string name="action_share_transcript">Dela transkription</string>
+    <string name="title_share_transcript">Terminaltranskription</string>
+    <string name="title_share_transcript_with">Skicka transkription till:</string>
+    <string name="action_share_selected_text">Dela markerad text</string>
+    <string name="title_share_selected_text">Terminaltext</string>
+    <string name="title_share_selected_text_with">Skicka markerad text till:</string>
+    <string name="action_autofill_username">Fyll i användarnamn automatiskt</string>
+    <string name="action_autofill_password">Fyll i lösenord automatiskt</string>
+    <string name="action_reset_terminal">Återställ</string>
+    <string name="msg_terminal_reset">Terminalen har återställts</string>
+    <string name="action_kill_process">Avsluta process (%d)</string>
+    <string name="title_confirm_kill_process">Vill du verkligen avsluta den här sessionen?</string>
+    <string name="action_style_terminal">Utseende</string>
+    <string name="action_toggle_keep_screen_on">Håll skärmen på</string>
+    <string name="action_open_help">Hjälp</string>
+    <string name="action_open_settings">Inställningar</string>
+    <string name="action_report_issue">Rapportera problem</string>
+    <string name="msg_generating_report">Skapar rapport</string>
+    <string name="msg_add_termux_debug_info">Lägga till felsökningsinformation från Termux i rapporten?</string>
+    <string name="error_styling_not_installed">Insticksappen &TERMUX_STYLING_APP_NAME; är inte installerad.</string>
+    <string name="action_styling_install">Installera</string>
+
+    <string name="notification_action_exit">Avsluta</string>
+    <string name="notification_action_wake_lock">Aktivera vakenlås</string>
+    <string name="notification_action_wake_unlock">Släpp vakenlås</string>
+
+    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME; kräver behörigheten &quot;Visa över andra appar&quot; för att starta terminalsessioner i bakgrunden på Android &gt;= 10.
+        Ge den via Inställningar → Appar → &TERMUX_APP_NAME; → Avancerat</string>
+    <string name="error_termux_service_invalid_execution_command_runner">Ogiltig kommandoexekverare för TermuxService: `%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_runner">Kommandoexekveraren stöds inte av TermuxService: `%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_shell_create_mode">Skalets skapandeläge stöds inte av TermuxService: `%1$s`</string>
+    <string name="error_termux_service_execution_command_shell_name_unset">Skalnamnet är inte angett men skalets skapandeläge `%1$s` skickades</string>
+
+    <string name="error_run_command_service_invalid_intent_action">Ogiltig Intent-åtgärd för RunCommandService: `%1$s`</string>
+    <string name="error_run_command_service_invalid_execution_command_runner">Ogiltig kommandoexekverare för RunCommandService: `%1$s`</string>
+    <string name="error_run_command_service_mandatory_extra_missing">Obligatoriskt extrafält saknas i RunCommandService: &quot;%1$s&quot;</string>
+    <string name="error_run_command_service_api_help">Besök %1$s för mer information om hur RUN_COMMAND Intent används.</string>
+
+    <string name="title_file_received">Spara fil i ~/downloads/</string>
+    <string name="action_file_received_edit">Redigera</string>
+    <string name="action_file_received_open_directory">Öppna katalog</string>
+
+    <string name="error_termux_service_start_failed_general">Det gick inte att starta TermuxService. Kontrollera logcat för undantagsmeddelandet.</string>
+    <string name="error_termux_service_start_failed_bg">Det gick inte att starta TermuxService medan appen körs i bakgrunden på grund av Androids bakgrundsbegränsningar.</string>
+
+    <string name="title_activity_termux_settings">Inställningar för &TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_summary">Inställningar för appen &TERMUX_APP_NAME;</string>
+    <string name="termux_debugging_preferences_title">Felsökning</string>
+    <string name="termux_debugging_preferences_summary">Inställningar för felsökning</string>
+    <string name="termux_logging_header">Loggning</string>
+    <string name="termux_log_level_title">Loggnivå</string>
+    <string name="termux_terminal_view_key_logging_enabled_title">Loggning av tangenttryckningar i terminalvyn</string>
+    <string name="termux_terminal_view_key_logging_enabled_off">Loggarna kommer inte att innehålla poster om tangenttryckningar i terminalvyn. (Standard)</string>
+    <string name="termux_terminal_view_key_logging_enabled_on">Logcat-loggarna kommer att innehålla poster om tangenttryckningar i terminalvyn.
+        De är mycket utförliga och bör inaktiveras under normala omständigheter, annars försämras prestandan.</string>
+    <string name="termux_plugin_error_notifications_enabled_title">Aviseringar om fel i insticksappar</string>
+    <string name="termux_plugin_error_notifications_enabled_off">Inaktivera meddelanderutor och aviseringar för fel i insticksappar.</string>
+    <string name="termux_plugin_error_notifications_enabled_on">Visa meddelanderutor och aviseringar för fel i insticksappar. (Standard)</string>
+    <string name="termux_crash_report_notifications_enabled_title">Aviseringar om kraschrapporter</string>
+    <string name="termux_crash_report_notifications_enabled_off">Inaktivera aviseringar om kraschrapporter.</string>
+    <string name="termux_crash_report_notifications_enabled_on">Visa aviseringar om kraschrapporter. (Standard)</string>
+
+    <string name="termux_terminal_io_preferences_title">Terminal-I/O</string>
+    <string name="termux_terminal_io_preferences_summary">Inställningar för terminal-I/O</string>
+    <string name="termux_keyboard_header">Tangentbord</string>
+    <string name="termux_soft_keyboard_enabled_title">Skärmtangentbord aktiverat</string>
+    <string name="termux_soft_keyboard_enabled_off">Skärmtangentbordet kommer att inaktiveras.</string>
+    <string name="termux_soft_keyboard_enabled_on">Skärmtangentbordet kommer att aktiveras. (Standard)</string>
+    <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">Skärmtangentbord endast utan fysiskt tangentbord</string>
+    <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">Skärmtangentbordet aktiveras även om ett fysiskt tangentbord är anslutet. (Standard)</string>
+    <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Skärmtangentbordet aktiveras endast om inget fysiskt tangentbord är anslutet.</string>
+
+    <string name="termux_terminal_view_preferences_title">Terminalvy</string>
+    <string name="termux_terminal_view_preferences_summary">Inställningar för terminalvyn</string>
+    <string name="termux_terminal_view_view_header">Vy</string>
+    <string name="termux_terminal_view_terminal_margin_adjustment_title">Justering av terminalmarginal</string>
+    <string name="termux_terminal_view_terminal_margin_adjustment_off">Justering av terminalmarginal inaktiveras.</string>
+    <string name="termux_terminal_view_terminal_margin_adjustment_on">Justering av terminalmarginal aktiveras.
+        Aktivera den för att försöka lösa problemet där skärmtangentbordet täcker en del av extratangenterna eller terminalvyn.
+        Inaktivera den om skärmen flimrar på enheten. (Standard)</string>
+
+    <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
+    <string name="termux_api_preferences_summary">Inställningar för appen &TERMUX_API_APP_NAME;</string>
+    <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_float_preferences_summary">Inställningar för appen &TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_tasker_preferences_summary">Inställningar för appen &TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
+    <string name="termux_widget_preferences_summary">Inställningar för appen &TERMUX_WIDGET_APP_NAME;</string>
+    <string name="about_preference_title">Om</string>
+    <string name="donate_preference_title">Donera</string>
+</resources>
