@@ -1,4 +1,17 @@
-# PR (draft for discussion)
+# PR (draft for discussion) — SUPERSEDED
+
+> **Status: superseded / already implemented.** This document is kept for historical context.
+>
+> The shipped implementation on `master` differs from this draft in two ways:
+>
+> 1. It is a **full replacement**, not an optional path: the `extra-keys` property itself now
+>    holds tekl source. No `extra-keys-tekl` property and no JSON fallback exist.
+> 2. It is written in **Java** (the repo has no Kotlin toolchain) inside
+>    `termux-shared/.../extrakeys/tekl/`, with JVM unit tests, instead of Kotlin.
+>
+> See commit `c119a3f` ("Added: Parse extra-keys natively with tekl, replacing the JSON syntax"),
+> the README fork note, and https://github.com/poisongod/termux-extrakey-lang/releases/tag/v0.4.0
+> for the companion CLI that writes the new syntax.
 
 > **title**: `feat(extra-keys): add an optional tekl DSL authoring path for extra-keys`
 
