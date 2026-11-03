@@ -128,4 +128,21 @@ public class ControlSequenceIntroducerTest extends TerminalTestCase {
         assertEquals(TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, mTerminal.mEffect);
     }
 
+    /** See https://github.com/termux/termux-app/issues/5415 - ICH must keep the colors of the shifted cells. */
+    public void testInsertCharactersKeepsStyleOfShiftedCells() {
+        // Bash output from the issue: echoed "^[[B" typeahead, a colored prompt, then Home and an inserted "a".
+        withTerminalSized(20, 2).enterString("^[[B\033[0;32m~\033[0m \033[0;97m$\033[0m \r\033[4C\033[1@a");
+        assertLinesAre("^[[Ba~ $            ", "                    ");
+        assertForegroundColorAt(0, 4, TextStyle.COLOR_INDEX_FOREGROUND);
+        assertForegroundColorAt(0, 5, 2);
+        assertForegroundColorAt(0, 7, 15);
+
+        // Simpler case: insert in front of colored text.
+        withTerminalSized(6, 2).enterString("a\033[31mbc\033[0m\r\033[2@");
+        assertLinesAre("  abc ", "      ");
+        assertForegroundColorAt(0, 2, TextStyle.COLOR_INDEX_FOREGROUND);
+        assertForegroundColorAt(0, 3, 1);
+        assertForegroundColorAt(0, 4, 1);
+    }
+
 }
