@@ -35,6 +35,8 @@ public final class TextStyle {
     private final static int CHARACTER_ATTRIBUTE_TRUECOLOR_FOREGROUND = 1 << 9;
     /** If true (24-bit) color is used for the cell for foreground. */
     private final static int CHARACTER_ATTRIBUTE_TRUECOLOR_BACKGROUND= 1 << 10;
+    /** If true, character represents a {@link TerminalBitmap} slice, not text. */
+    public final static int TERMINAL_BITMAP = 1 << 15;
 
     public final static int COLOR_INDEX_FOREGROUND = 256;
     public final static int COLOR_INDEX_BACKGROUND = 257;
@@ -85,6 +87,30 @@ public final class TextStyle {
 
     public static int decodeEffect(long style) {
         return (int) (style & 0b11111111111);
+    }
+
+
+
+    public static long encodeTerminalBitmap(int num, int x, int y) {
+        return ((long) x << 48) | ((long) y << 32) | ((long) num << 16) | TERMINAL_BITMAP;
+    }
+
+    public static boolean isTerminalBitmap(long style) {
+        return (style & TERMINAL_BITMAP) != 0;
+    }
+
+    /* The bitmap num, x or y could have value `0`, so only return value (especially `0`) if bitmap bit is set. */
+
+    public static int getTerminalBitmapNum(long style) {
+        return (style & TERMINAL_BITMAP) != 0 ? (int) (style & 0xffff0000L) >> 16 : -1;
+    }
+
+    public static int getTerminalBitmapX(long style) {
+        return (style & TERMINAL_BITMAP) != 0 ? (int) ((style >> 48) & 0xfff) : -1;
+    }
+
+    public static int getTerminalBitmapY(long style) {
+        return (style & TERMINAL_BITMAP) != 0 ? (int) ((style >> 32) & 0xfff) : -1;
     }
 
 }
