@@ -2,11 +2,11 @@ name: CodeQL Advanced
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
   schedule:
-    - cron: '31 6 * * 2'
+    - cron: "31 6 * * 2"
 
 permissions:
   contents: read
@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Set up Android SDK
         if: matrix.build-mode == 'manual'
@@ -51,6 +51,7 @@ jobs:
         run: |
           sdkmanager --install \
             "platforms;android-36" \
+            "build-tools;36.0.0" \
             "ndk;29.0.14206865"
 
       - name: Initialize CodeQL
