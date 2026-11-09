@@ -62,29 +62,37 @@ public final class TerminalRow {
 
     /** NOTE: The sourceX2 is exclusive. */
     public void copyInterval(TerminalRow line, int sourceX1, int sourceX2, int destinationX) {
-        mHasNonOneWidthOrSurrogateChars |= line.mHasNonOneWidthOrSurrogateChars;
-        final int x1 = line.findStartOfColumn(sourceX1);
-        final int x2 = line.findStartOfColumn(sourceX2);
-        boolean startingFromSecondHalfOfWideChar = (sourceX1 > 0 && line.wideDisplayCharacterStartingAt(sourceX1 - 1));
-        final char[] sourceChars = (this == line) ? Arrays.copyOf(line.mText, line.mText.length) : line.mText;
-        int latestNonCombiningWidth = 0;
-        for (int i = x1; i < x2; i++) {
-            char sourceChar = sourceChars[i];
-            int codePoint = Character.isHighSurrogate(sourceChar) ? Character.toCodePoint(sourceChar, sourceChars[++i]) : sourceChar;
-            if (startingFromSecondHalfOfWideChar) {
-                // Just treat copying second half of wide char as copying whitespace.
-                codePoint = ' ';
-                startingFromSecondHalfOfWideChar = false;
-            }
-            int w = WcWidth.width(codePoint);
-            if (w > 0) {
-                destinationX += latestNonCombiningWidth;
-                sourceX1 += latestNonCombiningWidth;
-                latestNonCombiningWidth = w;
-            }
-            setChar(destinationX, codePoint, line.getStyle(sourceX1));
-        }
+    mHasNonOneWidthOrSurrogateChars |= line.mHasNonOneWidthOrSurrogateChars;
+    final int x1 = line.findStartOfColumn(sourceX1);
+    final int x2 = line.findStartOfColumn(sourceX2);
+    boolean startingFromSecondHalfOfWideChar = (sourceX1 > 0 && line.wideDisplayCharacterStartingAt(sourceX1 - 1));
+    final char[] sourceChars = (this == line) ? Arrays.copyOf(line.mText, line.mText.length) : line.mText;
+    // Only snapshot styles on self-copy when the intervals overlap (possible read-after-write).
+    final long[] sourceStyles;
+    if (this == line) {
+        int length = sourceX2 - sourceX1;
+        boolean overlaps = destinationX < sourceX2 && sourceX1 < destinationX + length;
+        sourceStyles = overlaps ? Arrays.copyOf(line.mStyle, line.mStyle.length) : line.mStyle;
+    } else {
+        sourceStyles = line.mStyle;
     }
+    int latestNonCombiningWidth = 0;
+    for (int i = x1; i < x2; i++) {
+        char sourceChar = sourceChars[i];
+        int codePoint = Character.isHighSurrogate(sourceChar) ? Character.toCodePoint(sourceChar, sourceChars[++i]) : sourceChar;
+        if (startingFromSecondHalfOfWideChar) {
+            codePoint = ' ';
+            startingFromSecondHalfOfWideChar = false;
+        }
+        int w = WcWidth.width(codePoint);
+        if (w > 0) {
+            destinationX += latestNonCombiningWidth;
+            sourceX1 += latestNonCombiningWidth;
+            latestNonCombiningWidth = w;
+        }
+        setChar(destinationX, codePoint, sourceStyles[sourceX1]);
+    }
+}
 
     public int getSpaceUsed() {
         return mSpaceUsed;
