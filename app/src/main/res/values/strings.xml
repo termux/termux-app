@@ -235,4 +235,5 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
 
+    <string name="msg_terminal_input_rejected">Terminal input could not be queued. Some input was not sent. Wait for the terminal to catch up before retrying.</string>
 </resources>

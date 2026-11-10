@@ -197,6 +197,13 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
     @Override
+    public void onTerminalInputRejected(@NonNull TerminalSession session) {
+        logWarn("TerminalSession", "Terminal input rejected: input queue unavailable or full");
+        if (mActivity.isVisible() && mActivity.getCurrentSession() == session)
+            mActivity.showToast(mActivity.getString(R.string.msg_terminal_input_rejected), true);
+    }
+
+    @Override
     public void onBell(@NonNull TerminalSession session) {
         if (!mActivity.isVisible()) return;
 
