@@ -68,6 +68,22 @@
                     android:choiceMode="singleChoice"
                     android:longClickable="true" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/workspaces_button"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/action_workspaces" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/device_button"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/action_device" />
+
                 <LinearLayout
                     style="?android:attr/buttonBarStyle"
                     android:layout_width="match_parent"

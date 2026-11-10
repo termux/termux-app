@@ -30,6 +30,7 @@ android {
         implementation "androidx.viewpager:viewpager:1.0.0"
         implementation "com.google.android.material:material:1.12.0"
         implementation "com.google.guava:guava:24.1-jre"
+        implementation "com.google.code.gson:gson:2.10.1"
         implementation "io.noties.markwon:core:$markwonVersion"
         implementation "io.noties.markwon:ext-strikethrough:$markwonVersion"
         implementation "io.noties.markwon:linkify:$markwonVersion"

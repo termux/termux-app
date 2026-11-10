@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_open_in_terminal"
+        android:icon="@drawable/ic_terminal"
+        android:title="@string/action_open_in_terminal" />
+
+    <item
+        android:id="@+id/action_toggle_favorite"
+        android:icon="@drawable/ic_star_outline"
+        android:title="@string/action_set_as_favorite" />
+
+    <item
+        android:id="@+id/action_refresh_git"
+        android:icon="@drawable/ic_refresh"
+        android:title="Refresh Git status" />
+
+    <item
+        android:id="@+id/action_git_status"
+        android:icon="@drawable/ic_git"
+        android:title="@string/msg_git_detected"
+        android:enabled="false" />
+
+    <item
+        android:id="@+id/action_remove_workspace"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/action_remove_workspace" />
+
+</menu>

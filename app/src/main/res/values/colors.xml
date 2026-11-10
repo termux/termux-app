@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Session color identifiers (8 Material colors) -->
+    <color name="session_color_0">#F44336</color> <!-- red -->
+    <color name="session_color_1">#E91E63</color> <!-- pink -->
+    <color name="session_color_2">#9C27B0</color> <!-- purple -->
+    <color name="session_color_3">#673AB7</color> <!-- deep purple -->
+    <color name="session_color_4">#3F51B5</color> <!-- indigo -->
+    <color name="session_color_5">#2196F3</color> <!-- blue -->
+    <color name="session_color_6">#009688</color> <!-- teal -->
+    <color name="session_color_7">#4CAF50</color> <!-- green -->
 </resources>

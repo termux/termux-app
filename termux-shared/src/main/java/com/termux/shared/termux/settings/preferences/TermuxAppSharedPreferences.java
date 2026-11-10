@@ -179,6 +179,42 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setString(mSharedPreferences, TERMUX_APP.KEY_CURRENT_SESSION, value, false);
     }
 
+    /**
+     * Get the session name for a session handle.
+     * @param sessionHandle The session handle (UUID)
+     * @return The session name, or null if not set
+     */
+    public String getSessionName(String sessionHandle) {
+        return SharedPreferenceUtils.getString(mSharedPreferences, TERMUX_APP.KEY_SESSION_NAME_PREFIX + sessionHandle, null, true);
+    }
+
+    /**
+     * Set the session name for a session handle.
+     * @param sessionHandle The session handle (UUID)
+     * @param name The session name, or null to clear
+     */
+    public void setSessionName(String sessionHandle, String name) {
+        SharedPreferenceUtils.setString(mSharedPreferences, TERMUX_APP.KEY_SESSION_NAME_PREFIX + sessionHandle, name, false);
+    }
+
+    /**
+     * Get the session color index for a session handle.
+     * @param sessionHandle The session handle (UUID)
+     * @return The color index (0-7), or -1 if not set
+     */
+    public int getSessionColorIndex(String sessionHandle) {
+        return SharedPreferenceUtils.getInt(mSharedPreferences, TERMUX_APP.KEY_SESSION_COLOR_INDEX_PREFIX + sessionHandle, -1);
+    }
+
+    /**
+     * Set the session color index for a session handle.
+     * @param sessionHandle The session handle (UUID)
+     * @param colorIndex The color index (0-7), or -1 to clear
+     */
+    public void setSessionColorIndex(String sessionHandle, int colorIndex) {
+        SharedPreferenceUtils.setInt(mSharedPreferences, TERMUX_APP.KEY_SESSION_COLOR_INDEX_PREFIX + sessionHandle, colorIndex, false);
+    }
+
 
 
     public int getLogLevel() {

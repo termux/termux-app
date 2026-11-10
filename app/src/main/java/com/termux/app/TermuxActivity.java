@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.termux.R;
 import com.termux.app.api.file.FileReceiverActivity;
+import com.termux.app.device.DeviceDiagnosticsActivity;
 import com.termux.app.terminal.TermuxActivityRootView;
 import com.termux.app.terminal.TermuxTerminalSessionActivityClient;
 import com.termux.app.terminal.io.TermuxTerminalExtraKeys;
@@ -39,6 +40,8 @@ import com.termux.shared.android.PermissionUtils;
 import com.termux.shared.data.DataUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_ACTIVITY;
+import com.termux.shared.termux.TermuxConstants.TERMUX_APP.TERMUX_SERVICE;
+import com.termux.app.workspace.WorkspaceActivity;
 import com.termux.app.activities.HelpActivity;
 import com.termux.app.activities.SettingsActivity;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
@@ -249,6 +252,10 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setNewSessionButtonView();
 
+        setWorkspacesButtonView();
+
+        setDeviceButtonView();
+
         setToggleKeyboardView();
 
         registerForContextMenu(mTerminalView);
@@ -394,6 +401,14 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         final Intent intent = getIntent();
         setIntent(null);
 
+        // Extract working directory from intent if present
+        final String workingDirectory;
+        if (intent != null && intent.getExtras() != null) {
+            workingDirectory = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_WORKDIR, null);
+        } else {
+            workingDirectory = null;
+        }
+
         if (mTermuxService.isTermuxSessionsEmpty()) {
             if (mIsVisible) {
                 TermuxInstaller.setupBootstrapIfNeeded(TermuxActivity.this, () -> {
@@ -403,7 +418,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
                         if (intent != null && intent.getExtras() != null) {
                             launchFailsafe = intent.getExtras().getBoolean(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
                         }
-                        mTermuxTerminalSessionActivityClient.addNewSession(launchFailsafe, null);
+                        mTermuxTerminalSessionActivityClient.addNewSession(launchFailsafe, null, workingDirectory);
                     } catch (WindowManager.BadTokenException e) {
                         // Activity finished - ignore.
                     }
@@ -419,7 +434,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             if (!mIsActivityRecreated && intent != null && Intent.ACTION_RUN.equals(intent.getAction())) {
                 // Android 7.1 app shortcut from res/xml/shortcuts.xml.
                 boolean isFailSafe = intent.getBooleanExtra(TERMUX_ACTIVITY.EXTRA_FAILSAFE_SESSION, false);
-                mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null);
+                mTermuxTerminalSessionActivityClient.addNewSession(isFailSafe, null, workingDirectory);
             } else {
                 mTermuxTerminalSessionActivityClient.setCurrentSession(mTermuxTerminalSessionActivityClient.getCurrentStoredSessionOrLast());
             }
@@ -435,6 +450,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         // Respect being stopped from the {@link TermuxService} notification action.
         finishActivityIfNotFinishing();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+        // Handle new intent for workspace directory
+        if (intent != null && intent.getExtras() != null) {
+            String workingDirectory = IntentUtils.getStringExtraIfSet(intent, TERMUX_SERVICE.EXTRA_WORKDIR, null);
+            if (workingDirectory != null) {
+                mTermuxTerminalSessionActivityClient.addNewSession(false, null, workingDirectory);
+            }
+        }
     }
 
 
@@ -582,6 +611,20 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         });
     }
 
+    private void setWorkspacesButtonView() {
+        findViewById(R.id.workspaces_button).setOnClickListener(v -> {
+            ActivityUtils.startActivity(this, new Intent(this, WorkspaceActivity.class));
+            getDrawer().closeDrawers();
+        });
+    }
+
+    private void setDeviceButtonView() {
+        findViewById(R.id.device_button).setOnClickListener(v -> {
+            ActivityUtils.startActivity(this, new Intent(this, DeviceDiagnosticsActivity.class));
+            getDrawer().closeDrawers();
+        });
+    }
+
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
             mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
@@ -601,6 +644,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     @SuppressLint("RtlHardcoded")
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         if (getDrawer().isDrawerOpen(Gravity.LEFT)) {
             getDrawer().closeDrawers();
         } else {

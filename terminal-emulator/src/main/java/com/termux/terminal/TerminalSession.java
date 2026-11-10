@@ -68,6 +68,17 @@ public final class TerminalSession extends TerminalOutput {
     /** Set by the application for user identification of session, not by terminal. */
     public String mSessionName;
 
+    /** Color index for session identification (0-7 for 8 Material colors, -1 for none). */
+    private int mColorIndex = -1;
+
+    public int getColorIndex() {
+        return mColorIndex;
+    }
+
+    public void setColorIndex(int colorIndex) {
+        mColorIndex = colorIndex;
+    }
+
     final Handler mMainThreadHandler = new MainThreadHandler();
 
     private final String mShellPath;

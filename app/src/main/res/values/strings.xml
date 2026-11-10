@@ -52,6 +52,20 @@
     <string name="title_create_named_session">New named session</string>
     <string name="action_create_named_session_confirm">Create</string>
 
+    <!-- Session color picker -->
+    <string name="title_session_color">Session color</string>
+    <string name="action_session_color_none">None</string>
+    <string-array name="session_color_names">
+        <item>Red</item>
+        <item>Pink</item>
+        <item>Purple</item>
+        <item>Deep Purple</item>
+        <item>Indigo</item>
+        <item>Blue</item>
+        <item>Teal</item>
+        <item>Green</item>
+    </string-array>
+
     <string name="action_toggle_soft_keyboard">Keyboard</string>
 
     <string name="msg_enabling_terminal_toolbar">Enabling Terminal Toolbar</string>
@@ -234,5 +248,69 @@
 
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
+
+    <!-- Workspace/Project Management -->
+    <string name="action_workspaces">Workspaces</string>
+    <string name="title_workspaces">Workspaces</string>
+    <string name="action_add_workspace">Add workspace</string>
+    <string name="action_remove_workspace">Remove</string>
+    <string name="action_open_in_terminal">Open in terminal</string>
+    <string name="action_set_as_favorite">Favorite</string>
+    <string name="action_remove_favorite">Unfavorite</string>
+    <string name="workspace_name_hint">Workspace name</string>
+    <string name="workspace_path_hint">Path</string>
+    <string name="msg_no_workspaces">No workspaces yet. Tap + to add one.</string>
+    <string name="msg_workspace_added">Workspace added</string>
+    <string name="msg_workspace_removed">Workspace removed</string>
+    <string name="msg_git_detected">Git repository detected</string>
+    <string name="msg_not_git_repo">Not a git repository</string>
+    <string name="action_pick_directory">Pick directory</string>
+    <string name="title_directory_picker">Select workspace directory</string>
+
+    <!-- Device Diagnostics -->
+    <!-- Device Diagnostics -->
+    <!-- Device Diagnostics -->
+    <!-- Device Diagnostics -->
+    <string name="action_device">Device</string>
+    <string name="title_device">Device Diagnostics</string>
+    <string name="device_cpu">CPU</string>
+    <string name="device_memory">Memory</string>
+    <string name="device_storage">Storage</string>
+    <string name="device_battery">Battery</string>
+    <string name="device_thermal">Thermal</string>
+    <string name="device_network">Network</string>
+    <string name="device_architecture">Architecture</string>
+    <string name="device_cores">Cores</string>
+    <string name="device_frequency">Frequency</string>
+    <string name="device_total_memory">Total Memory</string>
+    <string name="device_available_memory">Available Memory</string>
+    <string name="device_total_storage">Total Storage</string>
+    <string name="device_free_storage">Free Storage</string>
+    <string name="device_battery_level">Battery Level</string>
+    <string name="device_battery_status">Battery Status</string>
+    <string name="device_battery_health">Battery Health</string>
+    <string name="device_battery_technology">Battery Technology</string>
+    <string name="device_battery_temperature">Battery Temperature</string>
+    <string name="device_battery_voltage">Battery Voltage</string>
+    <string name="device_battery_current">Battery Current</string>
+    <string name="device_thermal_status">Thermal Status</string>
+    <string name="device_network_type">Network Type</string>
+    <string name="device_wifi_ssid">Wi-Fi SSID</string>
+    <string name="device_wifi_signal">Wi-Fi Signal</string>
+    <string name="device_mobile_network">Mobile Network</string>
+    <string name="device_ip_address">IP Address</string>
+    <string name="device_mac_address">MAC Address</string>
+    <string name="device_kernel_version">Kernel Version</string>
+    <string name="device_android_version">Android Version</string>
+    <string name="device_api_level">API Level</string>
+    <string name="device_security_patch">Security Patch</string>
+    <string name="device_build_number">Build Number</string>
+    <string name="device_manufacturer">Manufacturer</string>
+    <string name="device_model">Model</string>
+    <string name="device_fingerprint">Fingerprint</string>
+    <string name="device_uptime">Uptime</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="msg_permission_denied">Permission denied</string>
+<string name="msg_not_available">Not available</string>
 
 </resources>

@@ -136,6 +136,16 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_CURRENT_SESSION = "current_session";
 
+        /**
+         * Defines the key prefix for session name stored by session handle.
+         */
+        public static final String KEY_SESSION_NAME_PREFIX = "session_name_";
+
+        /**
+         * Defines the key prefix for session color index stored by session handle.
+         */
+        public static final String KEY_SESSION_COLOR_INDEX_PREFIX = "session_color_index_";
+
 
         /**
          * Defines the key for current log level.

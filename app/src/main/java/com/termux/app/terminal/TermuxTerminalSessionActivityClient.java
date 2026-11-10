@@ -11,7 +11,12 @@ import android.graphics.Typeface;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -344,15 +349,72 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     public void renameSession(final TerminalSession sessionToRename) {
         if (sessionToRename == null) return;
 
+        // First show the rename dialog
         TextInputDialogUtils.textInput(mActivity, R.string.title_rename_session, sessionToRename.mSessionName, R.string.action_rename_session_confirm, text -> {
             renameSession(sessionToRename, text);
-            termuxSessionListNotifyUpdated();
+            // Then show color picker dialog
+            showColorPickerDialog(sessionToRename);
         }, -1, null, -1, null, null);
+    }
+
+    private void showColorPickerDialog(final TerminalSession sessionToRename) {
+        if (sessionToRename == null) return;
+
+        // 8 Material colors
+        final int[] colorResIds = {
+            R.color.session_color_0,  // red
+            R.color.session_color_1,  // pink
+            R.color.session_color_2,  // purple
+            R.color.session_color_3,  // deep purple
+            R.color.session_color_4,  // indigo
+            R.color.session_color_5,  // blue
+            R.color.session_color_6,  // teal
+            R.color.session_color_7   // green
+        };
+
+        final String[] colorNames = mActivity.getResources().getStringArray(R.array.session_color_names);
+
+        // Create a custom list adapter for the color picker
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(mActivity, android.R.layout.select_dialog_item, colorNames) {
+            @Override
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                if (textView != null) {
+                    // Add color indicator to the left of each item
+                    textView.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        mActivity.getResources().getDrawable(colorResIds[position], null),
+                        null, null, null
+                    );
+                    textView.setCompoundDrawablePadding(16);
+                }
+                return view;
+            }
+        };
+
+        new AlertDialog.Builder(mActivity)
+            .setTitle(R.string.title_session_color)
+            .setAdapter(adapter, (dialog, which) -> {
+                // User selected a color
+                sessionToRename.setColorIndex(which);
+                // Persist to SharedPreferences
+                mActivity.getPreferences().setSessionColorIndex(sessionToRename.mHandle, which);
+                termuxSessionListNotifyUpdated();
+            })
+            .setNegativeButton(R.string.action_session_color_none, (dialog, which) -> {
+                // User wants no color
+                sessionToRename.setColorIndex(-1);
+                mActivity.getPreferences().setSessionColorIndex(sessionToRename.mHandle, -1);
+                termuxSessionListNotifyUpdated();
+            })
+            .show();
     }
 
     private void renameSession(TerminalSession sessionToRename, String text) {
         if (sessionToRename == null) return;
         sessionToRename.mSessionName = text;
+        // Persist to SharedPreferences
+        mActivity.getPreferences().setSessionName(sessionToRename.mHandle, text);
         TermuxService service = mActivity.getTermuxService();
         if (service != null) {
             TermuxSession termuxSession = service.getTermuxSessionForTerminalSession(sessionToRename);
@@ -362,6 +424,10 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
     }
 
     public void addNewSession(boolean isFailSafe, String sessionName) {
+        addNewSession(isFailSafe, sessionName, null);
+    }
+
+    public void addNewSession(boolean isFailSafe, String sessionName, String workingDirectory) {
         TermuxService service = mActivity.getTermuxService();
         if (service == null) return;
 
@@ -371,11 +437,12 @@ public class TermuxTerminalSessionActivityClient extends TermuxTerminalSessionCl
         } else {
             TerminalSession currentSession = mActivity.getCurrentSession();
 
-            String workingDirectory;
-            if (currentSession == null) {
-                workingDirectory = mActivity.getProperties().getDefaultWorkingDirectory();
-            } else {
-                workingDirectory = currentSession.getCwd();
+            if (workingDirectory == null) {
+                if (currentSession == null) {
+                    workingDirectory = mActivity.getProperties().getDefaultWorkingDirectory();
+                } else {
+                    workingDirectory = currentSession.getCwd();
+                }
             }
 
             TermuxSession newTermuxSession = service.createTermuxSession(null, null, null, workingDirectory, isFailSafe, sessionName);

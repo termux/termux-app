@@ -1,6 +1,7 @@
 package com.termux.app.terminal;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -34,6 +35,18 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
     final StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
     final StyleSpan italicSpan = new StyleSpan(Typeface.ITALIC);
 
+    // 8 Material colors for session identification
+    private static final int[] SESSION_COLORS = {
+        R.color.session_color_0,  // red
+        R.color.session_color_1,  // pink
+        R.color.session_color_2,  // purple
+        R.color.session_color_3,  // deep purple
+        R.color.session_color_4,  // indigo
+        R.color.session_color_5,  // blue
+        R.color.session_color_6,  // teal
+        R.color.session_color_7   // green
+    };
+
     public TermuxSessionsListViewController(TermuxActivity activity, List<TermuxSession> sessionList) {
         super(activity.getApplicationContext(), R.layout.item_terminal_sessions_list, sessionList);
         this.mActivity = activity;
@@ -50,17 +63,19 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         }
 
         TextView sessionTitleView = sessionRowView.findViewById(R.id.session_title);
+        View colorIndicatorView = sessionRowView.findViewById(R.id.session_color_indicator);
 
         TerminalSession sessionAtRow = getItem(position).getTerminalSession();
         if (sessionAtRow == null) {
             sessionTitleView.setText("null session");
+            colorIndicatorView.setVisibility(View.GONE);
             return sessionRowView;
         }
 
         boolean shouldEnableDarkTheme = ThemeUtils.shouldEnableDarkTheme(mActivity, NightMode.getAppNightMode().getName());
 
         if (shouldEnableDarkTheme) {
-            sessionTitleView.setBackground(
+            sessionRowView.setBackground(
                 ContextCompat.getDrawable(mActivity, R.drawable.session_background_black_selected)
             );
         }
@@ -89,6 +104,16 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         int defaultColor = shouldEnableDarkTheme ? Color.WHITE : Color.BLACK;
         int color = sessionRunning || sessionAtRow.getExitStatus() == 0 ? defaultColor : Color.RED;
         sessionTitleView.setTextColor(color);
+
+        // Handle color indicator
+        int colorIndex = sessionAtRow.getColorIndex();
+        if (colorIndex >= 0 && colorIndex < SESSION_COLORS.length) {
+            colorIndicatorView.setBackgroundColor(ContextCompat.getColor(mActivity, SESSION_COLORS[colorIndex]));
+            colorIndicatorView.setVisibility(View.VISIBLE);
+        } else {
+            colorIndicatorView.setVisibility(View.GONE);
+        }
+
         return sessionRowView;
     }
 
@@ -105,5 +130,4 @@ public class TermuxSessionsListViewController extends ArrayAdapter<TermuxSession
         mActivity.getTermuxTerminalSessionClient().renameSession(selectedSession.getTerminalSession());
         return true;
     }
-
 }
