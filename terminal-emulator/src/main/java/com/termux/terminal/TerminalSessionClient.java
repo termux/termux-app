@@ -20,6 +20,12 @@ public interface TerminalSessionClient {
 
     void onPasteTextFromClipboard(@Nullable TerminalSession session);
 
+    /** Called on the main thread when a complete input submission could not be queued. */
+    default void onTerminalInputRejected(@NonNull TerminalSession session) {
+        logWarn("TerminalSession", "Terminal input rejected: input queue unavailable or full");
+        onBell(session);
+    }
+
     void onBell(@NonNull TerminalSession session);
 
     void onColorsChanged(@NonNull TerminalSession session);

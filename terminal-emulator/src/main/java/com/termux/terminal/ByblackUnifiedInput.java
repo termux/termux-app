@@ -7,6 +7,10 @@ import java.util.Arrays;
 /** A single FIFO producer queue; never waits on the Android UI thread. */
 final class ByblackUnifiedInput {
     static final int MAX_PENDING = 4 * 1024 * 1024;
+    // Leave capacity for typing after a paste has filled its allowed share.
+    static final int INPUT_RESERVE = 64 * 1024;
+    // Account for queue nodes and job objects as well as payloads.
+    private static final int JOB_OVERHEAD = 64;
     enum Result { ACCEPTED, FULL, CLOSED }
     private static final class Job {
         final byte[] bytes;
@@ -19,17 +23,13 @@ final class ByblackUnifiedInput {
         }
     }
     private final ByteQueue output;
-    private final ByblackInputWriter legacyWriter;
     private final ArrayDeque<Job> pending = new ArrayDeque<>();
     private final Thread worker;
     private int pendingBytes;
     private boolean closed;
 
-    ByblackUnifiedInput(ByteQueue output) { this(output, null); }
-    // Compatibility with older isolated tests; production uses ByteQueue directly.
-    ByblackUnifiedInput(ByblackInputWriter writer) { this(null, writer); }
-    private ByblackUnifiedInput(ByteQueue output, ByblackInputWriter writer) {
-        this.output = output; this.legacyWriter = writer;
+    ByblackUnifiedInput(ByteQueue output) {
+        this.output = output;
         worker = new Thread(this::runWorker, "ByblackUnifiedInput");
         worker.setDaemon(true);
         worker.start();
@@ -40,9 +40,10 @@ final class ByblackUnifiedInput {
             throw new IllegalArgumentException("Invalid range");
         if (closed) return Result.CLOSED;
         if (count == 0) return Result.ACCEPTED;
-        if (count > MAX_PENDING - pendingBytes) return Result.FULL;
-        pending.addLast(new Job(Arrays.copyOfRange(data, offset, offset + count), null, false, count));
-        pendingBytes += count;
+        long charge = (long) count + JOB_OVERHEAD;
+        if (charge > MAX_PENDING - pendingBytes) return Result.FULL;
+        pending.addLast(new Job(Arrays.copyOfRange(data, offset, offset + count), null, false, (int) charge));
+        pendingBytes += (int) charge;
         notifyAll();
         return Result.ACCEPTED;
     }
@@ -50,8 +51,8 @@ final class ByblackUnifiedInput {
         if (closed) return Result.CLOSED;
         if (text == null || text.isEmpty()) return Result.ACCEPTED;
         // Count UTF-16 storage pessimistically; no UI-thread UTF-8 encoding.
-        long charge = (long) text.length() * 2 + 32;
-        if (charge > MAX_PENDING - pendingBytes) return Result.FULL;
+        long charge = (long) text.length() * 2 + JOB_OVERHEAD;
+        if (charge > MAX_PENDING - INPUT_RESERVE - pendingBytes) return Result.FULL;
         pending.addLast(new Job(null, text, bracketed, (int) charge));
         pendingBytes += (int) charge;
         notifyAll();
@@ -77,7 +78,7 @@ final class ByblackUnifiedInput {
                     ok = send(data);
                 }
                 synchronized (this) {
-                    pendingBytes -= job.charge;
+                    if (!closed) pendingBytes -= job.charge;
                     notifyAll();
                 }
                 if (!ok) return;
@@ -94,7 +95,6 @@ final class ByblackUnifiedInput {
         }
     }
     private boolean send(byte[] data) {
-        if (legacyWriter != null) return legacyWriter.submitBlocking(data, 0, data.length);
         // ByteQueue.write may block, but only on our worker.
         for (int i = 0; i < data.length; i += 4096) {
             if (Thread.currentThread().isInterrupted()) return false;
@@ -103,13 +103,18 @@ final class ByblackUnifiedInput {
         }
         return true;
     }
+    // Package-private lifecycle probe for tests; callers must close before joining.
+    boolean awaitTermination(long timeoutMillis) throws InterruptedException {
+        worker.join(timeoutMillis);
+        return !worker.isAlive();
+    }
     synchronized int pendingBytes() { return pendingBytes; }
     synchronized void close() {
         closed = true;
         pending.clear();
         pendingBytes = 0;
         notifyAll();
-        if (output != null) output.close();
+        output.close();
         worker.interrupt();
     }
 }

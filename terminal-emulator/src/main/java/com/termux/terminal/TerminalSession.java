@@ -32,6 +32,7 @@ public final class TerminalSession extends TerminalOutput {
 
     private static final int MSG_NEW_INPUT = 1;
     private static final int MSG_PROCESS_EXITED = 4;
+    private static final int MSG_INPUT_REJECTED = 5;
 
     public final String mHandle = UUID.randomUUID().toString();
 
@@ -43,7 +44,7 @@ public final class TerminalSession extends TerminalOutput {
      */
     final ByteQueue mProcessToTerminalIOQueue = new ByteQueue(64 * 1024);
     /**
-     * A queue written to from the main thread due to user interaction, and read by another thread which forwards by
+     * A queue written to from the background input worker, and read by another thread which forwards by
      * writing to the {@link #mTerminalFileDescriptor}.
      */
     final ByteQueue mTerminalToProcessIOQueue = new ByteQueue(4096);
@@ -126,6 +127,7 @@ public final class TerminalSession extends TerminalOutput {
         int[] processId = new int[1];
         mTerminalFileDescriptor = JNI.createSubprocess(mShellPath, mCwd, mArgs, mEnv, processId, rows, columns, cellWidthPixels, cellHeightPixels);
         mShellPid = processId[0];
+        mByblackUnifiedInput = new ByblackUnifiedInput(mTerminalToProcessIOQueue);
         mClient.setTerminalShellPid(this, mShellPid);
 
         final FileDescriptor terminalFileDescriptorWrapped = wrapFileDescriptor(mTerminalFileDescriptor, mClient);
@@ -173,31 +175,28 @@ public final class TerminalSession extends TerminalOutput {
 
     }
 
-    private final ByblackUnifiedInput mByblackUnifiedInput =
-        new ByblackUnifiedInput(mTerminalToProcessIOQueue);
+    private ByblackUnifiedInput mByblackUnifiedInput;
 
-    /**
-     * Submit terminal input without blocking the Android UI thread.
-     *
-     * Large input must be handled by a background producer.
-     */
+    /** Submit input in FIFO order without waiting for the shell on the UI thread. */
     @Override
     public void write(byte[] data, int offset, int count) {
-        ByblackUnifiedInput.Result result =
-            mByblackUnifiedInput.offer(data, offset, count);
-
-        if (result != ByblackUnifiedInput.Result.ACCEPTED) {
-            android.util.Log.w(
-                "ByblackANR", "Input rejected: " + result);
-        }
+        if (mShellPid <= 0) return;
+        reportInputResult(mByblackUnifiedInput.offer(data, offset, count));
     }
 
     public void writePasteAsync(String text, boolean bracketed) {
-        ByblackUnifiedInput.Result result = mByblackUnifiedInput.offerPaste(text, bracketed);
-        if (result != ByblackUnifiedInput.Result.ACCEPTED)
-            android.util.Log.w("ByblackANR", "Paste rejected: " + result);
+        if (mShellPid <= 0) return;
+        reportInputResult(mByblackUnifiedInput.offerPaste(text, bracketed));
     }
 
+    private void reportInputResult(ByblackUnifiedInput.Result result) {
+        if (result != ByblackUnifiedInput.Result.ACCEPTED &&
+                !mMainThreadHandler.hasMessages(MSG_INPUT_REJECTED)) {
+            mMainThreadHandler.sendEmptyMessage(MSG_INPUT_REJECTED);
+        }
+    }
+
+    /** Write the Unicode code point to the terminal encoded in UTF-8. */
     public void writeCodePoint(boolean prependEscape, int codePoint) {
         if (codePoint > 1114111 || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) {
             // 1114111 (= 2**16 + 1024**2 - 1) is the highest code point, [0xD800,0xDFFF] is the surrogate range.
@@ -268,7 +267,7 @@ public final class TerminalSession extends TerminalOutput {
         }
 
         // Stop the reader and writer threads, and close the I/O streams
-        mByblackUnifiedInput.close();
+        if (mByblackUnifiedInput != null) mByblackUnifiedInput.close();
         mProcessToTerminalIOQueue.close();
         JNI.close(mTerminalFileDescriptor);
     }
@@ -358,6 +357,10 @@ public final class TerminalSession extends TerminalOutput {
 
         @Override
         public void handleMessage(Message msg) {
+            if (msg.what == MSG_INPUT_REJECTED) {
+                if (mShellPid > 0) mClient.onTerminalInputRejected(TerminalSession.this);
+                return;
+            }
             int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
             if (bytesRead > 0) {
                 mEmulator.append(mReceiveBuffer, bytesRead);
