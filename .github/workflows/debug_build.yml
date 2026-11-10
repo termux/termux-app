@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - master
+      - feature/termux-workstation
       - 'github-releases/**'
   pull_request:
     branches:
       - master
+      - feature/termux-workstation
 
 jobs:
   build:

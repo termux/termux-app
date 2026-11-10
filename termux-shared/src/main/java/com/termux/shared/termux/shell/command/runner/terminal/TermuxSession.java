@@ -18,6 +18,7 @@ import com.termux.shared.shell.command.environment.IShellEnvironment;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
+import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 
 import java.io.File;
 import java.util.Collections;
@@ -156,6 +157,20 @@ public class TermuxSession {
         TerminalSession terminalSession = new TerminalSession(executionCommand.executable,
             executionCommand.workingDirectory, executionCommand.arguments, environmentArray,
             executionCommand.terminalTranscriptRows, terminalSessionClient);
+
+        // Load persisted session name and color index from SharedPreferences
+        String sessionHandle = terminalSession.mHandle;
+        TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(currentPackageContext);
+        if (preferences != null) {
+            String persistedName = preferences.getSessionName(sessionHandle);
+            if (persistedName != null) {
+                terminalSession.mSessionName = persistedName;
+            }
+            int persistedColorIndex = preferences.getSessionColorIndex(sessionHandle);
+            if (persistedColorIndex >= 0) {
+                terminalSession.setColorIndex(persistedColorIndex);
+            }
+        }
 
         if (executionCommand.shellName != null) {
             terminalSession.mSessionName = executionCommand.shellName;

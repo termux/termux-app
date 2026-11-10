@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - master
+      - feature/termux-workstation
       - android-10
   pull_request:
     branches:
       - master
+      - feature/termux-workstation
       - android-10
 
 jobs:
