@@ -43,6 +43,7 @@
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/application_name"
+        android:localeConfig="@xml/locales_config"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
