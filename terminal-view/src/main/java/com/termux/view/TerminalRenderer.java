@@ -63,9 +63,6 @@ public final class TerminalRenderer {
     private int[] mVisualToRunCell = new int[256];
     private float[] mVisCellLeft = new float[256];
     private float[] mVisCellRight = new float[256];
-    private int mTrackedAnchorCol = -1;
-    private boolean mTrackedAnchorIsRtl = false;
-    private float mTrackedAnchorEdgeX = Float.NaN;
 
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
@@ -390,27 +387,6 @@ public final class TerminalRenderer {
     private void renderBidiRow(BidiLayout layout, TerminalBuffer screen, Canvas canvas, int[] palette,
                                int columns, int cursorShape, boolean reverseVideo, float heightOffset) {
         final BidiLayout.LogicalCell[] visualCells = layout.visualCells;
-        final int trimmedLen = layout.trimmedActiveLength;
-        int typingEdgeAnchorVisual = -1;
-        boolean typingEdgeAnchorIsRtl = false;
-        if (trimmedLen > 0) {
-            int lastLogical = trimmedLen - 1;
-            int vLast = layout.logicalToVisual[lastLogical];
-            int anchorLogical = (visualCells[vLast].displayWidth == 0 && lastLogical > 0)
-                    ? lastLogical - 1 : lastLogical;
-            int anchorVisual = layout.logicalToVisual[anchorLogical];
-            boolean anchorIsRtl = visualCells[anchorVisual].isRtl;
-            int endOfTextVisual = anchorVisual + Math.max(1, visualCells[anchorVisual].displayWidth);
-            if (anchorIsRtl || endOfTextVisual < trimmedLen) {
-                typingEdgeAnchorVisual = anchorVisual;
-                typingEdgeAnchorIsRtl = anchorIsRtl;
-            }
-        }
-        mTrackedAnchorCol = typingEdgeAnchorVisual;
-        mTrackedAnchorIsRtl = typingEdgeAnchorIsRtl;
-        mTrackedAnchorEdgeX = Float.NaN;
-        boolean deferTypingEdgeCaret = false;
-        int deferredCursorColor = 0;
 
         long lastRunStyle = 0;
         boolean lastRunInsideCursor = false;
@@ -462,14 +438,6 @@ public final class TerminalRenderer {
             boolean insideCursor = cell.insideCursor;
             if (!insideCursor && codePointWcWidth == 2 && vCol + 1 < columns && visualCells[vCol + 1].insideCursor) {
                 insideCursor = true;
-            }
-            if (typingEdgeAnchorVisual >= 0 && insideCursor
-                    && isPlainSpaceCell(cell)
-                    && cell.originalColumn >= trimmedLen
-                    && (cell.originalColumn - trimmedLen) <= 4) {
-                insideCursor = false;
-                deferTypingEdgeCaret = true;
-                deferredCursorColor = palette[TextStyle.COLOR_INDEX_CURSOR];
             }
 
             boolean fontWidthMismatch = false;
@@ -529,32 +497,6 @@ public final class TerminalRenderer {
                     lastRunInsideCursor, lastRunInsideSelection, lastRunIsRtl,
                     cursorShape, reverseVideo);
         }
-
-        if (deferTypingEdgeCaret) {
-            float edgeX = !Float.isNaN(mTrackedAnchorEdgeX)
-                    ? mTrackedAnchorEdgeX
-                    : (typingEdgeAnchorIsRtl
-                    ? (typingEdgeAnchorVisual * mFontWidth)
-                    : ((typingEdgeAnchorVisual + Math.max(1, visualCells[typingEdgeAnchorVisual].displayWidth)) * mFontWidth));
-            float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-            float barW = Math.max(2f, mFontWidth / 4.f);
-            float maxX = columns * mFontWidth;
-            mTextPaint.setColor(deferredCursorColor);
-            if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
-                float uW = Math.max(barW, mFontWidth * 0.65f);
-                float uLeft = typingEdgeAnchorIsRtl
-                        ? Math.max(0f, Math.min(maxX - uW, edgeX - uW * 0.5f))
-                        : Math.max(0f, Math.min(maxX - uW, edgeX));
-                canvas.drawRect(uLeft, heightOffset - cursorHeight / 4.f, uLeft + uW, heightOffset, mTextPaint);
-            } else {
-                float barLeft = typingEdgeAnchorIsRtl
-                        ? Math.max(0f, Math.min(maxX - barW, edgeX - barW))
-                        : Math.max(0f, Math.min(maxX - barW, edgeX - barW * 0.5f));
-                canvas.drawRect(barLeft, heightOffset - cursorHeight, barLeft + barW, heightOffset, mTextPaint);
-            }
-        }
-        mTrackedAnchorCol = -1;
-        mTrackedAnchorEdgeX = Float.NaN;
     }
 
     private void drawSixelBitmap(Bitmap bitmap, Rect srcRect, Canvas canvas, int column, float heightOffset) {
@@ -783,13 +725,8 @@ public final class TerminalRenderer {
             final boolean needScale = Math.abs(scaleX - 1.0f) > 0.005f;
             final float baseline = heightOffset - mFontLineSpacingAndAscent;
 
-            final boolean trackAnchor = (mTrackedAnchorCol >= startCol && mTrackedAnchorCol < endCol);
-            if (hasOverlay || !uniformText || trackAnchor) {
+            if (hasOverlay || !uniformText) {
                 computeVisualCellBounds(runColumns, used, measuredWidth, scaleX, drawLeft, drawnWidth);
-            }
-            if (trackAnchor) {
-                int idx = mTrackedAnchorCol - startCol;
-                mTrackedAnchorEdgeX = mTrackedAnchorIsRtl ? mVisCellLeft[idx] : mVisCellRight[idx];
             }
 
             if (hasOverlay) {
@@ -825,23 +762,13 @@ public final class TerminalRenderer {
                     if (cell.insideCursor) {
                         mTextPaint.setColor(cursorColor);
                         float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-                        float glyphW = gRight - gLeft;
-                        float minCursorW = mFontWidth * 0.65f;
-                        float cLeft = gLeft;
-                        float cRight = gRight;
-                        if (glyphW < minCursorW) {
-                            float center = (gLeft + gRight) * 0.5f;
-                            cLeft = Math.max(slotLeft, Math.min(slotRight - minCursorW, center - minCursorW * 0.5f));
-                            cRight = Math.min(slotRight, cLeft + minCursorW);
-                        }
+                        float cRight = (gRight - gLeft < 2f) ? Math.max(gRight, gLeft + mFontWidth * 0.45f) : gRight;
                         if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
-                            canvas.drawRect(cLeft, bottom - cursorHeight / 4.f, cRight, bottom, mTextPaint);
+                            canvas.drawRect(gLeft, bottom - cursorHeight / 4.f, cRight, bottom, mTextPaint);
                         } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
-                            float barW = mFontWidth / 4.f;
-                            float barRight = Math.min(slotRight, Math.max(slotLeft + barW, gRight));
-                            canvas.drawRect(barRight - barW, bottom - cursorHeight, barRight, bottom, mTextPaint);
+                            canvas.drawRect(gLeft, bottom - cursorHeight, gLeft + mFontWidth / 4.f, bottom, mTextPaint);
                         } else {
-                            canvas.drawRect(cLeft, bottom - cursorHeight, cRight, bottom, mTextPaint);
+                            canvas.drawRect(gLeft, bottom - cursorHeight, cRight, bottom, mTextPaint);
                         }
                     }
                 }

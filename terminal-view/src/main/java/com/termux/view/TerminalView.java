@@ -38,7 +38,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.termux.terminal.KeyHandler;
+import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
+import com.termux.terminal.TerminalRow;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.textselection.TextSelectionCursorController;
 
@@ -921,10 +923,112 @@ public final class TerminalView extends View {
             return true;
 
         TerminalEmulator term = mTermSession.getEmulator();
+        if (keyMod == 0 && (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
+                && term != null && !term.isAlternateBufferActive()) {
+            int visualDir = (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) ? -1 : 1;
+            int stepDelta = resolveVisualArrowSteps(term, visualDir);
+            if (stepDelta != ARROW_STEP_FALLBACK) {
+                if (stepDelta == 0) return true;
+                int stepKeyCode = (stepDelta > 0) ? KeyEvent.KEYCODE_DPAD_RIGHT : KeyEvent.KEYCODE_DPAD_LEFT;
+                String stepCode = KeyHandler.getCode(stepKeyCode, 0,
+                        term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
+                if (stepCode != null) {
+                    int count = Math.abs(stepDelta);
+                    StringBuilder sb = new StringBuilder(stepCode.length() * count);
+                    for (int i = 0; i < count; i++) {
+                        sb.append(stepCode);
+                    }
+                    mTermSession.write(sb.toString());
+                    return true;
+                }
+            }
+        }
+
         String code = KeyHandler.getCode(keyCode, keyMod, term.isCursorKeysApplicationMode(), term.isKeypadApplicationMode());
         if (code == null) return false;
         mTermSession.write(code);
         return true;
+    }
+
+    static final int ARROW_STEP_FALLBACK = Integer.MIN_VALUE;
+
+    static int resolveVisualArrowSteps(TerminalEmulator term, int visualDir) {
+        if (term == null || visualDir == 0) return ARROW_STEP_FALLBACK;
+        final int columns = term.mColumns;
+        final int cursorRow = term.getCursorRow();
+        final int cursorCol = term.getCursorCol();
+        if (columns <= 0 || cursorCol < 0 || cursorCol >= columns) return ARROW_STEP_FALLBACK;
+
+        TerminalBuffer screen = term.getScreen();
+        if (screen == null) return ARROW_STEP_FALLBACK;
+        byte paragraphDir = BidiLayout.resolveInheritedDirection(screen, cursorRow, columns);
+        TerminalRow rowObject = screen.allocateFullLineIfNecessary(screen.externalToInternalRow(cursorRow));
+        if (rowObject == null || (!rowObject.mMayContainRtlOrBidi && paragraphDir != BidiLayout.DIR_RTL)) {
+            return ARROW_STEP_FALLBACK;
+        }
+        BidiLayout layout = BidiLayout.build(rowObject, columns, cursorCol, false,
+                -1, -1, -1, -1, cursorRow, false, paragraphDir);
+        return resolveVisualArrowSteps(layout, cursorCol, columns, visualDir);
+    }
+
+    /**
+     * Computes signed horizontal cursor steps to move one visual cell left ({@code visualDir < 0})
+     * or right ({@code visualDir > 0}) across BiDi-reordered Arabic and mixed LTR/RTL text.
+     *
+     * @return positive for rightward key repeats, negative for leftward key repeats, {@code 0} to
+     * consume a visual boundary press cleanly, or {@link #ARROW_STEP_FALLBACK} for default behavior.
+     */
+    static int resolveVisualArrowSteps(BidiLayout layout, int cursorCol, int columns, int visualDir) {
+        if (layout == null || layout.isIdentity || visualDir == 0 || columns <= 0) {
+            return ARROW_STEP_FALLBACK;
+        }
+        if (cursorCol < 0 || cursorCol >= columns) {
+            return ARROW_STEP_FALLBACK;
+        }
+        // Preserve standard rightward behavior past active text (e.g., shell autosuggestions or EOL bell).
+        if (cursorCol >= layout.trimmedActiveLength && visualDir > 0) {
+            return ARROW_STEP_FALLBACK;
+        }
+
+        int curVis = layout.logicalToVisual[cursorCol];
+        int targetVis = curVis + visualDir;
+        while (targetVis >= 0 && targetVis < columns
+                && layout.visualCells[targetVis].displayWidth == 0
+                && layout.visualCells[targetVis].codePoint == 0) {
+            targetVis += visualDir;
+        }
+
+        if (targetVis < 0) {
+            // At visual col 0 of a BiDi row: stay put rather than stepping backward into RTL text.
+            return 0;
+        }
+        if (targetVis >= columns) {
+            return ARROW_STEP_FALLBACK;
+        }
+
+        int targetLogical = layout.visualToLogical[targetVis];
+        if (layout.promptPrefixLength > 0 && cursorCol >= layout.promptPrefixLength
+                && targetLogical < layout.promptPrefixLength) {
+            // Do not cross leftward into a read-only shell prompt where readline would clamp and bounce.
+            return 0;
+        }
+        if (targetLogical == cursorCol) {
+            return 0;
+        }
+
+        int lo = Math.min(cursorCol, targetLogical);
+        int hi = Math.max(cursorCol, targetLogical);
+        int steps = 0;
+        for (int c = lo; c < hi; c++) {
+            BidiLayout.LogicalCell cell = layout.visualCells[layout.logicalToVisual[c]];
+            if (!(cell.displayWidth == 0 && cell.codePoint == 0)) {
+                steps++;
+            }
+        }
+        if (steps <= 0 || steps > columns) {
+            return ARROW_STEP_FALLBACK;
+        }
+        return (targetLogical > cursorCol) ? steps : -steps;
     }
 
     public boolean handleKeyCodeAction(int keyCode, int keyMod) {

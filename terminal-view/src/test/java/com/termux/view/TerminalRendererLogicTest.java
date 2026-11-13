@@ -528,48 +528,135 @@ public class TerminalRendererLogicTest {
     }
 
     @Test
-    public void testTypingCursorRedirectsToInsertionEdgeWithoutStrandingAtOppositeSide() {
+    public void testCursorShapesPreserveStandardGeometryAndRtlGlyphBounds() {
         TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
         float w = renderer.mFontWidth;
 
-        // 1. Pure Arabic "مرحبا" with cursor at col 5 (trailing typing edge):
-        // Caret must sit near visual left edge (< 1*w), NOT stranded at col 5 (5*w).
-        TerminalEmulator rtlEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627");
-        int cursorColor = rtlEm.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
-        RecordingCanvas c1 = new RecordingCanvas();
-        renderer.render(rtlEm, c1, 0, -1, -1, -1, -1);
-        RectCall rtlCaret = findLastCursorRect(c1, cursorColor);
-        assertTrue("Expected cursor rect for pure RTL typing edge", rtlCaret != null);
-        assertTrue("Cursor stranded on wrong side at x=" + rtlCaret.left, rtlCaret.right <= w * 1.1f);
+        // 1. Default BLOCK cursor on trailing space after Arabic keeps standard full-cell block shape.
+        TerminalEmulator blockEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627");
+        int cursorColor = blockEm.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
+        RecordingCanvas cBlock = new RecordingCanvas();
+        renderer.render(blockEm, cBlock, 0, -1, -1, -1, -1);
+        RectCall blockTrailing = findLastCursorRect(cBlock, cursorColor);
+        assertTrue("Expected standard BLOCK cursor rect on trailing cell", blockTrailing != null);
+        assertEquals(w, blockTrailing.right - blockTrailing.left, 0.5f);
+        assertTrue("Trailing cell cursor should sit at col 5",
+                blockTrailing.left >= 4.9f * w && blockTrailing.left <= 5.1f * w);
 
-        // 2. Bash prompt "$ مرحبا" with cursor at col 7:
-        // Prompt "$ " is at [0..2*w), Arabic word starts at 2*w; insertion caret must sit around 2*w, NOT 7*w.
-        TerminalEmulator promptEm = newEmulator(20, 2, "$ \u0645\u0631\u062D\u0628\u0627");
-        RecordingCanvas c2 = new RecordingCanvas();
-        renderer.render(promptEm, c2, 0, -1, -1, -1, -1);
-        RectCall promptCaret = findLastCursorRect(c2, cursorColor);
-        assertTrue("Expected cursor rect for prompted Arabic typing edge", promptCaret != null);
-        assertTrue("Prompt cursor stranded at x=" + promptCaret.left,
-                promptCaret.left >= w && promptCaret.right <= w * 2.5f);
+        // 2. BAR cursor (\e[6 q) and UNDERLINE cursor (\e[4 q) inside an Arabic word keep standard shapes
+        //    positioned within the Arabic word bounds without spilling over neighboring letters.
+        TerminalEmulator barEm = newEmulator(20, 2, "\u001b[6 q\u0645\u0631\u062D\u0628\u0627\u001b[3G");
+        RecordingCanvas cBar = new RecordingCanvas();
+        renderer.render(barEm, cBar, 0, -1, -1, -1, -1);
+        RectCall barRect = findLastCursorRect(cBar, cursorColor);
+        assertTrue("Expected BAR cursor rect inside Arabic word", barRect != null);
+        assertTrue("BAR cursor must remain thin bar, width=" + (barRect.right - barRect.left),
+                (barRect.right - barRect.left) <= w * 0.35f);
+        assertTrue("BAR cursor must stay inside RTL run bounds",
+                barRect.left >= 0f && barRect.right <= 5.1f * w);
 
-        // 3. Arabic + embedded LTR "مرحبا abc" with cursor at col 9:
-        // "abc" occupies visual [0..3*w), so insertion caret must sit near 3*w, NOT 9*w.
-        TerminalEmulator mixedEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627 abc");
-        RecordingCanvas c3 = new RecordingCanvas();
-        renderer.render(mixedEm, c3, 0, -1, -1, -1, -1);
-        RectCall mixedCaret = findLastCursorRect(c3, cursorColor);
-        assertTrue("Expected cursor rect for mixed trailing LTR typing edge", mixedCaret != null);
-        assertTrue("Mixed trailing LTR caret should be near end of 'abc' (~3w), was " + mixedCaret.left,
-                mixedCaret.left >= w * 2.5f && mixedCaret.right <= w * 3.5f);
+        TerminalEmulator ulEm = newEmulator(20, 2, "\u001b[4 q\u0645\u0631\u062D\u0628\u0627\u001b[3G");
+        RecordingCanvas cUl = new RecordingCanvas();
+        renderer.render(ulEm, cUl, 0, -1, -1, -1, -1);
+        RectCall ulRect = findLastCursorRect(cUl, cursorColor);
+        assertTrue("Expected UNDERLINE cursor rect inside Arabic word", ulRect != null);
+        assertTrue("UNDERLINE cursor height must stay thin underline, h=" + (ulRect.bottom - ulRect.top),
+                (ulRect.bottom - ulRect.top) <= (blockTrailing.bottom - blockTrailing.top) * 0.4f);
 
-        // 4. Explicit distant cursor positioning (\e[15G -> col 14) still draws at col 14.
-        TerminalEmulator farEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627\u001b[15G");
-        RecordingCanvas c4 = new RecordingCanvas();
-        renderer.render(farEm, c4, 0, -1, -1, -1, -1);
-        RectCall farCaret = findLastCursorRect(c4, cursorColor);
-        assertTrue("Expected explicit distant cursor rect", farCaret != null);
-        assertTrue("Distant cursor should render at col 14, was " + farCaret.left,
-                farCaret.left >= 13.9f * w && farCaret.left <= 14.1f * w);
+        // 3. BLOCK cursor inside Arabic word covers the target glyph cleanly without overshooting run slot.
+        TerminalEmulator rtlBlockEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627\u001b[3G");
+        RecordingCanvas cRtlBlock = new RecordingCanvas();
+        renderer.render(rtlBlockEm, cRtlBlock, 0, -1, -1, -1, -1);
+        RectCall rtlBlockRect = findLastCursorRect(cRtlBlock, cursorColor);
+        assertTrue("Expected BLOCK cursor rect inside Arabic word", rtlBlockRect != null);
+        assertTrue("RTL BLOCK cursor width must be visible", (rtlBlockRect.right - rtlBlockRect.left) > 1.5f);
+        assertTrue("RTL BLOCK cursor must stay within run slot [0..5w], got ["
+                        + rtlBlockRect.left + ", " + rtlBlockRect.right + "]",
+                rtlBlockRect.left >= 0f && rtlBlockRect.right <= 5.1f * w);
+    }
+
+    @Test
+    public void testVisualArrowStepsMoveSmoothlyAcrossArabicAndEnglish() {
+        // 1. Pure LTR identity falls back to default single-step keys.
+        TerminalEmulator ltrEm = newEmulator(24, 2, "hello world");
+        assertEquals(TerminalView.ARROW_STEP_FALLBACK, TerminalView.resolveVisualArrowSteps(ltrEm, -1));
+        assertEquals(TerminalView.ARROW_STEP_FALLBACK, TerminalView.resolveVisualArrowSteps(ltrEm, 1));
+
+        // 2. Pure Arabic "مرحبا" (cols 0..4, cursor at col 5): walk left visual col 5->0 and back 0->5.
+        TerminalEmulator arEm = newEmulator(24, 2, "\u0645\u0631\u062D\u0628\u0627");
+        int col = arEm.getCursorCol(); // 5
+        assertEquals(5, col);
+        int[] expectedLeftCols = {0, 1, 2, 3, 4}; // visual 4='م', 3='ر', 2='ح', 1='ب', 0='ا'
+        for (int targetCol : expectedLeftCols) {
+            int delta = TerminalView.resolveVisualArrowSteps(arEm, -1);
+            assertTrue("Expected leftward step delta != FALLBACK/0 from col=" + col,
+                    delta != TerminalView.ARROW_STEP_FALLBACK && delta != 0);
+            col += delta;
+            assertEquals("Left arrow should land on logical col=" + targetCol, targetCol, col);
+            String move = "\u001b[" + (col + 1) + "G";
+            arEm.append(move.getBytes(StandardCharsets.UTF_8), move.length());
+        }
+        // Pressing Left at visual col 0 stays cleanly at 'ا' instead of bouncing rightward to 'ب'.
+        assertEquals(0, TerminalView.resolveVisualArrowSteps(arEm, -1));
+
+        // Now walk Right across 'ا'->'ب'->'ح'->'ر'->'م'->' ' (col 5).
+        int[] expectedRightCols = {3, 2, 1, 0, 5};
+        for (int targetCol : expectedRightCols) {
+            int delta = TerminalView.resolveVisualArrowSteps(arEm, 1);
+            assertTrue("Expected rightward step delta != FALLBACK/0 from col=" + col,
+                    delta != TerminalView.ARROW_STEP_FALLBACK && delta != 0);
+            col += delta;
+            assertEquals("Right arrow should land on logical col=" + targetCol, targetCol, col);
+            String move = "\u001b[" + (col + 1) + "G";
+            arEm.append(move.getBytes(StandardCharsets.UTF_8), move.length());
+        }
+        // At trailing edge col 5, Right arrow falls back cleanly (autosuggestion / EOL behavior).
+        assertEquals(TerminalView.ARROW_STEP_FALLBACK, TerminalView.resolveVisualArrowSteps(arEm, 1));
+
+        // 3. Prompt + Arabic "$ مرحبا": pressing Left from visual 'ا' stops at prompt boundary without bouncing.
+        TerminalEmulator promptEm = newEmulator(24, 2, "$ \u0645\u0631\u062D\u0628\u0627\u001b[7G");
+        assertEquals("At leftmost Arabic char after '$ ' prompt, Left must not cross into prompt",
+                0, TerminalView.resolveVisualArrowSteps(promptEm, -1));
+
+        // 4. Mixed prompt + Arabic + English + Arabic "$ مرحبا hi بكم":
+        // Every Left press from typing edge steps strictly 1 visual column left across Arabic and English.
+        TerminalEmulator mixedEm = newEmulator(30, 2, "$ \u0645\u0631\u062D\u0628\u0627 hi \u0628\u0643\u0645");
+        TerminalBuffer screen = mixedEm.getScreen();
+        BidiLayout mixedLayout = BidiLayout.build(
+                screen.allocateFullLineIfNecessary(screen.externalToInternalRow(0)),
+                30, mixedEm.getCursorCol(), false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        int curCol = mixedEm.getCursorCol(); // 14 (visual 14)
+        int curVis = mixedLayout.logicalToVisual[curCol];
+        while (curVis > mixedLayout.promptPrefixLength) {
+            int delta = TerminalView.resolveVisualArrowSteps(mixedLayout, curCol, 30, -1);
+            assertTrue("Expected non-zero step at visual=" + curVis, delta != TerminalView.ARROW_STEP_FALLBACK && delta != 0);
+            curCol += delta;
+            int nextVis = mixedLayout.logicalToVisual[curCol];
+            assertEquals("Each Left press must move strictly 1 visual col left", curVis - 1, nextVis);
+            curVis = nextVis;
+        }
+        assertEquals("Should stop cleanly at first editable visual cell after prompt", 0,
+                TerminalView.resolveVisualArrowSteps(mixedLayout, curCol, 30, -1));
+
+        // 5. Wide emoji + Arabic: skipping width-0 continuation emits single logical character step.
+        // In LTR base "hello👍hi مرحبا", 'h' is at col 7 (v7) and '👍' spans cols 5..6 (v5..v6).
+        TerminalEmulator wideLtrEm = newEmulator(24, 2, "hello\uD83D\uDC4Dhi \u0645\u0631\u062D\u0628\u0627");
+        TerminalBuffer wideLtrScreen = wideLtrEm.getScreen();
+        BidiLayout wideLtrLayout = BidiLayout.build(
+                wideLtrScreen.allocateFullLineIfNecessary(wideLtrScreen.externalToInternalRow(0)),
+                24, wideLtrEm.getCursorCol(), false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertEquals(-1, TerminalView.resolveVisualArrowSteps(wideLtrLayout, 7, 24, -1));
+        assertEquals(1, TerminalView.resolveVisualArrowSteps(wideLtrLayout, 5, 24, 1));
+
+        // In RTL base "مرحبا👍hi", visual order is [h(7), i(8), 👍(5,6), ا(4), ..., م(0)]:
+        // 'h' is at v0 (stops on Left), '👍' at v2 steps Right onto 'ا' (col 4) skipping v3 continuation.
+        TerminalEmulator wideRtlEm = newEmulator(24, 2, "\u0645\u0631\u062D\u0628\u0627\uD83D\uDC4Dhi");
+        TerminalBuffer wideRtlScreen = wideRtlEm.getScreen();
+        BidiLayout wideRtlLayout = BidiLayout.build(
+                wideRtlScreen.allocateFullLineIfNecessary(wideRtlScreen.externalToInternalRow(0)),
+                24, wideRtlEm.getCursorCol(), false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertEquals(0, TerminalView.resolveVisualArrowSteps(wideRtlLayout, 7, 24, -1));
+        assertEquals(-1, TerminalView.resolveVisualArrowSteps(wideRtlLayout, 5, 24, 1));
     }
 
     @Test

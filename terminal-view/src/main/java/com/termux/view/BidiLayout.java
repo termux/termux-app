@@ -96,6 +96,7 @@ public final class BidiLayout {
     public final byte resolvedBaseDirection;
     public final boolean isIdentity;
     public final int trimmedActiveLength;
+    public final int promptPrefixLength;
 
     // Tracks last rendered dynamic cursor/selection state to skip per-cell loops on static frames.
     private int mRenderedCursorCol = -2;
@@ -104,7 +105,7 @@ public final class BidiLayout {
 
     private BidiLayout(LogicalCell[] visualCells, int[] logicalToVisual, int[] visualToLogical,
                        byte inputParagraphDirection, byte resolvedBaseDirection, boolean isIdentity,
-                       int trimmedActiveLength) {
+                       int trimmedActiveLength, int promptPrefixLength) {
         this.visualCells = visualCells;
         this.logicalToVisual = logicalToVisual;
         this.visualToLogical = visualToLogical;
@@ -112,6 +113,7 @@ public final class BidiLayout {
         this.resolvedBaseDirection = resolvedBaseDirection;
         this.isIdentity = isIdentity;
         this.trimmedActiveLength = trimmedActiveLength;
+        this.promptPrefixLength = promptPrefixLength;
     }
 
     /** Backward-compatible entry point defaulting to {@link #DIR_DEFAULT}. */
@@ -239,6 +241,7 @@ public final class BidiLayout {
 
         byte resolvedDir = (paragraphDirection == DIR_RTL) ? DIR_RTL : DIR_LTR;
         boolean allIdentity = true;
+        int promptEnd = 0;
 
         if (activeLength == 0 || (!rowObject.mMayContainRtlOrBidi && paragraphDirection != DIR_RTL)) {
             for (int i = 0; i < columns; i++) {
@@ -290,7 +293,7 @@ public final class BidiLayout {
                 reorderBoxTableCells(logicalCells, bidiChars, activeLength, activeVisToLog, levels);
                 resolvedDir = DIR_LTR;
             } else {
-                int promptEnd = hasAnyRtl ? detectPromptPrefixLength(logicalCells, bidiChars, activeLength) : 0;
+                promptEnd = hasAnyRtl ? detectPromptPrefixLength(logicalCells, bidiChars, activeLength) : 0;
                 if (promptEnd > 0) {
                     boolean payloadLtr = reorderSlice(bidiChars, promptEnd, activeLength,
                             Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT, activeVisToLog, levels, logicalCells);
@@ -329,7 +332,7 @@ public final class BidiLayout {
         }
 
         BidiLayout newLayout = new BidiLayout(visualCells, logicalToVisual, visualToLogical,
-                paragraphDirection, resolvedDir, allIdentity, activeLength);
+                paragraphDirection, resolvedDir, allIdentity, activeLength, promptEnd);
         if (isForRendering) {
             newLayout.mRenderedCursorCol = effectiveCursorCol;
             newLayout.mRenderedVSelStart = vSelStart;
