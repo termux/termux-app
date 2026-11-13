@@ -197,10 +197,14 @@ public class TerminalRendererLogicTest {
         row[0].codePoint = ' ';
         row[8].codePoint = 'x';
         assertEquals(TerminalRenderer.ALIGN_RIGHT, TerminalRenderer.resolveRtlAlignment(row, 3, 7, 10));
-        // Col-0 Arabic [0..2] before inline English 'x' at [4] -> ALIGN_CENTER so gap before English stays balanced
+        // Col-0 Arabic [0..2] before inline English 'x' at [4] -> ALIGN_LEFT so col 0 never indents
         row[8].codePoint = ' ';
         row[4].codePoint = 'x';
-        assertEquals(TerminalRenderer.ALIGN_CENTER, TerminalRenderer.resolveRtlAlignment(row, 0, 3, 10));
+        assertEquals(TerminalRenderer.ALIGN_LEFT, TerminalRenderer.resolveRtlAlignment(row, 0, 3, 10));
+
+        // Balanced centering caps left gap at <= 0.45w while preserving smaller natural centering
+        assertEquals(24.5f, TerminalRenderer.computeBalancedRtlLeftX(2, 12, 10.0f, 60.0f, 1.0f, TerminalRenderer.ALIGN_CENTER), 0.001f);
+        assertEquals(24.0f, TerminalRenderer.computeBalancedRtlLeftX(2, 4, 10.0f, 32.0f, 1.0f, TerminalRenderer.ALIGN_CENTER), 0.001f);
     }
 
     @Test
@@ -702,8 +706,8 @@ public class TerminalRendererLogicTest {
         assertTrue("Expected Arabic phrase RTL run", rtlPhrase != null);
         assertTrue("Expected crisp unstretched ')' delimiter", rightParen != null && Math.abs(rightParen.lastScaleX - 1.0f) < 0.01f);
         assertTrue("Left '(' must sit left of Arabic phrase", leftParen.x < rtlPhrase.x);
-        assertTrue("Arabic phrase must start tightly next to '(' (<= 0.75w), got x=" + rtlPhrase.x,
-                rtlPhrase.x <= w * 0.75f);
+        assertTrue("Arabic phrase must start cleanly next to '(' (<= 0.90w, no multi-space gap), got x=" + rtlPhrase.x,
+                rtlPhrase.x <= w * 0.90f);
         assertTrue("Right ')' must sit right of Arabic phrase, got x=" + rightParen.x,
                 rightParen.x > rtlPhrase.x);
 

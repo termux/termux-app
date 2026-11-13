@@ -30,8 +30,8 @@ public final class TerminalRenderer {
     static final float MAX_RTL_HORIZONTAL_STRETCH = 1.35f;
     /** Proportional scale factor for RTL scripts matching monospace Latin visual weight comfortably. */
     static final float RTL_TEXT_SIZE_SCALE = 1.08f;
-    /** Compact horizontal advance factor for paired ASCII delimiters hugging shaped RTL phrases. */
-    static final float RTL_DELIMITER_ADVANCE_FACTOR = 0.70f;
+    /** Balanced compact horizontal advance factor for paired ASCII delimiters next to shaped RTL phrases. */
+    static final float RTL_DELIMITER_ADVANCE_FACTOR = 0.86f;
 
     static final int ALIGN_LEFT = -1;
     static final int ALIGN_CENTER = 0;
@@ -130,6 +130,17 @@ public final class TerminalRenderer {
         return slotLeft + (slotWidth - drawnWidth) * 0.5f;
     }
 
+    /** Caps rightward shift for centered phrases so long RTL text never opens big leading gaps. */
+    static float computeBalancedRtlLeftX(int startCol, int runColumns, float fontWidth,
+                                         float measuredWidth, float scaleX, int alignment) {
+        float raw = computeRtlRunLeftX(startCol, runColumns, fontWidth, measuredWidth, scaleX, alignment);
+        if (alignment == ALIGN_CENTER) {
+            float maxShift = startCol * fontWidth + fontWidth * 0.45f;
+            if (raw > maxShift) return maxShift;
+        }
+        return raw;
+    }
+
     private static boolean isPlainSpaceCell(BidiLayout.LogicalCell cell) {
         return cell == null
                 || (cell.codePoint == ' ' && cell.combiningCount == 0 && !cell.hasBitmap && cell.displayWidth == 1);
@@ -158,7 +169,7 @@ public final class TerminalRenderer {
             return ALIGN_CENTER;
         }
         if (textOnRight && startCol == 0) {
-            return (endCol < columns && !isPlainSpaceCell(visualCells[endCol])) ? ALIGN_RIGHT : ALIGN_CENTER;
+            return (endCol < columns && !isPlainSpaceCell(visualCells[endCol])) ? ALIGN_RIGHT : ALIGN_LEFT;
         }
         if (textOnRight && startCol > 0 && !textOnLeft) return ALIGN_RIGHT;
         return ALIGN_LEFT;
@@ -760,7 +771,7 @@ public final class TerminalRenderer {
 
             final float scaleX = computeRtlRunScaleX(measuredWidth, runColumns, mFontWidth);
             final int alignment = resolveRtlAlignment(visualCells, startCol, endCol, visualCells.length);
-            final float drawLeft = computeRtlRunLeftX(startCol, runColumns, mFontWidth, measuredWidth, scaleX, alignment);
+            final float drawLeft = computeBalancedRtlLeftX(startCol, runColumns, mFontWidth, measuredWidth, scaleX, alignment);
             final float drawnWidth = measuredWidth * scaleX;
             final float slotLeft = startCol * mFontWidth;
             final float slotRight = endCol * mFontWidth;
@@ -886,7 +897,7 @@ public final class TerminalRenderer {
         }
         float totalDrawnW = fixedDelimSum + natRtlSum * scaleX;
         int alignment = resolveRtlAlignment(visualCells, startCol, endCol, visualCells.length);
-        float drawLeft = computeRtlRunLeftX(startCol, runColumns, mFontWidth, totalDrawnW, 1.0f, alignment);
+        float drawLeft = computeBalancedRtlLeftX(startCol, runColumns, mFontWidth, totalDrawnW, 1.0f, alignment);
 
         final float top = heightOffset - mFontLineSpacingAndAscent + mFontAscent;
         final float bottom = heightOffset;
