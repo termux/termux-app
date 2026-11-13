@@ -676,6 +676,103 @@ public class TerminalRendererLogicTest {
         assertTrue(TerminalRenderer.isInvisibleBidiFormatChar('\u061C'));
     }
 
+    @Test
+    public void testParenthesizedArabicTightSpacingAndMixedDelimiters() {
+        TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+        float w = renderer.mFontWidth;
+
+        // 1. "(أهلا بكم)" places mirrored '(' at visual left and ')' at visual right, hugging RTL text:
+        // Delimiters remain 1.0x unstretched monospace and rtlPhrase starts right at 0.70*w (no gap).
+        TerminalEmulator parensEm = newEmulator(20, 2, "(\u0623\u0647\u0644\u0627 \u0628\u0643\u0645)");
+        RecordingCanvas c1 = new RecordingCanvas();
+        renderer.render(parensEm, c1, 0, -1, -1, -1, -1);
+        DrawCall leftParen = null;
+        DrawCall rtlPhrase = null;
+        DrawCall rightParen = null;
+        for (DrawCall dc : c1.textCalls) {
+            if (!dc.isRtl && "(".equals(dc.text)) {
+                leftParen = dc;
+            } else if (dc.isRtl && dc.text.contains("\u0623\u0647\u0644\u0627")) {
+                rtlPhrase = dc;
+            } else if (!dc.isRtl && ")".equals(dc.text)) {
+                rightParen = dc;
+            }
+        }
+        assertTrue("Expected crisp unstretched '(' delimiter", leftParen != null && Math.abs(leftParen.lastScaleX - 1.0f) < 0.01f);
+        assertTrue("Expected Arabic phrase RTL run", rtlPhrase != null);
+        assertTrue("Expected crisp unstretched ')' delimiter", rightParen != null && Math.abs(rightParen.lastScaleX - 1.0f) < 0.01f);
+        assertTrue("Left '(' must sit left of Arabic phrase", leftParen.x < rtlPhrase.x);
+        assertTrue("Arabic phrase must start tightly next to '(' (<= 0.75w), got x=" + rtlPhrase.x,
+                rtlPhrase.x <= w * 0.75f);
+        assertTrue("Right ')' must sit right of Arabic phrase, got x=" + rightParen.x,
+                rightParen.x > rtlPhrase.x);
+
+        // 2. "قال (مرحبا) لكم": words and parentheses form cohesive spacing cleanly (3 RTL word calls + 2 delim calls).
+        TerminalEmulator sentenceEm = newEmulator(25, 2, "\u0642\u0627\u0644 (\u0645\u0631\u062D\u0628\u0627) \u0644\u0643\u0645");
+        RecordingCanvas c2 = new RecordingCanvas();
+        renderer.render(sentenceEm, c2, 0, -1, -1, -1, -1);
+        int rtlWordCalls = 0;
+        int parenCalls = 0;
+        for (DrawCall dc : c2.textCalls) {
+            if (dc.isRtl && !dc.text.trim().isEmpty()) rtlWordCalls++;
+            if (!dc.isRtl && ("(".equals(dc.text) || ")".equals(dc.text))) {
+                parenCalls++;
+                assertEquals(1.0f, dc.lastScaleX, 0.01f);
+            }
+        }
+        assertEquals(3, rtlWordCalls);
+        assertEquals(2, parenCalls);
+
+        // 3. LTR embedding boundary: "func(مرحبا) + x" keeps unmirrored '(' and ')' flush against 'func'.
+        TerminalEmulator funcEm = newEmulator(25, 2, "func(\u0645\u0631\u062D\u0628\u0627) + x");
+        RecordingCanvas c3 = new RecordingCanvas();
+        renderer.render(funcEm, c3, 0, -1, -1, -1, -1);
+        DrawCall funcOpen = null;
+        DrawCall funcClose = null;
+        DrawCall funcRtl = null;
+        for (DrawCall dc : c3.textCalls) {
+            if (!dc.isRtl && "(".equals(dc.text)) funcOpen = dc;
+            if (!dc.isRtl && ")".equals(dc.text)) funcClose = dc;
+            if (dc.isRtl && "\u0645\u0631\u062D\u0628\u0627".equals(dc.text)) funcRtl = dc;
+        }
+        assertTrue("Expected unmirrored '(' in func(مرحبا)", funcOpen != null);
+        assertTrue("Expected RTL word in func(مرحبا)", funcRtl != null);
+        assertTrue("Expected unmirrored ')' in func(مرحبا)", funcClose != null);
+        assertTrue("Opening '(' must hug 'func' cleanly", funcOpen.x < funcRtl.x && funcOpen.x <= 4.1f * w);
+        assertTrue("Closing ')' must stay right of Arabic word", funcClose.x > funcRtl.x);
+
+        // 4. Nested delimiters "((مرحبا))" and cursor on delimiter align without breaking cursor visibility.
+        TerminalEmulator nestedEm = newEmulator(20, 2, "((\u0645\u0631\u062D\u0628\u0627))\u001b[1G");
+        RecordingCanvas c4 = new RecordingCanvas();
+        renderer.render(nestedEm, c4, 0, -1, -1, -1, -1);
+        int cursorColor = nestedEm.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
+        RectCall delimCursor = findLastCursorRect(c4, cursorColor);
+        assertTrue("Expected visible cursor rect on nested delimiter", delimCursor != null && (delimCursor.right - delimCursor.left) > 1.0f);
+
+        // 5. Delimiters around space-separated "(hi)" do NOT join RTL; tight touching "مر(hi)ب" DOES join.
+        BidiLayout.LogicalCell[] spacedRow = new BidiLayout.LogicalCell[8];
+        String sSpaced = "\u0645 (hi) \u0628";
+        for (int i = 0; i < spacedRow.length; i++) {
+            spacedRow[i] = new BidiLayout.LogicalCell();
+            spacedRow[i].codePoint = sSpaced.charAt(i);
+            spacedRow[i].displayWidth = 1;
+            spacedRow[i].isRtl = (i == 0 || i == 7);
+        }
+        assertFalse(TerminalRenderer.canJoinRtlAdjacentDelimiter(spacedRow, 8, 2)); // '(' between ' ' and 'h'
+        assertFalse(TerminalRenderer.canJoinRtlAdjacentDelimiter(spacedRow, 8, 5)); // ')' between 'i' and ' '
+
+        BidiLayout.LogicalCell[] touchingRow = new BidiLayout.LogicalCell[7];
+        String sTouch = "\u0645\u0631(hi)\u0628";
+        for (int i = 0; i < touchingRow.length; i++) {
+            touchingRow[i] = new BidiLayout.LogicalCell();
+            touchingRow[i].codePoint = sTouch.charAt(i);
+            touchingRow[i].displayWidth = 1;
+            touchingRow[i].isRtl = (i != 3 && i != 4);
+        }
+        assertTrue(TerminalRenderer.canJoinRtlAdjacentDelimiter(touchingRow, 7, 2)); // '(' touches 'ر'
+        assertTrue(TerminalRenderer.canJoinRtlAdjacentDelimiter(touchingRow, 7, 5)); // ')' touches 'ب'
+    }
+
     private static RectCall findLastCursorRect(RecordingCanvas canvas, int cursorColor) {
         RectCall found = null;
         for (RectCall rc : canvas.rectCalls) {

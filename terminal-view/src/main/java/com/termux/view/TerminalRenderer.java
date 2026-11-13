@@ -30,10 +30,16 @@ public final class TerminalRenderer {
     static final float MAX_RTL_HORIZONTAL_STRETCH = 1.35f;
     /** Proportional scale factor for RTL scripts matching monospace Latin visual weight comfortably. */
     static final float RTL_TEXT_SIZE_SCALE = 1.08f;
+    /** Compact horizontal advance factor for paired ASCII delimiters hugging shaped RTL phrases. */
+    static final float RTL_DELIMITER_ADVANCE_FACTOR = 0.70f;
 
     static final int ALIGN_LEFT = -1;
     static final int ALIGN_CENTER = 0;
     static final int ALIGN_RIGHT = 1;
+
+    private static final int SEG_RTL = 0;
+    private static final int SEG_DELIM = 1;
+    private static final int SEG_SPACE = 2;
 
     final int mTextSize;
     final Typeface mTypeface;
@@ -63,6 +69,13 @@ public final class TerminalRenderer {
     private int[] mVisualToRunCell = new int[256];
     private float[] mVisCellLeft = new float[256];
     private float[] mVisCellRight = new float[256];
+    private int[] mSegKind = new int[32];
+    private int[] mSegVisStart = new int[32];
+    private int[] mSegVisEnd = new int[32];
+    private int[] mSegCharStart = new int[32];
+    private int[] mSegCharEnd = new int[32];
+    private float[] mSegNatWidth = new float[32];
+    private float[] mSegLeft = new float[32];
 
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
@@ -137,14 +150,24 @@ public final class TerminalRenderer {
     static int resolveRtlAlignment(BidiLayout.LogicalCell[] visualCells, int startCol, int endCol, int columns) {
         boolean textOnLeft = hasAdjacentTextOnLeft(visualCells, startCol);
         boolean textOnRight = hasAdjacentTextOnRight(visualCells, endCol, columns);
-        if (textOnRight && (textOnLeft || startCol == 0)) return ALIGN_CENTER;
+        if (textOnLeft && textOnRight) {
+            boolean flushLeft = startCol > 0 && !isPlainSpaceCell(visualCells[startCol - 1]);
+            boolean flushRight = endCol < columns && !isPlainSpaceCell(visualCells[endCol]);
+            if (flushLeft && !flushRight) return ALIGN_LEFT;
+            if (flushRight && !flushLeft) return ALIGN_RIGHT;
+            return ALIGN_CENTER;
+        }
+        if (textOnRight && startCol == 0) {
+            return (endCol < columns && !isPlainSpaceCell(visualCells[endCol])) ? ALIGN_RIGHT : ALIGN_CENTER;
+        }
         if (textOnRight && startCol > 0 && !textOnLeft) return ALIGN_RIGHT;
         return ALIGN_LEFT;
     }
 
     /**
      * Resolves whether a single space at {@code vCol} bridges two adjacent shaped RTL words
-     * into one continuous HarfBuzz phrase while leaving multi-space indentation/tables on the grid.
+     * (or an RTL-hugging paired delimiter) into one continuous phrase while leaving multi-space
+     * indentation/tables on the grid.
      */
     static boolean canBridgeSpaceIntoRtlRun(BidiLayout.LogicalCell[] visualCells, int columns,
                                             int vCol, BidiLayout.LogicalCell lastRtlCell) {
@@ -154,7 +177,8 @@ public final class TerminalRenderer {
             return false;
         }
         BidiLayout.LogicalCell next = visualCells[vCol + 1];
-        if (!isShapedRtlCell(next)) return false;
+        boolean nextIsRtlMember = isShapedRtlCell(next) || canJoinRtlAdjacentDelimiter(visualCells, columns, vCol + 1);
+        if (!nextIsRtlMember) return false;
         return Math.abs(curr.originalColumn - lastRtlCell.originalColumn) == 1
                 && Math.abs(next.originalColumn - curr.originalColumn) == 1;
     }
@@ -165,6 +189,33 @@ public final class TerminalRenderer {
                 || codePoint == '[' || codePoint == ']'
                 || codePoint == '{' || codePoint == '}'
                 || codePoint == '<' || codePoint == '>';
+    }
+
+    static boolean isMirroredAsciiDelimiterCell(BidiLayout.LogicalCell cell) {
+        return cell != null && !cell.hasBitmap && cell.displayWidth == 1
+                && cell.combiningCount == 0 && isMirroredAsciiDelimiter(cell.codePoint);
+    }
+
+    /**
+     * Returns true if a paired ASCII delimiter at {@code vCol} visually hugs a shaped RTL cell
+     * directly (or through adjacent delimiters) so it can travel tightly with the RTL phrase
+     * without leaving artificial monospace gaps next to parentheses/brackets.
+     */
+    static boolean canJoinRtlAdjacentDelimiter(BidiLayout.LogicalCell[] visualCells, int columns, int vCol) {
+        if (vCol < 0 || vCol >= columns || !isMirroredAsciiDelimiterCell(visualCells[vCol])) {
+            return false;
+        }
+        for (int i = vCol - 1; i >= 0; i--) {
+            BidiLayout.LogicalCell c = visualCells[i];
+            if (isShapedRtlCell(c)) return true;
+            if (!isMirroredAsciiDelimiterCell(c)) break;
+        }
+        for (int i = vCol + 1; i < columns; i++) {
+            BidiLayout.LogicalCell c = visualCells[i];
+            if (isShapedRtlCell(c)) return true;
+            if (!isMirroredAsciiDelimiterCell(c)) break;
+        }
+        return false;
     }
 
     /** Returns the UAX #9 mirrored counterpart for an ASCII paired delimiter. */
@@ -428,6 +479,7 @@ public final class TerminalRenderer {
             final int codePoint = cell.codePoint;
             final int codePointWcWidth = cell.displayWidth;
             final boolean isShapedRtl = isShapedRtlCell(cell)
+                    || canJoinRtlAdjacentDelimiter(visualCells, columns, vCol)
                     || (lastRunStartColumn >= 0 && lastRunIsRtl
                     && canBridgeSpaceIntoRtlRun(visualCells, columns, vCol, lastRtlCell));
             final long style = cell.style;
@@ -461,9 +513,14 @@ public final class TerminalRenderer {
             } else if (isShapedRtl != lastRunIsRtl) {
                 splitRun = true;
             } else if (isShapedRtl) {
-                // Keep connected RTL words unbroken across color/selection/cursor changes;
-                // only split if neighboring visual cells come from non-adjacent logical slices.
-                splitRun = lastRtlCell != null && Math.abs(cell.originalColumn - lastRtlCell.originalColumn) > 2;
+                // Keep connected RTL words and hugging paired delimiters unbroken across color/selection/cursor;
+                // only split non-adjacent logical RTL slices.
+                if (lastRtlCell != null && (isMirroredAsciiDelimiterCell(cell) || isMirroredAsciiDelimiterCell(lastRtlCell))) {
+                    splitRun = isMirroredAsciiDelimiterCell(cell) && isMirroredAsciiDelimiterCell(lastRtlCell)
+                            && Math.abs(cell.originalColumn - lastRtlCell.originalColumn) > 2;
+                } else {
+                    splitRun = lastRtlCell != null && Math.abs(cell.originalColumn - lastRtlCell.originalColumn) > 2;
+                }
             } else {
                 splitRun = (style != lastRunStyle
                         || insideCursor != lastRunInsideCursor
@@ -623,56 +680,11 @@ public final class TerminalRenderer {
             mVisCellRight = new float[newCap];
         }
 
-        // Reorder mRunCells into logical column order without heap allocation.
-        if (count > 1) {
-            boolean strictlyDescending = true;
-            for (int i = 1; i < count; i++) {
-                if (mRunCells[i].originalColumn >= mRunCells[i - 1].originalColumn) {
-                    strictlyDescending = false;
-                    break;
-                }
-            }
-            if (strictlyDescending) {
-                for (int lo = 0, hi = count - 1; lo < hi; lo++, hi--) {
-                    BidiLayout.LogicalCell tmp = mRunCells[lo];
-                    mRunCells[lo] = mRunCells[hi];
-                    mRunCells[hi] = tmp;
-                }
-            } else {
-                for (int i = 1; i < count; i++) {
-                    BidiLayout.LogicalCell key = mRunCells[i];
-                    int j = i - 1;
-                    while (j >= 0 && mRunCells[j].originalColumn > key.originalColumn) {
-                        mRunCells[j + 1] = mRunCells[j];
-                        j--;
-                    }
-                    mRunCells[j + 1] = key;
-                }
-            }
-        }
-
-        int used = 0;
+        boolean hasJoinedDelimiter = false;
         for (int i = 0; i < count; i++) {
-            mCellCharStart[i] = used;
-            used += encodeCellToBuffer(mRunCells[i], mRunCharBuffer, used);
-            mCellCharEnd[i] = used;
-        }
-        if (used == 0) return;
-
-        for (int i = 0; i < runColumns; i++) {
-            BidiLayout.LogicalCell target = visualCells[startCol + i];
-            int revIdx = count - 1 - i;
-            if (revIdx >= 0 && revIdx < count && mRunCells[revIdx] == target) {
-                mVisualToRunCell[i] = revIdx;
-            } else {
-                int found = -1;
-                for (int r = 0; r < count; r++) {
-                    if (mRunCells[r] == target) {
-                        found = r;
-                        break;
-                    }
-                }
-                mVisualToRunCell[i] = found;
+            if (isMirroredAsciiDelimiterCell(mRunCells[i])) {
+                hasJoinedDelimiter = true;
+                break;
             }
         }
 
@@ -683,18 +695,50 @@ public final class TerminalRenderer {
             mTextPaint.setTextSize(originalTextSize * RTL_TEXT_SIZE_SCALE);
         }
         try {
+            if (hasJoinedDelimiter) {
+                flushMixedDelimRtlRun(canvas, visualCells, palette, heightOffset,
+                        startCol, endCol, runColumns, cursorShape, reverseVideo,
+                        originalTypeface, originalTextSize);
+                return;
+            }
+
+            sortRunCellsLogical(count);
+
+            int used = 0;
+            for (int i = 0; i < count; i++) {
+                mCellCharStart[i] = used;
+                used += encodeCellToBuffer(mRunCells[i], mRunCharBuffer, used);
+                mCellCharEnd[i] = used;
+            }
+            if (used == 0) return;
+
+            for (int i = 0; i < runColumns; i++) {
+                BidiLayout.LogicalCell target = visualCells[startCol + i];
+                int revIdx = count - 1 - i;
+                if (revIdx >= 0 && revIdx < count && mRunCells[revIdx] == target) {
+                    mVisualToRunCell[i] = revIdx;
+                } else {
+                    int found = -1;
+                    for (int r = 0; r < count; r++) {
+                        if (mRunCells[r] == target) {
+                            found = r;
+                            break;
+                        }
+                    }
+                    mVisualToRunCell[i] = found;
+                }
+            }
+
             final float top = heightOffset - mFontLineSpacingAndAscent + mFontAscent;
             final float bottom = heightOffset;
             final float clipTop = top - mFontLineSpacing;
             final float clipBottom = bottom + mFontLineSpacing;
             final int defaultBg = palette[TextStyle.COLOR_INDEX_BACKGROUND];
-            final int cursorColor = palette[TextStyle.COLOR_INDEX_CURSOR];
             final boolean isBlockCursor = (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK);
 
-            // Check whether all cells share uniform appearance and whether any overlay rects are needed.
-            final long firstStyle = visualCells[startCol].style;
             boolean uniformText = true;
-            boolean hasOverlay = false;
+            boolean hasOverlay = reverseVideo;
+            final long firstStyle = visualCells[startCol].style;
             boolean refInv = visualCells[startCol].insideSelection ^ (visualCells[startCol].insideCursor && isBlockCursor);
             for (int c = startCol; c < endCol; c++) {
                 BidiLayout.LogicalCell cell = visualCells[c];
@@ -708,9 +752,7 @@ public final class TerminalRenderer {
                     uniformText = false;
                 }
             }
-            if (reverseVideo) hasOverlay = true;
 
-            // Measure with dominant bold/italic flags before positioning and segment calculation.
             int firstEffect = TextStyle.decodeEffect(firstStyle);
             mTextPaint.setFakeBoldText((firstEffect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0);
             mTextPaint.setTextSkewX((firstEffect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0 ? -0.35f : 0.f);
@@ -726,122 +768,392 @@ public final class TerminalRenderer {
             final float baseline = heightOffset - mFontLineSpacingAndAscent;
 
             if (hasOverlay || !uniformText) {
-                computeVisualCellBounds(runColumns, used, measuredWidth, scaleX, drawLeft, drawnWidth);
+                computeVisualCellBounds(0, runColumns, 0, used, measuredWidth, scaleX, drawLeft, true);
             }
-
             if (hasOverlay) {
-                final int totalColumns = visualCells.length;
-                for (int i = 0; i < runColumns; i++) {
-                    int c = startCol + i;
-                    BidiLayout.LogicalCell cell = visualCells[c];
-                    long cellStyle = cell.style;
-                    int effect = TextStyle.decodeEffect(cellStyle);
-                    boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
-                    int fore = resolveForeColor(TextStyle.decodeForeColor(cellStyle), bold, palette);
-                    int back = resolveBackColor(TextStyle.decodeBackColor(cellStyle), palette);
-                    boolean cellInvert = reverseVideo
-                            ^ ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0)
-                            ^ cell.insideSelection
-                            ^ (cell.insideCursor && isBlockCursor);
-                    int resolvedBg = cellInvert ? fore : back;
-
-                    float gLeft = mVisCellLeft[i];
-                    float gRight = mVisCellRight[i];
-                    float bgLeft = (i == 0 && (back != defaultBg
-                            || (startCol > 0 && visualCells[startCol - 1].insideSelection && cell.insideSelection)))
-                            ? Math.min(slotLeft, gLeft) : gLeft;
-                    float bgRight = (i == runColumns - 1 && (back != defaultBg
-                            || (endCol < totalColumns && visualCells[endCol].insideSelection && cell.insideSelection)))
-                            ? Math.max(slotRight, gRight) : gRight;
-
-                    if (resolvedBg != defaultBg) {
-                        mTextPaint.setColor(resolvedBg);
-                        canvas.drawRect(bgLeft, top, bgRight, bottom, mTextPaint);
-                    }
-
-                    if (cell.insideCursor) {
-                        mTextPaint.setColor(cursorColor);
-                        float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-                        float cRight = (gRight - gLeft < 2f) ? Math.max(gRight, gLeft + mFontWidth * 0.45f) : gRight;
-                        if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
-                            canvas.drawRect(gLeft, bottom - cursorHeight / 4.f, cRight, bottom, mTextPaint);
-                        } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
-                            canvas.drawRect(gLeft, bottom - cursorHeight, gLeft + mFontWidth / 4.f, bottom, mTextPaint);
-                        } else {
-                            canvas.drawRect(gLeft, bottom - cursorHeight, cRight, bottom, mTextPaint);
-                        }
-                    }
-                }
+                drawRtlOverlays(canvas, visualCells, palette, startCol, endCol, runColumns,
+                        cursorShape, reverseVideo, top, bottom, slotLeft, slotRight);
             }
 
-            if (uniformText) {
-                drawRtlSegment(canvas, visualCells[startCol], palette, mRunCharBuffer, used,
-                        scaleX, drawLeft, needScale, baseline, cursorShape, reverseVideo, false,
-                        0f, 0f, 0f, 0f);
-            } else {
-                int segStart = startCol;
-                while (segStart < endCol) {
-                    BidiLayout.LogicalCell startCell = visualCells[segStart];
-                    boolean startInv = startCell.insideSelection ^ (startCell.insideCursor && isBlockCursor);
-                    int segEnd = segStart + 1;
-                    while (segEnd < endCol) {
-                        BidiLayout.LogicalCell next = visualCells[segEnd];
-                        boolean nextInv = next.insideSelection ^ (next.insideCursor && isBlockCursor);
-                        if (next.style != startCell.style || nextInv != startInv) break;
-                        segEnd++;
-                    }
-                    float clipL = (segStart == startCol)
-                            ? Math.min(drawLeft, slotLeft) - mFontWidth
-                            : mVisCellLeft[segStart - startCol];
-                    float clipR = (segEnd == endCol)
-                            ? Math.max(drawLeft + drawnWidth, slotRight) + mFontWidth
-                            : mVisCellRight[segEnd - 1 - startCol];
-                    drawRtlSegment(canvas, startCell, palette, mRunCharBuffer, used,
-                            scaleX, drawLeft, needScale, baseline, cursorShape, reverseVideo, true,
-                            clipL, clipTop, clipR, clipBottom);
-                    segStart = segEnd;
-                }
-            }
+            drawRtlSpanSegments(canvas, visualCells, palette, startCol, endCol, startCol, endCol,
+                    mRunCharBuffer, 0, used, scaleX, drawLeft, drawnWidth, slotLeft, slotRight,
+                    needScale, baseline, clipTop, clipBottom, cursorShape, reverseVideo, uniformText);
         } finally {
             mTextPaint.setTypeface(originalTypeface);
             mTextPaint.setTextSize(originalTextSize);
         }
     }
 
-    private void computeVisualCellBounds(int runColumns, int used, float measuredWidth,
-                                         float scaleX, float drawLeft, float drawnWidth) {
-        boolean useRunAdvance = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && measuredWidth > 0f);
+    private void flushMixedDelimRtlRun(Canvas canvas, BidiLayout.LogicalCell[] visualCells,
+                                       int[] palette, float heightOffset,
+                                       int startCol, int endCol, int runColumns,
+                                       int cursorShape, boolean reverseVideo,
+                                       Typeface originalTypeface, float originalTextSize) {
+        ensureSegCapacity(runColumns);
+        int segCount = 0;
+        int used = 0;
+        float fixedDelimSum = 0f;
+        float natRtlSum = 0f;
+        float rawSpaceW = mTextPaint.measureText(" ");
+        float spaceNatW = (rawSpaceW > 0f) ? rawSpaceW : (mFontWidth * 0.45f);
+
+        int rel = 0;
+        while (rel < runColumns) {
+            BidiLayout.LogicalCell cell = visualCells[startCol + rel];
+            if (isMirroredAsciiDelimiterCell(cell)) {
+                int dispCp = cell.isRtl ? getMirroredAsciiChar(cell.codePoint) : cell.codePoint;
+                float glyphW = (dispCp >= 0 && dispCp < asciiMeasures.length) ? asciiMeasures[dispCp] : mFontWidth;
+                float slotW = Math.min(glyphW, mFontWidth * RTL_DELIMITER_ADVANCE_FACTOR);
+                mSegKind[segCount] = SEG_DELIM;
+                mSegVisStart[segCount] = rel;
+                mSegVisEnd[segCount] = rel + 1;
+                mSegCharStart[segCount] = 0;
+                mSegCharEnd[segCount] = 0;
+                mSegNatWidth[segCount] = slotW;
+                fixedDelimSum += slotW;
+                segCount++;
+                rel++;
+            } else if (isPlainSpaceCell(cell)
+                    && ((rel > 0 && isMirroredAsciiDelimiterCell(visualCells[startCol + rel - 1]))
+                    || (rel + 1 < runColumns && isMirroredAsciiDelimiterCell(visualCells[startCol + rel + 1])))) {
+                mSegKind[segCount] = SEG_SPACE;
+                mSegVisStart[segCount] = rel;
+                mSegVisEnd[segCount] = rel + 1;
+                mSegCharStart[segCount] = 0;
+                mSegCharEnd[segCount] = 0;
+                mSegNatWidth[segCount] = spaceNatW;
+                natRtlSum += spaceNatW;
+                segCount++;
+                rel++;
+            } else {
+                int sStart = rel;
+                int sCount = 0;
+                while (rel < runColumns) {
+                    BidiLayout.LogicalCell cur = visualCells[startCol + rel];
+                    if (isMirroredAsciiDelimiterCell(cur)) break;
+                    if (isPlainSpaceCell(cur) && rel + 1 < runColumns
+                            && isMirroredAsciiDelimiterCell(visualCells[startCol + rel + 1])) {
+                        break;
+                    }
+                    if (!(cur.displayWidth == 0 && cur.codePoint == 0)) {
+                        mRunCells[sCount++] = cur;
+                    }
+                    rel++;
+                }
+                int sEnd = rel;
+                if (sCount == 0) continue;
+                sortRunCellsLogical(sCount);
+
+                int bufStart = used;
+                for (int r = 0; r < sCount; r++) {
+                    BidiLayout.LogicalCell rc = mRunCells[r];
+                    int cStart = used;
+                    used += encodeCellToBuffer(rc, mRunCharBuffer, used);
+                    int cEnd = used;
+                    for (int v = sStart; v < sEnd; v++) {
+                        if (visualCells[startCol + v] == rc) {
+                            mCellCharStart[v] = cStart;
+                            mCellCharEnd[v] = cEnd;
+                            break;
+                        }
+                    }
+                }
+                int bufLen = used - bufStart;
+                int segEffect = TextStyle.decodeEffect(visualCells[startCol + sStart].style);
+                mTextPaint.setFakeBoldText((segEffect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0);
+                mTextPaint.setTextSkewX((segEffect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0 ? -0.35f : 0.f);
+                float segNatW = (bufLen > 0) ? mTextPaint.measureText(mRunCharBuffer, bufStart, bufLen) : 0f;
+
+                mSegKind[segCount] = SEG_RTL;
+                mSegVisStart[segCount] = sStart;
+                mSegVisEnd[segCount] = sEnd;
+                mSegCharStart[segCount] = bufStart;
+                mSegCharEnd[segCount] = used;
+                mSegNatWidth[segCount] = segNatW;
+                natRtlSum += segNatW;
+                segCount++;
+            }
+        }
+        if (segCount == 0) return;
+
+        float slotWidth = runColumns * mFontWidth;
+        float availRtlWidth = Math.max(0f, slotWidth - fixedDelimSum);
+        float scaleX = 1.0f;
+        if (natRtlSum > 0f) {
+            float rawScale = availRtlWidth / natRtlSum;
+            scaleX = (rawScale < 1.0f) ? Math.max(0.1f, rawScale)
+                    : Math.min(rawScale, getMaxRtlHorizontalStretch(runColumns));
+        }
+        float totalDrawnW = fixedDelimSum + natRtlSum * scaleX;
+        int alignment = resolveRtlAlignment(visualCells, startCol, endCol, visualCells.length);
+        float drawLeft = computeRtlRunLeftX(startCol, runColumns, mFontWidth, totalDrawnW, 1.0f, alignment);
+
+        final float top = heightOffset - mFontLineSpacingAndAscent + mFontAscent;
+        final float bottom = heightOffset;
+        final float clipTop = top - mFontLineSpacing;
+        final float clipBottom = bottom + mFontLineSpacing;
+        final float slotLeft = startCol * mFontWidth;
+        final float slotRight = endCol * mFontWidth;
+        final float baseline = heightOffset - mFontLineSpacingAndAscent;
+        final int defaultBg = palette[TextStyle.COLOR_INDEX_BACKGROUND];
+        final boolean isBlockCursor = (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK);
+
+        boolean hasOverlay = reverseVideo;
+        for (int c = startCol; c < endCol; c++) {
+            BidiLayout.LogicalCell cell = visualCells[c];
+            if (cell.insideCursor || cell.insideSelection) hasOverlay = true;
+            int back = resolveBackColor(TextStyle.decodeBackColor(cell.style), palette);
+            if (back != defaultBg || (TextStyle.decodeEffect(cell.style) & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0) {
+                hasOverlay = true;
+            }
+        }
+
+        float curX = drawLeft;
+        for (int s = 0; s < segCount; s++) {
+            mSegLeft[s] = curX;
+            int kind = mSegKind[s];
+            int sStart = mSegVisStart[s];
+            int sEnd = mSegVisEnd[s];
+            float segW = (kind == SEG_DELIM) ? mSegNatWidth[s] : (mSegNatWidth[s] * scaleX);
+            if (kind == SEG_DELIM || kind == SEG_SPACE) {
+                mVisCellLeft[sStart] = curX;
+                mVisCellRight[sStart] = curX + segW;
+            } else {
+                boolean segUniform = isSpanUniform(visualCells, startCol + sStart, startCol + sEnd, isBlockCursor);
+                if (hasOverlay || !segUniform) {
+                    computeVisualCellBounds(sStart, sEnd, mSegCharStart[s], mSegCharEnd[s],
+                            mSegNatWidth[s], scaleX, curX, false);
+                }
+            }
+            curX += segW;
+        }
+
+        if (hasOverlay) {
+            drawRtlOverlays(canvas, visualCells, palette, startCol, endCol, runColumns,
+                    cursorShape, reverseVideo, top, bottom, slotLeft, slotRight);
+        }
+
+        boolean needRtlScale = Math.abs(scaleX - 1.0f) > 0.005f;
+        boolean usingRtlFont = true;
+        for (int s = 0; s < segCount; s++) {
+            int kind = mSegKind[s];
+            if (kind == SEG_SPACE) continue;
+            int sStart = mSegVisStart[s];
+            int sEnd = mSegVisEnd[s];
+            if (kind == SEG_DELIM) {
+                if (usingRtlFont) {
+                    mTextPaint.setTypeface(originalTypeface);
+                    mTextPaint.setTextSize(originalTextSize);
+                    usingRtlFont = false;
+                }
+                BidiLayout.LogicalCell dCell = visualCells[startCol + sStart];
+                if (configurePaintForCell(dCell, palette, cursorShape, reverseVideo)) {
+                    int dispCp = dCell.isRtl ? getMirroredAsciiChar(dCell.codePoint) : dCell.codePoint;
+                    float glyphW = (dispCp >= 0 && dispCp < asciiMeasures.length) ? asciiMeasures[dispCp] : mFontWidth;
+                    float gx = mSegLeft[s] + (mSegNatWidth[s] - glyphW) * 0.5f;
+                    mCellMeasureBuffer[0] = (char) dispCp;
+                    canvas.drawText(mCellMeasureBuffer, 0, 1, gx, baseline, mTextPaint);
+                }
+            } else {
+                if (!usingRtlFont) {
+                    mTextPaint.setTypeface(Typeface.DEFAULT);
+                    if (originalTextSize > 0f) {
+                        mTextPaint.setTextSize(originalTextSize * RTL_TEXT_SIZE_SCALE);
+                    }
+                    usingRtlFont = true;
+                }
+                int segStartCol = startCol + sStart;
+                int segEndCol = startCol + sEnd;
+                boolean segUniform = isSpanUniform(visualCells, segStartCol, segEndCol, isBlockCursor);
+                float segDrawnW = mSegNatWidth[s] * scaleX;
+                drawRtlSpanSegments(canvas, visualCells, palette, startCol, endCol, segStartCol, segEndCol,
+                        mRunCharBuffer, mSegCharStart[s], mSegCharEnd[s] - mSegCharStart[s],
+                        scaleX, mSegLeft[s], segDrawnW, mSegLeft[s], mSegLeft[s] + segDrawnW,
+                        needRtlScale, baseline, clipTop, clipBottom, cursorShape, reverseVideo, segUniform);
+            }
+        }
+    }
+
+    private void ensureSegCapacity(int cap) {
+        if (mSegKind.length >= cap) return;
+        int newCap = Math.max(cap, mSegKind.length * 2);
+        mSegKind = new int[newCap];
+        mSegVisStart = new int[newCap];
+        mSegVisEnd = new int[newCap];
+        mSegCharStart = new int[newCap];
+        mSegCharEnd = new int[newCap];
+        mSegNatWidth = new float[newCap];
+        mSegLeft = new float[newCap];
+    }
+
+    private void sortRunCellsLogical(int count) {
+        if (count <= 1) return;
+        boolean strictlyDescending = true;
+        for (int i = 1; i < count; i++) {
+            if (mRunCells[i].originalColumn >= mRunCells[i - 1].originalColumn) {
+                strictlyDescending = false;
+                break;
+            }
+        }
+        if (strictlyDescending) {
+            for (int lo = 0, hi = count - 1; lo < hi; lo++, hi--) {
+                BidiLayout.LogicalCell tmp = mRunCells[lo];
+                mRunCells[lo] = mRunCells[hi];
+                mRunCells[hi] = tmp;
+            }
+        } else {
+            for (int i = 1; i < count; i++) {
+                BidiLayout.LogicalCell key = mRunCells[i];
+                int j = i - 1;
+                while (j >= 0 && mRunCells[j].originalColumn > key.originalColumn) {
+                    mRunCells[j + 1] = mRunCells[j];
+                    j--;
+                }
+                mRunCells[j + 1] = key;
+            }
+        }
+    }
+
+    private static boolean isSpanUniform(BidiLayout.LogicalCell[] visualCells, int segStartCol, int segEndCol,
+                                         boolean isBlockCursor) {
+        BidiLayout.LogicalCell first = visualCells[segStartCol];
+        long firstStyle = first.style;
+        boolean refInv = first.insideSelection ^ (first.insideCursor && isBlockCursor);
+        for (int c = segStartCol + 1; c < segEndCol; c++) {
+            BidiLayout.LogicalCell cell = visualCells[c];
+            boolean cellInv = cell.insideSelection ^ (cell.insideCursor && isBlockCursor);
+            if (cell.style != firstStyle || cellInv != refInv) return false;
+        }
+        return true;
+    }
+
+    private void drawRtlOverlays(Canvas canvas, BidiLayout.LogicalCell[] visualCells, int[] palette,
+                                 int startCol, int endCol, int runColumns, int cursorShape,
+                                 boolean reverseVideo, float top, float bottom,
+                                 float slotLeft, float slotRight) {
+        final int totalColumns = visualCells.length;
+        final int defaultBg = palette[TextStyle.COLOR_INDEX_BACKGROUND];
+        final int cursorColor = palette[TextStyle.COLOR_INDEX_CURSOR];
+        final boolean isBlockCursor = (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK);
+
         for (int i = 0; i < runColumns; i++) {
+            int c = startCol + i;
+            BidiLayout.LogicalCell cell = visualCells[c];
+            long cellStyle = cell.style;
+            int effect = TextStyle.decodeEffect(cellStyle);
+            boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
+            int fore = resolveForeColor(TextStyle.decodeForeColor(cellStyle), bold, palette);
+            int back = resolveBackColor(TextStyle.decodeBackColor(cellStyle), palette);
+            boolean cellInvert = reverseVideo
+                    ^ ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0)
+                    ^ cell.insideSelection
+                    ^ (cell.insideCursor && isBlockCursor);
+            int resolvedBg = cellInvert ? fore : back;
+
+            float gLeft = mVisCellLeft[i];
+            float gRight = mVisCellRight[i];
+            float bgLeft = (i == 0 && (back != defaultBg
+                    || (startCol > 0 && visualCells[startCol - 1].insideSelection && cell.insideSelection)))
+                    ? Math.min(slotLeft, gLeft) : gLeft;
+            float bgRight = (i == runColumns - 1 && (back != defaultBg
+                    || (endCol < totalColumns && visualCells[endCol].insideSelection && cell.insideSelection)))
+                    ? Math.max(slotRight, gRight) : gRight;
+
+            if (resolvedBg != defaultBg) {
+                mTextPaint.setColor(resolvedBg);
+                canvas.drawRect(bgLeft, top, bgRight, bottom, mTextPaint);
+            }
+
+            if (cell.insideCursor) {
+                mTextPaint.setColor(cursorColor);
+                float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+                float cRight = (gRight - gLeft < 2f) ? Math.max(gRight, gLeft + mFontWidth * 0.45f) : gRight;
+                if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
+                    canvas.drawRect(gLeft, bottom - cursorHeight / 4.f, cRight, bottom, mTextPaint);
+                } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
+                    canvas.drawRect(gLeft, bottom - cursorHeight, gLeft + mFontWidth / 4.f, bottom, mTextPaint);
+                } else {
+                    canvas.drawRect(gLeft, bottom - cursorHeight, cRight, bottom, mTextPaint);
+                }
+            }
+        }
+    }
+
+    private void drawRtlSpanSegments(Canvas canvas, BidiLayout.LogicalCell[] visualCells, int[] palette,
+                                     int runStartCol, int runEndCol, int segStartCol, int segEndCol,
+                                     char[] text, int bufOffset, int bufLen,
+                                     float scaleX, float drawLeft, float drawnWidth,
+                                     float slotLeft, float slotRight, boolean needScale,
+                                     float baseline, float clipTop, float clipBottom,
+                                     int cursorShape, boolean reverseVideo, boolean uniform) {
+        if (bufLen <= 0) return;
+        if (uniform) {
+            drawRtlSegment(canvas, visualCells[segStartCol], palette, text, bufOffset, bufLen,
+                    scaleX, drawLeft, needScale, baseline, cursorShape, reverseVideo, false,
+                    0f, 0f, 0f, 0f);
+            return;
+        }
+        final boolean isBlockCursor = (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK);
+        int subStart = segStartCol;
+        while (subStart < segEndCol) {
+            BidiLayout.LogicalCell startCell = visualCells[subStart];
+            boolean startInv = startCell.insideSelection ^ (startCell.insideCursor && isBlockCursor);
+            int subEnd = subStart + 1;
+            while (subEnd < segEndCol) {
+                BidiLayout.LogicalCell next = visualCells[subEnd];
+                boolean nextInv = next.insideSelection ^ (next.insideCursor && isBlockCursor);
+                if (next.style != startCell.style || nextInv != startInv) break;
+                subEnd++;
+            }
+            float clipL = (subStart == segStartCol)
+                    ? Math.min(drawLeft, slotLeft) - ((segStartCol == runStartCol) ? mFontWidth : mFontWidth * 0.15f)
+                    : mVisCellLeft[subStart - runStartCol];
+            float clipR = (subEnd == segEndCol)
+                    ? Math.max(drawLeft + drawnWidth, slotRight) + ((segEndCol == runEndCol) ? mFontWidth : mFontWidth * 0.15f)
+                    : mVisCellRight[subEnd - 1 - runStartCol];
+            drawRtlSegment(canvas, startCell, palette, text, bufOffset, bufLen,
+                    scaleX, drawLeft, needScale, baseline, cursorShape, reverseVideo, true,
+                    clipL, clipTop, clipR, clipBottom);
+            subStart = subEnd;
+        }
+    }
+
+    private void computeVisualCellBounds(int vStart, int vEnd, int bufStart, int bufEnd,
+                                         float measuredWidth, float scaleX, float segLeft,
+                                         boolean mapViaRunCell) {
+        boolean useRunAdvance = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && measuredWidth > 0f);
+        int span = vEnd - vStart;
+        float drawnWidth = measuredWidth * scaleX;
+        for (int i = vStart; i < vEnd; i++) {
             float gLeft;
             float gRight;
-            int runIdx = mVisualToRunCell[i];
-            if (useRunAdvance && runIdx >= 0) {
-                int cStart = mCellCharStart[runIdx];
-                int cEnd = mCellCharEnd[runIdx];
-                float advStart = (cStart <= 0) ? 0f
-                        : mTextPaint.getRunAdvance(mRunCharBuffer, 0, used, 0, used, true, cStart);
-                float advEnd = (cEnd >= used) ? measuredWidth
-                        : mTextPaint.getRunAdvance(mRunCharBuffer, 0, used, 0, used, true, cEnd);
+            int idx = mapViaRunCell ? mVisualToRunCell[i] : i;
+            if (useRunAdvance && idx >= 0) {
+                int cStart = mCellCharStart[idx];
+                int cEnd = mCellCharEnd[idx];
+                float advStart = (cStart <= bufStart) ? 0f
+                        : mTextPaint.getRunAdvance(mRunCharBuffer, bufStart, bufEnd, bufStart, bufEnd, true, cStart);
+                float advEnd = (cEnd >= bufEnd) ? measuredWidth
+                        : mTextPaint.getRunAdvance(mRunCharBuffer, bufStart, bufEnd, bufStart, bufEnd, true, cEnd);
                 float loAdv = Math.min(advStart, advEnd);
                 float hiAdv = Math.max(advStart, advEnd);
-                gLeft = drawLeft + Math.max(0f, measuredWidth - hiAdv) * scaleX;
-                gRight = drawLeft + Math.min(measuredWidth, measuredWidth - loAdv) * scaleX;
+                gLeft = segLeft + Math.max(0f, measuredWidth - hiAdv) * scaleX;
+                gRight = segLeft + Math.min(measuredWidth, measuredWidth - loAdv) * scaleX;
             } else {
-                gLeft = drawLeft + drawnWidth * ((float) i / runColumns);
-                gRight = drawLeft + drawnWidth * ((float) (i + 1) / runColumns);
+                float rel = i - vStart;
+                gLeft = segLeft + drawnWidth * (rel / span);
+                gRight = segLeft + drawnWidth * ((rel + 1) / span);
             }
             mVisCellLeft[i] = gLeft;
             mVisCellRight[i] = gRight;
         }
     }
 
-    private void drawRtlSegment(Canvas canvas, BidiLayout.LogicalCell repCell, int[] palette,
-                                char[] text, int used, float scaleX, float drawLeft, boolean needScale,
-                                float baseline, int cursorShape, boolean reverseVideo,
-                                boolean clip, float clipL, float clipT, float clipR, float clipB) {
+    private boolean configurePaintForCell(BidiLayout.LogicalCell repCell, int[] palette,
+                                          int cursorShape, boolean reverseVideo) {
         long style = repCell.style;
         int effect = TextStyle.decodeEffect(style);
-        if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) != 0) return;
+        if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) != 0) return false;
 
         boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
         boolean underline = (effect & TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE) != 0;
@@ -870,6 +1182,14 @@ public final class TerminalRenderer {
         mTextPaint.setTextSkewX(italic ? -0.35f : 0.f);
         mTextPaint.setStrikeThruText(strikeThrough);
         mTextPaint.setColor(textColor);
+        return true;
+    }
+
+    private void drawRtlSegment(Canvas canvas, BidiLayout.LogicalCell repCell, int[] palette,
+                                char[] text, int offset, int used, float scaleX, float drawLeft,
+                                boolean needScale, float baseline, int cursorShape, boolean reverseVideo,
+                                boolean clip, float clipL, float clipT, float clipR, float clipB) {
+        if (!configurePaintForCell(repCell, palette, cursorShape, reverseVideo)) return;
 
         boolean needSave = clip || needScale;
         if (needSave) canvas.save();
@@ -881,9 +1201,9 @@ public final class TerminalRenderer {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            canvas.drawTextRun(text, 0, used, 0, used, x, baseline, true, mTextPaint);
+            canvas.drawTextRun(text, offset, used, offset, used, x, baseline, true, mTextPaint);
         } else {
-            canvas.drawText(text, 0, used, x, baseline, mTextPaint);
+            canvas.drawText(text, offset, used, x, baseline, mTextPaint);
         }
 
         if (needSave) canvas.restore();
