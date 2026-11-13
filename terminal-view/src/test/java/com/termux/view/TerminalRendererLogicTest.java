@@ -131,13 +131,13 @@ public class TerminalRendererLogicTest {
 
     @Test
     public void testRtlScaleCappedAgainstDistortion() {
-        // Short 2-col Arabic word "في" with narrow proportional measurement (e.g. 8px in 20px slot)
-        // Old code stretched 2.5x! New code must cap <= MAX_RTL_HORIZONTAL_STRETCH (1.15f).
-        float scale = TerminalRenderer.computeRtlRunScaleX(8.0f, 2, 10.0f);
-        assertEquals(TerminalRenderer.MAX_RTL_HORIZONTAL_STRETCH, scale, 0.0001f);
-
-        // Single col 5px in 10px slot -> capped at 1.15f
-        assertEquals(1.15f, TerminalRenderer.computeRtlRunScaleX(5.0f, 1, 10.0f), 0.0001f);
+        // Progressive gentle caps prevent flat short words ("في", "لا") while closing inter-word gaps on longer phrases.
+        assertEquals(1.20f, TerminalRenderer.computeRtlRunScaleX(5.0f, 1, 10.0f), 0.0001f);
+        assertEquals(1.26f, TerminalRenderer.computeRtlRunScaleX(8.0f, 2, 10.0f), 0.0001f);
+        assertEquals(1.34f, TerminalRenderer.computeRtlRunScaleX(12.0f, 3, 10.0f), 0.0001f);
+        assertEquals(1.42f, TerminalRenderer.computeRtlRunScaleX(20.0f, 5, 10.0f), 0.0001f);
+        assertEquals(TerminalRenderer.MAX_RTL_HORIZONTAL_STRETCH,
+                TerminalRenderer.computeRtlRunScaleX(40.0f, 10, 10.0f), 0.0001f);
 
         // Slightly wide 25px word in 20px slot -> shrinks smoothly to 0.80f to fit without overflow
         assertEquals(0.80f, TerminalRenderer.computeRtlRunScaleX(25.0f, 2, 10.0f), 0.0001f);
@@ -149,12 +149,106 @@ public class TerminalRendererLogicTest {
 
     @Test
     public void testRtlRunCenterPlacementWithinGridSlot() {
-        // 4-col slot [2..6] with fontWidth=10 -> slot [20..60], drawnWidth = 20 * 1.15 = 23 -> centered at 20 + (40-23)/2 = 28.5
-        float left = TerminalRenderer.computeRtlRunLeftX(2, 4, 10.0f, 20.0f, 1.15f);
-        assertEquals(28.5f, left, 0.001f);
+        // 4-col slot [2..6] with fontWidth=10 -> slot [20..60], drawnWidth = 20 * 1.15 = 23 -> centered at 28.5
+        assertEquals(28.5f, TerminalRenderer.computeRtlRunLeftX(2, 4, 10.0f, 20.0f, 1.15f), 0.001f);
+        // Explicit left and right alignments inside [20..60]
+        assertEquals(20.0f, TerminalRenderer.computeRtlRunLeftX(2, 4, 10.0f, 20.0f, 1.15f, TerminalRenderer.ALIGN_LEFT), 0.001f);
+        assertEquals(37.0f, TerminalRenderer.computeRtlRunLeftX(2, 4, 10.0f, 20.0f, 1.15f, TerminalRenderer.ALIGN_RIGHT), 0.001f);
 
-        // Shrunk/full-width run starts directly at slot left
+        // Shrunk/full-width run starts directly at slot left regardless of alignment
         assertEquals(20.0f, TerminalRenderer.computeRtlRunLeftX(2, 4, 10.0f, 50.0f, 0.8f), 0.001f);
+
+        // Neighbor-aware alignment resolution
+        BidiLayout.LogicalCell[] row = new BidiLayout.LogicalCell[10];
+        for (int i = 0; i < 10; i++) {
+            row[i] = new BidiLayout.LogicalCell();
+            row[i].codePoint = ' ';
+            row[i].displayWidth = 1;
+        }
+        // Prompt "$ " at [0..1] + Arabic at [2..5] + blanks [6..9] -> ALIGN_LEFT (no gap after prompt)
+        row[0].codePoint = '$';
+        assertEquals(TerminalRenderer.ALIGN_LEFT, TerminalRenderer.resolveRtlAlignment(row, 2, 6, 10));
+        // Sandwiched between "$ " and " x" -> ALIGN_CENTER
+        row[7].codePoint = 'x';
+        assertEquals(TerminalRenderer.ALIGN_CENTER, TerminalRenderer.resolveRtlAlignment(row, 2, 6, 10));
+        // Leading spaces [0..2] before Arabic [3..6] + " x" on right -> ALIGN_RIGHT
+        row[0].codePoint = ' ';
+        row[8].codePoint = 'x';
+        assertEquals(TerminalRenderer.ALIGN_RIGHT, TerminalRenderer.resolveRtlAlignment(row, 3, 7, 10));
+    }
+
+    @Test
+    public void testSingleSpaceBridgesArabicPhraseWhileMultiSpacePreservesColumns() {
+        byte[] nl = "\r\n".getBytes(StandardCharsets.US_ASCII);
+
+        // 1. Multi-word Arabic sentence separated by single spaces renders as ONE contiguous HarfBuzz phrase
+        String phrase = "\u0645\u0631\u062D\u0628\u0627 \u0628\u0643\u0645 \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0628\u0631\u0646\u0627\u0645\u062C";
+        TerminalEmulator emPhrase = new TerminalEmulator(new DummyOutput(), 40, 2, 10, 20, 4, null);
+        emPhrase.append(phrase.getBytes(StandardCharsets.UTF_8), phrase.getBytes(StandardCharsets.UTF_8).length);
+        emPhrase.append(nl, nl.length);
+
+        TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+        RecordingCanvas canvas1 = new RecordingCanvas();
+        renderer.render(emPhrase, canvas1, 0, -1, -1, -1, -1);
+
+        int rtlCalls = 0;
+        boolean sawWholePhrase = false;
+        for (DrawCall dc : canvas1.textCalls) {
+            if (dc.isRtl) {
+                rtlCalls++;
+                if (phrase.equals(dc.text)) sawWholePhrase = true;
+            }
+        }
+        assertEquals("Single-spaced Arabic sentence must merge into one RTL run", 1, rtlCalls);
+        assertTrue("Entire bridged Arabic phrase must be passed to HarfBuzz in logical order", sawWholePhrase);
+
+        // 2. Multi-space padding ("   ") preserves columnar TUI spacing on LTR grid
+        String padded = "\u0627\u0644\u0627\u0633\u0645   \u0627\u0644\u0642\u064A\u0645\u0629";
+        TerminalEmulator emPad = new TerminalEmulator(new DummyOutput(), 25, 2, 10, 20, 4, null);
+        emPad.append(padded.getBytes(StandardCharsets.UTF_8), padded.getBytes(StandardCharsets.UTF_8).length);
+        emPad.append(nl, nl.length);
+
+        RecordingCanvas canvas2 = new RecordingCanvas();
+        renderer.render(emPad, canvas2, 0, -1, -1, -1, -1);
+
+        int padRtlCalls = 0;
+        boolean sawFirstWord = false;
+        boolean sawSecondWord = false;
+        boolean sawTripleSpaceLtr = false;
+        for (DrawCall dc : canvas2.textCalls) {
+            if (dc.isRtl) {
+                padRtlCalls++;
+                if ("\u0627\u0644\u0627\u0633\u0645".equals(dc.text)) sawFirstWord = true;
+                if ("\u0627\u0644\u0642\u064A\u0645\u0629".equals(dc.text)) sawSecondWord = true;
+            } else if ("   ".equals(dc.text)) {
+                sawTripleSpaceLtr = true;
+            }
+        }
+        assertEquals("Multi-space padding must split into separate RTL runs", 2, padRtlCalls);
+        assertTrue(sawFirstWord && sawSecondWord && sawTripleSpaceLtr);
+    }
+
+    @Test
+    public void testBridgedPhrasePartialSelectionSplitsClipsCleanlyWithoutBreakingJoining() {
+        byte[] nl = "\r\n".getBytes(StandardCharsets.US_ASCII);
+        String phrase = "\u0645\u0631\u062D\u0628\u0627 \u0628\u0643\u0645";
+        TerminalEmulator em = new TerminalEmulator(new DummyOutput(), 20, 2, 10, 20, 4, null);
+        em.append(phrase.getBytes(StandardCharsets.UTF_8), phrase.getBytes(StandardCharsets.UTF_8).length);
+        em.append(nl, nl.length);
+
+        TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+        RecordingCanvas canvas = new RecordingCanvas();
+        // Select visual cols [4..8] ("مرحبا") while keeping "بكم" unselected
+        renderer.render(em, canvas, 0, 0, 0, 4, 8);
+
+        int clippedRtlCalls = 0;
+        for (DrawCall dc : canvas.textCalls) {
+            if (dc.isRtl && phrase.equals(dc.text) && dc.clipped) {
+                clippedRtlCalls++;
+            }
+        }
+        assertTrue("Selected and unselected halves of bridged phrase must both render full context",
+                clippedRtlCalls >= 2);
     }
 
     @Test

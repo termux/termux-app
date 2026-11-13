@@ -26,8 +26,14 @@ import com.termux.terminal.WcWidth;
  */
 public final class TerminalRenderer {
 
-    /** Maximum horizontal stretch factor for RTL runs so glyphs remain unflattened. */
-    static final float MAX_RTL_HORIZONTAL_STRETCH = 1.15f;
+    /** Maximum horizontal stretch factor for longer RTL phrases so glyphs remain balanced. */
+    static final float MAX_RTL_HORIZONTAL_STRETCH = 1.48f;
+    /** Uniform proportional scale factor for RTL scripts so Arabic matches Latin visual height cleanly. */
+    static final float RTL_TEXT_SIZE_SCALE = 1.15f;
+
+    static final int ALIGN_LEFT = -1;
+    static final int ALIGN_CENTER = 0;
+    static final int ALIGN_RIGHT = 1;
 
     final int mTextSize;
     final Typeface mTypeface;
@@ -52,6 +58,11 @@ public final class TerminalRenderer {
     private final char[] mCellMeasureBuffer = new char[64];
     private BidiLayout.LogicalCell[] mRunCells = new BidiLayout.LogicalCell[256];
     private char[] mRunCharBuffer = new char[1024];
+    private int[] mCellCharStart = new int[256];
+    private int[] mCellCharEnd = new int[256];
+    private int[] mVisualToRunCell = new int[256];
+    private float[] mVisCellLeft = new float[256];
+    private float[] mVisCellRight = new float[256];
 
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
@@ -73,22 +84,79 @@ public final class TerminalRenderer {
         }
     }
 
-    /** Computes horizontal X scale factor for an RTL word run within its grid column slot. */
+    static float getMaxRtlHorizontalStretch(int runColumns) {
+        if (runColumns <= 1) return 1.20f;
+        if (runColumns == 2) return 1.26f;
+        if (runColumns == 3) return 1.34f;
+        if (runColumns < 8) return 1.42f;
+        return MAX_RTL_HORIZONTAL_STRETCH;
+    }
+
+    /** Computes horizontal X scale factor for an RTL word or phrase within its grid column slot. */
     static float computeRtlRunScaleX(float measuredWidth, int runColumns, float fontWidth) {
         if (measuredWidth <= 0f || runColumns <= 0 || fontWidth <= 0f) return 1.0f;
         float slotWidth = runColumns * fontWidth;
         float rawScale = slotWidth / measuredWidth;
         if (rawScale < 1.0f) return rawScale;
-        return Math.min(rawScale, MAX_RTL_HORIZONTAL_STRETCH);
+        return Math.min(rawScale, getMaxRtlHorizontalStretch(runColumns));
     }
 
-    /** Computes left X coordinate in grid pixels for drawing an RTL run centered inside its slot. */
+    /** Computes centered left X coordinate in grid pixels for drawing an RTL run inside its slot. */
     static float computeRtlRunLeftX(int startCol, int runColumns, float fontWidth, float measuredWidth, float scaleX) {
+        return computeRtlRunLeftX(startCol, runColumns, fontWidth, measuredWidth, scaleX, ALIGN_CENTER);
+    }
+
+    /** Computes left X coordinate in grid pixels for drawing an RTL run with neighbor-aware alignment. */
+    static float computeRtlRunLeftX(int startCol, int runColumns, float fontWidth,
+                                    float measuredWidth, float scaleX, int alignment) {
         float slotLeft = startCol * fontWidth;
         float slotWidth = runColumns * fontWidth;
         float drawnWidth = measuredWidth * scaleX;
-        if (drawnWidth >= slotWidth) return slotLeft;
+        if (drawnWidth >= slotWidth || alignment == ALIGN_LEFT) return slotLeft;
+        if (alignment == ALIGN_RIGHT) return slotLeft + (slotWidth - drawnWidth);
         return slotLeft + (slotWidth - drawnWidth) * 0.5f;
+    }
+
+    private static boolean isPlainSpaceCell(BidiLayout.LogicalCell cell) {
+        return cell == null
+                || (cell.codePoint == ' ' && cell.combiningCount == 0 && !cell.hasBitmap && cell.displayWidth == 1);
+    }
+
+    private static boolean hasAdjacentTextOnLeft(BidiLayout.LogicalCell[] visualCells, int startCol) {
+        if (startCol <= 0) return false;
+        if (!isPlainSpaceCell(visualCells[startCol - 1])) return true;
+        return startCol >= 2 && !isPlainSpaceCell(visualCells[startCol - 2]);
+    }
+
+    private static boolean hasAdjacentTextOnRight(BidiLayout.LogicalCell[] visualCells, int endCol, int columns) {
+        if (endCol >= columns) return false;
+        if (!isPlainSpaceCell(visualCells[endCol])) return true;
+        return endCol + 1 < columns && !isPlainSpaceCell(visualCells[endCol + 1]);
+    }
+
+    static int resolveRtlAlignment(BidiLayout.LogicalCell[] visualCells, int startCol, int endCol, int columns) {
+        boolean textOnLeft = hasAdjacentTextOnLeft(visualCells, startCol);
+        boolean textOnRight = hasAdjacentTextOnRight(visualCells, endCol, columns);
+        if (textOnLeft && textOnRight) return ALIGN_CENTER;
+        if (textOnRight && startCol > 0 && !textOnLeft) return ALIGN_RIGHT;
+        return ALIGN_LEFT;
+    }
+
+    /**
+     * Resolves whether a single space at {@code vCol} bridges two adjacent shaped RTL words
+     * into one continuous HarfBuzz phrase while leaving multi-space indentation/tables on the grid.
+     */
+    static boolean canBridgeSpaceIntoRtlRun(BidiLayout.LogicalCell[] visualCells, int columns,
+                                            int vCol, BidiLayout.LogicalCell lastRtlCell) {
+        if (lastRtlCell == null || vCol + 1 >= columns) return false;
+        BidiLayout.LogicalCell curr = visualCells[vCol];
+        if (curr.hasBitmap || curr.codePoint != ' ' || curr.combiningCount != 0 || curr.displayWidth != 1) {
+            return false;
+        }
+        BidiLayout.LogicalCell next = visualCells[vCol + 1];
+        if (!isShapedRtlCell(next)) return false;
+        return Math.abs(curr.originalColumn - lastRtlCell.originalColumn) == 1
+                && Math.abs(next.originalColumn - curr.originalColumn) == 1;
     }
 
     /**
@@ -326,7 +394,9 @@ public final class TerminalRenderer {
 
             final int codePoint = cell.codePoint;
             final int codePointWcWidth = cell.displayWidth;
-            final boolean isShapedRtl = isShapedRtlCell(cell);
+            final boolean isShapedRtl = isShapedRtlCell(cell)
+                    || (lastRunStartColumn >= 0 && lastRunIsRtl
+                    && canBridgeSpaceIntoRtlRun(visualCells, columns, vCol, lastRtlCell));
             final long style = cell.style;
             boolean insideSelection = cell.insideSelection;
             if (!insideSelection && codePointWcWidth == 2 && vCol + 1 < columns && visualCells[vCol + 1].insideSelection) {
@@ -492,13 +562,23 @@ public final class TerminalRenderer {
     }
 
     /**
-     * Renders an RTL word run using native cursive shaping, gently capped scaling, and
-     * per-segment horizontal clipping for mid-word color, selection, and cursor contrast.
+     * Renders an RTL word or bridged multi-word phrase using native cursive shaping, proportional
+     * size balance, neighbor-aware placement, and HarfBuzz-aligned per-segment horizontal clipping.
      */
     private void flushRtlWordRun(Canvas canvas, BidiLayout.LogicalCell[] visualCells,
                                  int[] palette, float heightOffset,
                                  int startCol, int endCol, int runColumns, int count,
                                  int cursorShape, boolean reverseVideo) {
+        int neededMeta = Math.max(count, runColumns);
+        if (mCellCharStart.length < neededMeta) {
+            int newCap = Math.max(neededMeta, mCellCharStart.length * 2);
+            mCellCharStart = new int[newCap];
+            mCellCharEnd = new int[newCap];
+            mVisualToRunCell = new int[newCap];
+            mVisCellLeft = new float[newCap];
+            mVisCellRight = new float[newCap];
+        }
+
         // Reorder mRunCells into logical column order without heap allocation.
         if (count > 1) {
             boolean strictlyDescending = true;
@@ -529,11 +609,35 @@ public final class TerminalRenderer {
 
         int used = 0;
         for (int i = 0; i < count; i++) {
+            mCellCharStart[i] = used;
             used += encodeCellToBuffer(mRunCells[i], mRunCharBuffer, used);
+            mCellCharEnd[i] = used;
+        }
+        if (used == 0) return;
+
+        for (int i = 0; i < runColumns; i++) {
+            BidiLayout.LogicalCell target = visualCells[startCol + i];
+            int revIdx = count - 1 - i;
+            if (revIdx >= 0 && revIdx < count && mRunCells[revIdx] == target) {
+                mVisualToRunCell[i] = revIdx;
+            } else {
+                int found = -1;
+                for (int r = 0; r < count; r++) {
+                    if (mRunCells[r] == target) {
+                        found = r;
+                        break;
+                    }
+                }
+                mVisualToRunCell[i] = found;
+            }
         }
 
         final Typeface originalTypeface = mTextPaint.getTypeface();
+        final float originalTextSize = mTextPaint.getTextSize();
         mTextPaint.setTypeface(Typeface.DEFAULT);
+        if (originalTextSize > 0f) {
+            mTextPaint.setTextSize(originalTextSize * RTL_TEXT_SIZE_SCALE);
+        }
         try {
             final float top = heightOffset - mFontLineSpacingAndAscent + mFontAscent;
             final float bottom = heightOffset;
@@ -543,61 +647,86 @@ public final class TerminalRenderer {
             final int cursorColor = palette[TextStyle.COLOR_INDEX_CURSOR];
             final boolean isBlockCursor = (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK);
 
-            // 1. Draw per-cell backgrounds, selection highlights, and cursor rectangles in grid space.
+            // Check whether all cells share uniform appearance and whether any overlay rects are needed.
+            final long firstStyle = visualCells[startCol].style;
+            boolean uniformText = true;
+            boolean hasOverlay = false;
+            boolean refInv = visualCells[startCol].insideSelection ^ (visualCells[startCol].insideCursor && isBlockCursor);
             for (int c = startCol; c < endCol; c++) {
                 BidiLayout.LogicalCell cell = visualCells[c];
-                long cellStyle = cell.style;
-                int effect = TextStyle.decodeEffect(cellStyle);
-                boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
-                int fore = resolveForeColor(TextStyle.decodeForeColor(cellStyle), bold, palette);
-                int back = resolveBackColor(TextStyle.decodeBackColor(cellStyle), palette);
-                boolean cellInvert = reverseVideo
-                        ^ ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0)
-                        ^ cell.insideSelection
-                        ^ (cell.insideCursor && isBlockCursor);
-                int resolvedBg = cellInvert ? fore : back;
-
-                float cellLeft = c * mFontWidth;
-                float cellRight = (c + 1) * mFontWidth;
-                if (resolvedBg != defaultBg) {
-                    mTextPaint.setColor(resolvedBg);
-                    canvas.drawRect(cellLeft, top, cellRight, bottom, mTextPaint);
+                if (cell.insideCursor || cell.insideSelection) hasOverlay = true;
+                int back = resolveBackColor(TextStyle.decodeBackColor(cell.style), palette);
+                if (back != defaultBg || (TextStyle.decodeEffect(cell.style) & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0) {
+                    hasOverlay = true;
                 }
-
-                if (cell.insideCursor) {
-                    mTextPaint.setColor(cursorColor);
-                    float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-                    if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
-                        canvas.drawRect(cellLeft, bottom - cursorHeight / 4.f, cellRight, bottom, mTextPaint);
-                    } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
-                        canvas.drawRect(cellLeft, bottom - cursorHeight, cellLeft + mFontWidth / 4.f, bottom, mTextPaint);
-                    } else {
-                        canvas.drawRect(cellLeft, bottom - cursorHeight, cellRight, bottom, mTextPaint);
-                    }
+                boolean cellInv = cell.insideSelection ^ (cell.insideCursor && isBlockCursor);
+                if (cell.style != firstStyle || cellInv != refInv) {
+                    uniformText = false;
                 }
             }
+            if (reverseVideo) hasOverlay = true;
 
-            // 2. Measure with dominant bold flag so width measurement accurately reflects glyph strokes.
-            long firstStyle = visualCells[startCol].style;
+            // Measure with dominant bold/italic flags before positioning and segment calculation.
             int firstEffect = TextStyle.decodeEffect(firstStyle);
             mTextPaint.setFakeBoldText((firstEffect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0);
             mTextPaint.setTextSkewX((firstEffect & TextStyle.CHARACTER_ATTRIBUTE_ITALIC) != 0 ? -0.35f : 0.f);
             final float measuredWidth = mTextPaint.measureText(mRunCharBuffer, 0, used);
 
             final float scaleX = computeRtlRunScaleX(measuredWidth, runColumns, mFontWidth);
-            final float drawLeft = computeRtlRunLeftX(startCol, runColumns, mFontWidth, measuredWidth, scaleX);
+            final int alignment = resolveRtlAlignment(visualCells, startCol, endCol, visualCells.length);
+            final float drawLeft = computeRtlRunLeftX(startCol, runColumns, mFontWidth, measuredWidth, scaleX, alignment);
+            final float drawnWidth = measuredWidth * scaleX;
+            final float slotLeft = startCol * mFontWidth;
+            final float slotRight = endCol * mFontWidth;
             final boolean needScale = Math.abs(scaleX - 1.0f) > 0.005f;
             final float baseline = heightOffset - mFontLineSpacingAndAscent;
 
-            // Check whether all cells in this word share identical visual foreground appearance.
-            boolean uniformText = true;
-            boolean refInv = visualCells[startCol].insideSelection ^ (visualCells[startCol].insideCursor && isBlockCursor);
-            for (int c = startCol + 1; c < endCol; c++) {
-                BidiLayout.LogicalCell cell = visualCells[c];
-                boolean cellInv = cell.insideSelection ^ (cell.insideCursor && isBlockCursor);
-                if (cell.style != firstStyle || cellInv != refInv) {
-                    uniformText = false;
-                    break;
+            if (hasOverlay || !uniformText) {
+                computeVisualCellBounds(runColumns, used, measuredWidth, scaleX, drawLeft, drawnWidth);
+            }
+
+            if (hasOverlay) {
+                final int totalColumns = visualCells.length;
+                for (int i = 0; i < runColumns; i++) {
+                    int c = startCol + i;
+                    BidiLayout.LogicalCell cell = visualCells[c];
+                    long cellStyle = cell.style;
+                    int effect = TextStyle.decodeEffect(cellStyle);
+                    boolean bold = (effect & (TextStyle.CHARACTER_ATTRIBUTE_BOLD | TextStyle.CHARACTER_ATTRIBUTE_BLINK)) != 0;
+                    int fore = resolveForeColor(TextStyle.decodeForeColor(cellStyle), bold, palette);
+                    int back = resolveBackColor(TextStyle.decodeBackColor(cellStyle), palette);
+                    boolean cellInvert = reverseVideo
+                            ^ ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVERSE) != 0)
+                            ^ cell.insideSelection
+                            ^ (cell.insideCursor && isBlockCursor);
+                    int resolvedBg = cellInvert ? fore : back;
+
+                    float gLeft = mVisCellLeft[i];
+                    float gRight = mVisCellRight[i];
+                    float bgLeft = (i == 0 && (back != defaultBg
+                            || (startCol > 0 && visualCells[startCol - 1].insideSelection && cell.insideSelection)))
+                            ? Math.min(slotLeft, gLeft) : gLeft;
+                    float bgRight = (i == runColumns - 1 && (back != defaultBg
+                            || (endCol < totalColumns && visualCells[endCol].insideSelection && cell.insideSelection)))
+                            ? Math.max(slotRight, gRight) : gRight;
+
+                    if (resolvedBg != defaultBg) {
+                        mTextPaint.setColor(resolvedBg);
+                        canvas.drawRect(bgLeft, top, bgRight, bottom, mTextPaint);
+                    }
+
+                    if (cell.insideCursor) {
+                        mTextPaint.setColor(cursorColor);
+                        float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+                        float cursorRight = Math.max(gRight, gLeft + mFontWidth * 0.45f);
+                        if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
+                            canvas.drawRect(gLeft, bottom - cursorHeight / 4.f, cursorRight, bottom, mTextPaint);
+                        } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
+                            canvas.drawRect(gLeft, bottom - cursorHeight, gLeft + mFontWidth / 4.f, bottom, mTextPaint);
+                        } else {
+                            canvas.drawRect(gLeft, bottom - cursorHeight, cursorRight, bottom, mTextPaint);
+                        }
+                    }
                 }
             }
 
@@ -617,14 +746,48 @@ public final class TerminalRenderer {
                         if (next.style != startCell.style || nextInv != startInv) break;
                         segEnd++;
                     }
+                    float clipL = (segStart == startCol)
+                            ? Math.min(drawLeft, slotLeft) - mFontWidth
+                            : mVisCellLeft[segStart - startCol];
+                    float clipR = (segEnd == endCol)
+                            ? Math.max(drawLeft + drawnWidth, slotRight) + mFontWidth
+                            : mVisCellRight[segEnd - 1 - startCol];
                     drawRtlSegment(canvas, startCell, palette, mRunCharBuffer, used,
                             scaleX, drawLeft, needScale, baseline, cursorShape, reverseVideo, true,
-                            segStart * mFontWidth, clipTop, segEnd * mFontWidth, clipBottom);
+                            clipL, clipTop, clipR, clipBottom);
                     segStart = segEnd;
                 }
             }
         } finally {
             mTextPaint.setTypeface(originalTypeface);
+            mTextPaint.setTextSize(originalTextSize);
+        }
+    }
+
+    private void computeVisualCellBounds(int runColumns, int used, float measuredWidth,
+                                         float scaleX, float drawLeft, float drawnWidth) {
+        boolean useRunAdvance = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && measuredWidth > 0f);
+        for (int i = 0; i < runColumns; i++) {
+            float gLeft;
+            float gRight;
+            int runIdx = mVisualToRunCell[i];
+            if (useRunAdvance && runIdx >= 0) {
+                int cStart = mCellCharStart[runIdx];
+                int cEnd = mCellCharEnd[runIdx];
+                float advStart = (cStart <= 0) ? 0f
+                        : mTextPaint.getRunAdvance(mRunCharBuffer, 0, used, 0, used, true, cStart);
+                float advEnd = (cEnd >= used) ? measuredWidth
+                        : mTextPaint.getRunAdvance(mRunCharBuffer, 0, used, 0, used, true, cEnd);
+                float loAdv = Math.min(advStart, advEnd);
+                float hiAdv = Math.max(advStart, advEnd);
+                gLeft = drawLeft + Math.max(0f, measuredWidth - hiAdv) * scaleX;
+                gRight = drawLeft + Math.min(measuredWidth, measuredWidth - loAdv) * scaleX;
+            } else {
+                gLeft = drawLeft + drawnWidth * ((float) i / runColumns);
+                gRight = drawLeft + drawnWidth * ((float) (i + 1) / runColumns);
+            }
+            mVisCellLeft[i] = gLeft;
+            mVisCellRight[i] = gRight;
         }
     }
 
