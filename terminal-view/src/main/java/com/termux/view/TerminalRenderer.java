@@ -21,8 +21,7 @@ import com.termux.terminal.WcWidth;
  * <p>Pure-LTR / ASCII rows bypass {@link BidiLayout} and cell boxing entirely for native
  * zero-allocation scrolling and frame throughput. Main-buffer BiDi prose uses continuous
  * HarfBuzz-measured flow at natural undistorted stroke proportions ({@code scaleX <= 1.0f}),
- * with {@code dir="auto"} per-paragraph right-alignment for unprompted RTL paragraphs and
- * left-anchored monospace prefixes for shell prompts. Alternate-buffer TUIs, box-drawing
+ * left-anchored at the viewport origin with inherited wrapped-line BiDi ordering. Alternate-buffer TUIs, box-drawing
  * frames, Sixel bitmaps, and columnar tables preserve strict grid alignment.
  */
 public final class TerminalRenderer {
@@ -281,13 +280,9 @@ public final class TerminalRenderer {
         return layout.hasBoxBorder || layout.hasBitmap || layout.hasColumnarMultiSpace;
     }
 
-    /** Returns true when a BiDi row represents an unprompted RTL paragraph that aligns flush right. */
+    /** Keeps terminal rows left-anchored so CLI outputs and prompts never jump to the far right edge. */
     static boolean shouldRightAlignBidi(BidiLayout layout, boolean altBuffer) {
-        return layout != null
-                && !usesStrictGrid(layout, altBuffer)
-                && layout.resolvedBaseDirection == BidiLayout.DIR_RTL
-                && layout.promptPrefixLength == 0
-                && !layout.paragraphStartsWithPrompt;
+        return false;
     }
 
     /** Returns true if a paired ASCII delimiter hugs RTL text and should shape proportionally alongside it. */
@@ -1121,7 +1116,8 @@ public final class TerminalRenderer {
 
             if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
                 float barW = Math.max(2f, mFontWidth / 4.f);
-                boolean anchorRight = cell.isRtl || (geo.rightAligned && v >= activeLen);
+                boolean isTrailingEol = (v >= activeLen);
+                boolean anchorRight = isTrailingEol ? geo.rightAligned : cell.isRtl;
                 float barL;
                 float barR;
                 if (anchorRight) {

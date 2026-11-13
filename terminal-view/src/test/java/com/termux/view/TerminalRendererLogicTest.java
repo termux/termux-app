@@ -619,9 +619,8 @@ public class TerminalRendererLogicTest {
     public void testCursorShapesPreserveStandardGeometryAndRtlGlyphBounds() {
         TerminalRenderer renderer = newUniformRenderer();
         float w = renderer.mFontWidth;
-        float viewportW = 20 * w;
 
-        // 1. Default BLOCK cursor at EOL after right-aligned Arabic "مرحبا" touches contentLeft directly (0px phantom gap).
+        // 1. Default BLOCK cursor at EOL after left-anchored Arabic "مرحبا" sits flush at the right edge of the word.
         TerminalEmulator blockEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627");
         int cursorColor = blockEm.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
         RecordingCanvas cBlock = new RecordingCanvas();
@@ -632,12 +631,14 @@ public class TerminalRendererLogicTest {
             if (dc.isRtl) rtlDraw = dc;
         }
         assertTrue("Expected RTL text and trailing BLOCK cursor rect", blockTrailing != null && rtlDraw != null);
-        assertEquals("Trailing cursor on RTL paragraph must touch leftmost glyph edge cleanly",
-                rtlDraw.x, blockTrailing.right, 0.5f);
+        assertEquals("Left-anchored Arabic line must start at x=0", 0f, rtlDraw.x, 0.01f);
+        float contentRight = renderer.getVisualColumnRightX(blockEm, 4, 0);
+        assertEquals("Trailing BLOCK cursor must touch right edge of left-anchored RTL word cleanly",
+                contentRight, blockTrailing.left, 0.5f);
         assertTrue("Cursor width must be visible and proportional",
                 (blockTrailing.right - blockTrailing.left) >= w * 0.45f);
 
-        // 2. BAR cursor (\e[6 q) and UNDERLINE cursor (\e[4 q) inside right-aligned Arabic word stay within [contentLeft..viewportW].
+        // 2. BAR cursor (\e[6 q) and UNDERLINE cursor (\e[4 q) inside left-anchored Arabic word stay within [0..contentRight].
         TerminalEmulator barEm = newEmulator(20, 2, "\u001b[6 q\u0645\u0631\u062D\u0628\u0627\u001b[3G");
         RecordingCanvas cBar = new RecordingCanvas();
         renderer.render(barEm, cBar, 0, -1, -1, -1, -1);
@@ -645,8 +646,8 @@ public class TerminalRendererLogicTest {
         assertTrue("Expected BAR cursor rect inside Arabic word", barRect != null);
         assertTrue("BAR cursor must remain thin bar, width=" + (barRect.right - barRect.left),
                 (barRect.right - barRect.left) <= w * 0.35f);
-        assertTrue("BAR cursor must stay inside right-aligned RTL run bounds",
-                barRect.left >= rtlDraw.x - 1f && barRect.right <= viewportW + 0.5f);
+        assertTrue("BAR cursor must stay inside left-anchored RTL run bounds",
+                barRect.left >= 0f && barRect.right <= contentRight + 0.5f);
 
         TerminalEmulator ulEm = newEmulator(20, 2, "\u001b[4 q\u0645\u0631\u062D\u0628\u0627\u001b[3G");
         RecordingCanvas cUl = new RecordingCanvas();
@@ -656,17 +657,16 @@ public class TerminalRendererLogicTest {
         assertTrue("UNDERLINE cursor height must stay thin underline, h=" + (ulRect.bottom - ulRect.top),
                 (ulRect.bottom - ulRect.top) <= (blockTrailing.bottom - blockTrailing.top) * 0.4f);
 
-        // 3. BLOCK cursor inside Arabic word covers only that glyph cleanly within [contentLeft..viewportW].
+        // 3. BLOCK cursor inside Arabic word covers only that glyph cleanly within [0..contentRight].
         TerminalEmulator rtlBlockEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627\u001b[3G");
         RecordingCanvas cRtlBlock = new RecordingCanvas();
         renderer.render(rtlBlockEm, cRtlBlock, 0, -1, -1, -1, -1);
         RectCall rtlBlockRect = findLastCursorRect(cRtlBlock, cursorColor);
         assertTrue("Expected BLOCK cursor rect inside Arabic word", rtlBlockRect != null);
         assertTrue("RTL BLOCK cursor width must be visible", (rtlBlockRect.right - rtlBlockRect.left) > 1.5f);
-        assertTrue("RTL BLOCK cursor must stay within run bounds ["
-                        + rtlDraw.x + ".." + viewportW + "], got ["
+        assertTrue("RTL BLOCK cursor must stay within run bounds [0.." + contentRight + "], got ["
                         + rtlBlockRect.left + ", " + rtlBlockRect.right + "]",
-                rtlBlockRect.left >= rtlDraw.x - 1f && rtlBlockRect.right <= viewportW + 0.5f);
+                rtlBlockRect.left >= 0f && rtlBlockRect.right <= contentRight + 0.5f);
     }
 
     @Test
@@ -676,28 +676,11 @@ public class TerminalRendererLogicTest {
         assertEquals(TerminalView.ARROW_STEP_FALLBACK, TerminalView.resolveVisualArrowSteps(ltrEm, -1));
         assertEquals(TerminalView.ARROW_STEP_FALLBACK, TerminalView.resolveVisualArrowSteps(ltrEm, 1));
 
-        // 2. Pure right-aligned Arabic "مرحبا" (visual: [EOL(5)] ا(4) ب(3) ح(2) ر(1) م(0)):
-        // At EOL col=5 (leftmost visual edge), Left stays (0); Right walks 'ا'(4)->'ب'(3)->'ح'(2)->'ر'(1)->'م'(0).
+        // 2. Pure Arabic "مرحبا" (cols 0..4, cursor at col 5): walk left visual col 5->0 and back 0->5.
         TerminalEmulator arEm = newEmulator(24, 2, "\u0645\u0631\u062D\u0628\u0627");
-        int col = arEm.getCursorCol(); // 5 (EOL, leftmost visual edge)
+        int col = arEm.getCursorCol(); // 5
         assertEquals(5, col);
-        assertEquals("Left arrow at leftmost EOL of right-aligned RTL line stays cleanly",
-                0, TerminalView.resolveVisualArrowSteps(arEm, -1));
-        int[] expectedRightCols = {4, 3, 2, 1, 0}; // visual 0='ا' -> 1='ب' -> 2='ح' -> 3='ر' -> 4='م'
-        for (int targetCol : expectedRightCols) {
-            int delta = TerminalView.resolveVisualArrowSteps(arEm, 1);
-            assertTrue("Expected rightward step delta != FALLBACK/0 from col=" + col,
-                    delta != TerminalView.ARROW_STEP_FALLBACK && delta != 0);
-            col += delta;
-            assertEquals("Right arrow should land on logical col=" + targetCol, targetCol, col);
-            String move = "\u001b[" + (col + 1) + "G";
-            arEm.append(move.getBytes(StandardCharsets.UTF_8), move.length());
-        }
-        // At rightmost edge 'م' (col 0), pressing Right stays cleanly at 'م'.
-        assertEquals(0, TerminalView.resolveVisualArrowSteps(arEm, 1));
-
-        // Now walk Left back visually: 'ر'(1)->'ح'(2)->'ب'(3)->'ا'(4)->EOL(5).
-        int[] expectedLeftCols = {1, 2, 3, 4, 5};
+        int[] expectedLeftCols = {0, 1, 2, 3, 4}; // visual 4='م', 3='ر', 2='ح', 1='ب', 0='ا'
         for (int targetCol : expectedLeftCols) {
             int delta = TerminalView.resolveVisualArrowSteps(arEm, -1);
             assertTrue("Expected leftward step delta != FALLBACK/0 from col=" + col,
@@ -707,7 +690,22 @@ public class TerminalRendererLogicTest {
             String move = "\u001b[" + (col + 1) + "G";
             arEm.append(move.getBytes(StandardCharsets.UTF_8), move.length());
         }
+        // Pressing Left at visual col 0 stays cleanly at 'ا' instead of bouncing rightward to 'ب'.
         assertEquals(0, TerminalView.resolveVisualArrowSteps(arEm, -1));
+
+        // Now walk Right across 'ا'->'ب'->'ح'->'ر'->'م'->' ' (col 5).
+        int[] expectedRightCols = {3, 2, 1, 0, 5};
+        for (int targetCol : expectedRightCols) {
+            int delta = TerminalView.resolveVisualArrowSteps(arEm, 1);
+            assertTrue("Expected rightward step delta != FALLBACK/0 from col=" + col,
+                    delta != TerminalView.ARROW_STEP_FALLBACK && delta != 0);
+            col += delta;
+            assertEquals("Right arrow should land on logical col=" + targetCol, targetCol, col);
+            String move = "\u001b[" + (col + 1) + "G";
+            arEm.append(move.getBytes(StandardCharsets.UTF_8), move.length());
+        }
+        // At trailing edge col 5, Right arrow falls back cleanly (autosuggestion / EOL behavior).
+        assertEquals(TerminalView.ARROW_STEP_FALLBACK, TerminalView.resolveVisualArrowSteps(arEm, 1));
 
         // 3. Prompt + Arabic "$ مرحبا": pressing Left from visual 'ا' stops at prompt boundary without bouncing.
         TerminalEmulator promptEm = newEmulator(24, 2, "$ \u0645\u0631\u062D\u0628\u0627\u001b[7G");
@@ -744,14 +742,14 @@ public class TerminalRendererLogicTest {
         assertEquals(-1, TerminalView.resolveVisualArrowSteps(wideLtrLayout, 7, 24, -1));
         assertEquals(1, TerminalView.resolveVisualArrowSteps(wideLtrLayout, 5, 24, 1));
 
-        // In right-aligned RTL base "مرحبا👍hi", visual order is [h(7), i(8), 👍(5,6), ا(4), ..., م(0)]:
-        // Left from v=0 ('h', col=7) steps to EOL (col=9, delta +2); Right from '👍' (col=5) steps onto 'ا' (col=4, delta -1).
+        // In RTL base "مرحبا👍hi", visual order is [h(7), i(8), 👍(5,6), ا(4), ..., م(0)]:
+        // 'h' is at v0 (stops on Left), '👍' at v2 steps Right onto 'ا' (col 4) skipping v3 continuation.
         TerminalEmulator wideRtlEm = newEmulator(24, 2, "\u0645\u0631\u062D\u0628\u0627\uD83D\uDC4Dhi");
         TerminalBuffer wideRtlScreen = wideRtlEm.getScreen();
         BidiLayout wideRtlLayout = BidiLayout.build(
                 wideRtlScreen.allocateFullLineIfNecessary(wideRtlScreen.externalToInternalRow(0)),
                 24, wideRtlEm.getCursorCol(), false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
-        assertEquals(2, TerminalView.resolveVisualArrowSteps(wideRtlLayout, 7, 24, -1));
+        assertEquals(0, TerminalView.resolveVisualArrowSteps(wideRtlLayout, 7, 24, -1));
         assertEquals(-1, TerminalView.resolveVisualArrowSteps(wideRtlLayout, 5, 24, 1));
     }
 
@@ -797,12 +795,13 @@ public class TerminalRendererLogicTest {
         assertTrue("Expected crisp unstretched '(' delimiter", leftParen != null && Math.abs(leftParen.lastScaleX - 1.0f) < 0.01f);
         assertTrue("Expected Arabic phrase RTL run", rtlPhrase != null);
         assertTrue("Expected crisp unstretched ')' delimiter", rightParen != null && Math.abs(rightParen.lastScaleX - 1.0f) < 0.01f);
-        assertTrue("Left '(' must sit directly left of Arabic phrase", leftParen.x < rtlPhrase.x);
+        assertTrue("Left '(' must sit directly at left margin before Arabic phrase",
+                leftParen.x < rtlPhrase.x && leftParen.x <= 0.1f);
         assertTrue("Arabic phrase must start flush right after '(' with proportional advance, delta="
                         + (rtlPhrase.x - leftParen.x),
                 (rtlPhrase.x - leftParen.x) <= w * 1.25f);
-        assertTrue("Right ')' must sit flush right at end of Arabic phrase and align to viewport edge",
-                rightParen.x > rtlPhrase.x && rightParen.x + 1.25f * w >= 20f * w - 0.5f);
+        assertTrue("Right ')' must sit flush right at end of Arabic phrase (and stay left-anchored, not pushed to viewportW)",
+                rightParen.x > rtlPhrase.x && rightParen.x < 18f * w);
 
         // 2. "قال (مرحبا) لكم": words and parentheses form cohesive spacing cleanly (3 RTL word calls + 2 delim calls).
         TerminalEmulator sentenceEm = newEmulator(25, 2, "\u0642\u0627\u0644 (\u0645\u0631\u062D\u0628\u0627) \u0644\u0643\u0645");
@@ -896,23 +895,22 @@ public class TerminalRendererLogicTest {
         assertEquals("Pressing space after '$ ا' must add strictly one proportional space",
                 expectedSpace, barPromptAfterSpace.left - barPromptBeforeSpace.left, 0.25f);
 
-        // 2. Unprompted pure RTL "ا" -> "ا ": right-aligned flush at viewportW, BAR cursor touches left edge of 'ا'.
+        // 2. Unprompted pure RTL "ا" -> "ا ": left-anchored at x=0, BAR cursor touches right edge of 'ا' directly!
         TerminalEmulator emRtlAlef = newEmulator(20, 2, "\u001b[6 q\u0627");
         RecordingCanvas cRtl1 = new RecordingCanvas();
         renderer.render(emRtlAlef, cRtl1, 0, -1, -1, -1, -1);
         RectCall rtlBar1 = findLastCursorRect(cRtl1, cursorColor);
-        float viewportW = 20f * monoW;
         float alefW = monoW * 1.10f * 0.26f;
-        assertEquals("Unprompted 'ا' BAR cursor right edge must sit directly at viewportW - w(ا)",
-                viewportW - alefW, rtlBar1.right, 0.25f);
+        assertEquals("Unprompted 'ا' BAR cursor left edge must sit directly at x = w(ا) from left margin",
+                alefW, rtlBar1.left, 0.25f);
         emRtlAlef.append(" ".getBytes(StandardCharsets.US_ASCII), 1);
         RecordingCanvas cRtl2 = new RecordingCanvas();
         renderer.render(emRtlAlef, cRtl2, 0, -1, -1, -1, -1);
         RectCall rtlBar2 = findLastCursorRect(cRtl2, cursorColor);
-        assertEquals("Pressing space after unprompted 'ا' shifts cursor left by strictly 1 rtlSpaceW",
-                expectedSpace, rtlBar1.right - rtlBar2.right, 0.25f);
+        assertEquals("Pressing space after unprompted 'ا' shifts cursor right by strictly 1 rtlSpaceW",
+                expectedSpace, rtlBar2.left - rtlBar1.left, 0.25f);
 
-        // 3. Long narrow-letter Arabic phrase renders undistorted (scaleX == 1.0f) and flush right.
+        // 3. Long narrow-letter Arabic phrase renders undistorted (scaleX == 1.0f) and stays LEFT-ANCHORED at x=0.
         String alefSentence = "\u0627\u0646\u0627 \u0627\u0643\u062A\u0628 \u0627\u0644\u0627\u0646 \u0627\u0644\u064A\u0648\u0645";
         TerminalEmulator emLong = newEmulator(30, 2, alefSentence);
         RecordingCanvas cLong = new RecordingCanvas();
@@ -920,8 +918,11 @@ public class TerminalRendererLogicTest {
         for (DrawCall dc : cLong.textCalls) {
             assertEquals("Continuous flow must never distort scaleX > 1.0", 1.0f, dc.lastScaleX, 0.001f);
         }
+        assertEquals("Unprompted Arabic line must remain left-anchored at x=0",
+                0f, renderer.getVisualColumnLeftX(emLong, 0, 0), 0.01f);
         float rightEdge = renderer.getVisualColumnRightX(emLong, 18, 0); // activeLen=19 -> v=18
-        assertEquals("Flush right edge of RTL line must equal viewportW", 30f * monoW, rightEdge, 0.1f);
+        assertTrue("Tight left-anchored Arabic phrase must stay compact, got rightEdge=" + rightEdge,
+                rightEdge > 50f && rightEdge < 30f * monoW);
 
         // 4. Defensive check: zero-metric Paint + API < 23 renders cleanly without NaN or exceptions.
         TerminalRenderer zeroRenderer = new TerminalRenderer(20, Typeface.MONOSPACE, new Paint() {
@@ -937,16 +938,16 @@ public class TerminalRendererLogicTest {
     @Test
     public void testMultiLineWrappedParagraphAlignmentDirAutoVsPrompt() {
         TerminalRenderer renderer = newProportionalRenderer();
-        float w = renderer.mFontWidth;
         int cols = 20;
 
-        // A. Unprompted wrapped Arabic+English paragraph: all 3 lines align flush RIGHT at viewportW.
+        // A. Wrapped Arabic+English paragraph: ALL rows stay left-anchored (never jump to far right edge!)
+        //    while wrapped continuation rows inherit DIR_RTL ordering cleanly.
         TerminalEmulator arPara = newEmulator(cols, 4, "");
         TerminalBuffer scrA = arPara.getScreen();
         long st = scrA.allocateFullLineIfNecessary(0).getStyle(0);
         String r0 = "\u0645\u0631\u062D\u0628\u0627 \u0628\u0643\u0645 \u0641\u064A \u0639\u0627\u0644\u0645 \u0627"; // 19 cols
         String r1 = "\u0644\u0628\u0631\u0645\u062C\u0629 hello \u0627\u0644\u064A\u0648\u0645"; // 18 cols mixed
-        String r2 = "Termux"; // pure LTR wrapped continuation of RTL paragraph!
+        String r2 = "Termux"; // pure LTR wrapped continuation
         for (int c = 0; c < r0.length(); c++) scrA.setChar(c, 0, r0.charAt(c), st);
         scrA.setLineWrap(0);
         for (int c = 0; c < r1.length(); c++) scrA.setChar(c, 1, r1.charAt(c), st);
@@ -960,9 +961,9 @@ public class TerminalRendererLogicTest {
                     (byte) (ctx & BidiLayout.INHERITED_DIR_MASK),
                     (ctx & BidiLayout.INHERITED_PROMPT_FLAG) != 0);
             BidiLayout.PixelGeometry geo = renderer.ensureRowPixelGeometry(layout, cols, false);
-            assertTrue("Wrapped RTL paragraph row " + row + " must be rightAligned", geo.rightAligned);
-            assertEquals("Row " + row + " right edge must align flush with viewportW",
-                    cols * w, geo.contentRight, 0.1f);
+            assertFalse("Terminal row " + row + " must NEVER jump to right edge", geo.rightAligned);
+            assertEquals("Row " + row + " left edge must stay flush at x=0", 0f, geo.contentLeft, 0.01f);
+            assertEquals(BidiLayout.DIR_RTL, layout.resolvedBaseDirection);
         }
 
         // B. Prompted wrapped command: "$ " anchored LEFT on row 0 AND continuation row 1 stays LEFT!

@@ -186,8 +186,8 @@ public class TextSelectionBiDiTest {
                     leftX, renderer.getLogicalColumnLeftX(em, lCol, 0), 0.01f);
         }
 
-        // Dragging past left margin of right-aligned RTL line with clampToActive=true clamps cleanly to v=0
-        assertEquals(0, renderer.translateXToVisualColumn(em, 2.0f, 0, true));
+        // Dragging past right end of left-anchored RTL line with clampToActive=true clamps cleanly to last active visual col
+        assertEquals(layout.trimmedActiveLength - 1, renderer.translateXToVisualColumn(em, 290.0f, 0, true));
 
         // Static queries reuse cached PixelGeometry instance with zero re-computation
         BidiLayout.PixelGeometry geo2 = renderer.ensureRowPixelGeometry(layout, cols, false);
