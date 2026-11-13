@@ -46,7 +46,8 @@ public final class TerminalRenderer {
 
     final int mTextSize;
     final Typeface mTypeface;
-    private final Paint mTextPaint = new Paint();
+    private final Paint mTextPaint;
+    final boolean mUseApi23TextRun;
 
     /** Width of a single monospaced character, measured as {@code measureText("X")}. */
     final float mFontWidth;
@@ -81,6 +82,13 @@ public final class TerminalRenderer {
     private float[] mSegLeft = new float[32];
 
     public TerminalRenderer(int textSize, Typeface typeface) {
+        this(textSize, typeface, null, Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
+    }
+
+    /** Package-private constructor allowing JVM unit tests to supply custom {@link Paint} metrics and API level. */
+    TerminalRenderer(int textSize, Typeface typeface, Paint textPaint, boolean useApi23TextRun) {
+        mTextPaint = (textPaint != null) ? textPaint : new Paint();
+        mUseApi23TextRun = useApi23TextRun;
         mTextSize = textSize;
         mTypeface = typeface;
 
@@ -437,7 +445,7 @@ public final class TerminalRenderer {
 
         applyPaintStyleForMeasurement(visualCells[sStart].style);
         float segNatW = mTextPaint.measureText(mRunCharBuffer, 0, used);
-        boolean useRunAdvance = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && segNatW > 0f);
+        boolean useRunAdvance = (mUseApi23TextRun && segNatW > 0f);
         int span = sEnd - sStart;
         for (int v = sStart; v < sEnd; v++) {
             float gLeft;
@@ -1204,7 +1212,7 @@ public final class TerminalRenderer {
             drawX = slotLeft / sx;
             saved = true;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (mUseApi23TextRun) {
             canvas.drawTextRun(mRunCharBuffer, 0, used, 0, used, drawX, baseline, false, mTextPaint);
         } else {
             canvas.drawText(mRunCharBuffer, 0, used, drawX, baseline, mTextPaint);
@@ -1960,7 +1968,7 @@ public final class TerminalRenderer {
     private void computeVisualCellBounds(int vStart, int vEnd, int bufStart, int bufEnd,
                                          float measuredWidth, float scaleX, float segLeft,
                                          boolean mapViaRunCell) {
-        boolean useRunAdvance = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && measuredWidth > 0f);
+        boolean useRunAdvance = (mUseApi23TextRun && measuredWidth > 0f);
         int span = vEnd - vStart;
         float drawnWidth = measuredWidth * scaleX;
         for (int i = vStart; i < vEnd; i++) {
@@ -2039,7 +2047,7 @@ public final class TerminalRenderer {
             x /= scaleX;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (mUseApi23TextRun) {
             canvas.drawTextRun(text, offset, used, offset, used, x, baseline, true, mTextPaint);
         } else {
             canvas.drawText(text, offset, used, x, baseline, mTextPaint);
@@ -2127,7 +2135,7 @@ public final class TerminalRenderer {
             mTextPaint.setStrikeThruText(strikeThrough);
             mTextPaint.setColor(foreColor);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (mUseApi23TextRun) {
                 canvas.drawTextRun(text, startCharIndex, runWidthChars,
                         startCharIndex, runWidthChars,
                         left, y - mFontLineSpacingAndAscent, isRtl, mTextPaint);
