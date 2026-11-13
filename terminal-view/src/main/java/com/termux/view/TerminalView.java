@@ -547,13 +547,12 @@ public final class TerminalView extends View {
      * @return Array with the column and row.
      */
     public int[] getColumnAndRow(MotionEvent event, boolean relativeToScroll) {
-        int column = (int) (event.getX() / mRenderer.mFontWidth);
         int row = (int) ((event.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
         int logicalRow = row;
         if (relativeToScroll) {
             logicalRow += mTopRow;
         }
-        column = mRenderer.translateVisualToLogicalColumn(mEmulator, column, logicalRow);
+        int column = mRenderer.translateXToLogicalColumn(mEmulator, event.getX(), logicalRow);
         return new int[] { column, logicalRow };
     }
 
@@ -961,14 +960,21 @@ public final class TerminalView extends View {
 
         TerminalBuffer screen = term.getScreen();
         if (screen == null) return ARROW_STEP_FALLBACK;
-        byte paragraphDir = BidiLayout.resolveInheritedDirection(screen, cursorRow, columns);
+        int inheritedCtx = BidiLayout.resolveInheritedContext(screen, cursorRow, columns);
+        byte paragraphDir = (byte) (inheritedCtx & BidiLayout.INHERITED_DIR_MASK);
+        boolean inheritedPrompt = (inheritedCtx & BidiLayout.INHERITED_PROMPT_FLAG) != 0;
         TerminalRow rowObject = screen.allocateFullLineIfNecessary(screen.externalToInternalRow(cursorRow));
         if (rowObject == null || (!rowObject.mMayContainRtlOrBidi && paragraphDir != BidiLayout.DIR_RTL)) {
             return ARROW_STEP_FALLBACK;
         }
         BidiLayout layout = BidiLayout.build(rowObject, columns, cursorCol, false,
-                -1, -1, -1, -1, cursorRow, false, paragraphDir);
-        return resolveVisualArrowSteps(layout, cursorCol, columns, visualDir);
+                -1, -1, -1, -1, cursorRow, false, paragraphDir, inheritedPrompt);
+        return resolveVisualArrowSteps(layout, cursorCol, columns, visualDir, term.isAlternateBufferActive());
+    }
+
+    /** Backward-compatible main-buffer entry point for visual Left/Right arrow navigation. */
+    static int resolveVisualArrowSteps(BidiLayout layout, int cursorCol, int columns, int visualDir) {
+        return resolveVisualArrowSteps(layout, cursorCol, columns, visualDir, false);
     }
 
     /**
@@ -978,15 +984,53 @@ public final class TerminalView extends View {
      * @return positive for rightward key repeats, negative for leftward key repeats, {@code 0} to
      * consume a visual boundary press cleanly, or {@link #ARROW_STEP_FALLBACK} for default behavior.
      */
-    static int resolveVisualArrowSteps(BidiLayout layout, int cursorCol, int columns, int visualDir) {
-        if (layout == null || layout.isIdentity || visualDir == 0 || columns <= 0) {
+    static int resolveVisualArrowSteps(BidiLayout layout, int cursorCol, int columns,
+                                       int visualDir, boolean altBuffer) {
+        boolean rightAlignedBidi = TerminalRenderer.shouldRightAlignBidi(layout, altBuffer);
+        if (layout == null || (layout.isIdentity && !rightAlignedBidi) || visualDir == 0 || columns <= 0) {
             return ARROW_STEP_FALLBACK;
         }
         if (cursorCol < 0 || cursorCol >= columns) {
             return ARROW_STEP_FALLBACK;
         }
+
+        int activeLen = layout.trimmedActiveLength;
+        if (rightAlignedBidi && activeLen > 0 && cursorCol <= activeLen) {
+            int targetLogical;
+            if (cursorCol == activeLen) {
+                if (visualDir < 0) return 0; // Already at leftmost visual end (EOL) of RTL line.
+                int tv = 0;
+                while (tv < activeLen
+                        && layout.visualCells[tv].displayWidth == 0
+                        && layout.visualCells[tv].codePoint == 0) {
+                    tv++;
+                }
+                if (tv >= activeLen) return 0;
+                targetLogical = layout.visualToLogical[tv];
+            } else {
+                int curVis = layout.logicalToVisual[cursorCol];
+                int tv = curVis + visualDir;
+                while (tv >= 0 && tv < activeLen
+                        && layout.visualCells[tv].displayWidth == 0
+                        && layout.visualCells[tv].codePoint == 0) {
+                    tv += visualDir;
+                }
+                if (tv < 0) {
+                    // Stepping left off the leftmost RTL character lands at EOL insertion point.
+                    targetLogical = activeLen;
+                } else if (tv >= activeLen) {
+                    // Already at rightmost start of the RTL line.
+                    return 0;
+                } else {
+                    targetLogical = layout.visualToLogical[tv];
+                }
+            }
+            if (targetLogical == cursorCol) return 0;
+            return countLogicalCellSteps(layout, cursorCol, targetLogical, columns);
+        }
+
         // Preserve standard rightward behavior past active text (e.g., shell autosuggestions or EOL bell).
-        if (cursorCol >= layout.trimmedActiveLength && visualDir > 0) {
+        if (cursorCol >= activeLen && visualDir > 0) {
             return ARROW_STEP_FALLBACK;
         }
 
@@ -1016,6 +1060,10 @@ public final class TerminalView extends View {
             return 0;
         }
 
+        return countLogicalCellSteps(layout, cursorCol, targetLogical, columns);
+    }
+
+    private static int countLogicalCellSteps(BidiLayout layout, int cursorCol, int targetLogical, int columns) {
         int lo = Math.min(cursorCol, targetLogical);
         int hi = Math.max(cursorCol, targetLogical);
         int steps = 0;
@@ -1155,8 +1203,7 @@ public final class TerminalView extends View {
     }
 
     public int getCursorX(float x, int row) {
-        int visualCol = (int) (x / mRenderer.mFontWidth);
-        return mRenderer.translateVisualToLogicalColumn(mEmulator, visualCol, row);
+        return mRenderer.translateXToLogicalColumn(mEmulator, x, row);
     }
 
     public int getCursorY(float y) {
@@ -1171,8 +1218,7 @@ public final class TerminalView extends View {
         if (cx >= mEmulator.mColumns) {
             return Math.round(mEmulator.mColumns * mRenderer.mFontWidth);
         }
-        int visualCol = mRenderer.translateLogicalToVisualColumn(mEmulator, cx, cy);
-        return Math.round(visualCol * mRenderer.mFontWidth);
+        return Math.round(mRenderer.getLogicalColumnLeftX(mEmulator, cx, cy));
     }
 
     public int getPointY(int cy) {

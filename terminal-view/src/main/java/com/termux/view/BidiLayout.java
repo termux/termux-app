@@ -1,5 +1,7 @@
 package com.termux.view;
 
+import android.graphics.Typeface;
+
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalRow;
 import com.termux.terminal.TextStyle;
@@ -24,6 +26,79 @@ public final class BidiLayout {
     public static final byte DIR_LTR = 1;
     /** Explicit Right-to-Left paragraph base direction. */
     public static final byte DIR_RTL = 2;
+    /** Bitmask flag indicating an unwrapped paragraph root began with a left-anchored prompt. */
+    static final int INHERITED_PROMPT_FLAG = 0x10;
+    static final int INHERITED_DIR_MASK = 0x03;
+
+    /** Cached visual pixel geometry per row so rendering, hit-testing, selection, and cursor agree to the sub-pixel. */
+    public static final class PixelGeometry {
+        public final float[] visLeft;
+        public final float[] visRight;
+        public final boolean continuousFlow;
+        public final boolean rightAligned;
+        public final float contentLeft;
+        public final float contentRight;
+        public final float scaleX;
+        public final float rtlSpaceWidth;
+        final int textSize;
+        final Typeface typeface;
+        final float fontWidth;
+        final boolean altBuffer;
+
+        PixelGeometry(float[] visLeft, float[] visRight, boolean continuousFlow, boolean rightAligned,
+                      float contentLeft, float contentRight, float scaleX, float rtlSpaceWidth,
+                      int textSize, Typeface typeface, float fontWidth, boolean altBuffer) {
+            this.visLeft = visLeft;
+            this.visRight = visRight;
+            this.continuousFlow = continuousFlow;
+            this.rightAligned = rightAligned;
+            this.contentLeft = contentLeft;
+            this.contentRight = contentRight;
+            this.scaleX = scaleX;
+            this.rtlSpaceWidth = rtlSpaceWidth;
+            this.textSize = textSize;
+            this.typeface = typeface;
+            this.fontWidth = fontWidth;
+            this.altBuffer = altBuffer;
+        }
+
+        boolean matches(int textSize, Typeface typeface, float fontWidth, boolean altBuffer) {
+            return this.textSize == textSize
+                    && this.typeface == typeface
+                    && this.fontWidth == fontWidth
+                    && this.altBuffer == altBuffer;
+        }
+
+        public int findVisualColAtX(float x, boolean clampToActive, int activeLength) {
+            int columns = visLeft.length;
+            if (columns <= 0) return 0;
+            if (!continuousFlow) {
+                int col = (fontWidth > 0f) ? (int) (x / fontWidth) : 0;
+                return Math.max(0, Math.min(columns - 1, col));
+            }
+            if (activeLength <= 0) return 0;
+            if (rightAligned) {
+                if (x >= contentLeft) {
+                    for (int v = 0; v < activeLength; v++) {
+                        if (x < visRight[v]) return v;
+                    }
+                    return activeLength - 1;
+                }
+                if (clampToActive) return 0;
+                for (int v = activeLength; v < columns; v++) {
+                    if (x >= visLeft[v]) return v;
+                }
+                return columns - 1;
+            } else {
+                if (x < visLeft[0]) return 0;
+                int limit = clampToActive ? activeLength : columns;
+                for (int v = 0; v < limit; v++) {
+                    if (x < visRight[v]) return v;
+                }
+                return limit - 1;
+            }
+        }
+    }
 
     private static final int MAX_COMBINING = 15;
     private static final int MAX_WRAP_WALK = 32;
@@ -93,27 +168,41 @@ public final class BidiLayout {
     public final int[] logicalToVisual;
     public final int[] visualToLogical;
     public final byte inputParagraphDirection;
+    public final boolean inputParagraphStartsWithPrompt;
     public final byte resolvedBaseDirection;
     public final boolean isIdentity;
     public final int trimmedActiveLength;
     public final int promptPrefixLength;
+    public final boolean hasBoxBorder;
+    public final boolean hasBitmap;
+    public final boolean hasColumnarMultiSpace;
+    public final boolean paragraphStartsWithPrompt;
 
     // Tracks last rendered dynamic cursor/selection state to skip per-cell loops on static frames.
     private int mRenderedCursorCol = -2;
     private int mRenderedVSelStart = -2;
     private int mRenderedVSelEnd = -2;
+    public PixelGeometry mPixelGeometry;
 
     private BidiLayout(LogicalCell[] visualCells, int[] logicalToVisual, int[] visualToLogical,
-                       byte inputParagraphDirection, byte resolvedBaseDirection, boolean isIdentity,
-                       int trimmedActiveLength, int promptPrefixLength) {
+                       byte inputParagraphDirection, boolean inputParagraphStartsWithPrompt,
+                       byte resolvedBaseDirection, boolean isIdentity,
+                       int trimmedActiveLength, int promptPrefixLength,
+                       boolean hasBoxBorder, boolean hasBitmap, boolean hasColumnarMultiSpace,
+                       boolean paragraphStartsWithPrompt) {
         this.visualCells = visualCells;
         this.logicalToVisual = logicalToVisual;
         this.visualToLogical = visualToLogical;
         this.inputParagraphDirection = inputParagraphDirection;
+        this.inputParagraphStartsWithPrompt = inputParagraphStartsWithPrompt;
         this.resolvedBaseDirection = resolvedBaseDirection;
         this.isIdentity = isIdentity;
         this.trimmedActiveLength = trimmedActiveLength;
         this.promptPrefixLength = promptPrefixLength;
+        this.hasBoxBorder = hasBoxBorder;
+        this.hasBitmap = hasBitmap;
+        this.hasColumnarMultiSpace = hasColumnarMultiSpace;
+        this.paragraphStartsWithPrompt = paragraphStartsWithPrompt;
     }
 
     /** Backward-compatible entry point defaulting to {@link #DIR_DEFAULT}. */
@@ -121,7 +210,15 @@ public final class BidiLayout {
                                    int selectionY1, int selectionY2, int selectionX1, int selectionX2,
                                    int row, boolean isForRendering) {
         return build(rowObject, columns, cursorCol, cursorVisible,
-                selectionY1, selectionY2, selectionX1, selectionX2, row, isForRendering, DIR_DEFAULT);
+                selectionY1, selectionY2, selectionX1, selectionX2, row, isForRendering, DIR_DEFAULT, false);
+    }
+
+    /** Backward-compatible entry point preserving 11-argument callers. */
+    public static BidiLayout build(TerminalRow rowObject, int columns, int cursorCol, boolean cursorVisible,
+                                   int selectionY1, int selectionY2, int selectionX1, int selectionX2,
+                                   int row, boolean isForRendering, byte paragraphDirection) {
+        return build(rowObject, columns, cursorCol, cursorVisible,
+                selectionY1, selectionY2, selectionX1, selectionX2, row, isForRendering, paragraphDirection, false);
     }
 
     /**
@@ -130,7 +227,8 @@ public final class BidiLayout {
      */
     public static BidiLayout build(TerminalRow rowObject, int columns, int cursorCol, boolean cursorVisible,
                                    int selectionY1, int selectionY2, int selectionX1, int selectionX2,
-                                   int row, boolean isForRendering, byte paragraphDirection) {
+                                   int row, boolean isForRendering, byte paragraphDirection,
+                                   boolean inheritedStartsWithPrompt) {
         int effectiveCursorCol = cursorVisible ? cursorCol : -1;
         int vSelStart = -1;
         int vSelEnd = -1;
@@ -150,10 +248,12 @@ public final class BidiLayout {
             }
         }
 
-        // 1. Fast-path: reuse cached layout on matching columns and paragraph direction.
+        // 1. Fast-path: reuse cached layout on matching columns and paragraph context.
         if (rowObject.mCachedBidiLayout instanceof BidiLayout) {
             BidiLayout cached = (BidiLayout) rowObject.mCachedBidiLayout;
-            if (cached.visualCells.length == columns && cached.inputParagraphDirection == paragraphDirection) {
+            if (cached.visualCells.length == columns
+                    && cached.inputParagraphDirection == paragraphDirection
+                    && cached.inputParagraphStartsWithPrompt == inheritedStartsWithPrompt) {
                 if (isForRendering) {
                     if (cached.mRenderedCursorCol == effectiveCursorCol
                             && cached.mRenderedVSelStart == vSelStart
@@ -242,12 +342,16 @@ public final class BidiLayout {
         byte resolvedDir = (paragraphDirection == DIR_RTL) ? DIR_RTL : DIR_LTR;
         boolean allIdentity = true;
         int promptEnd = 0;
+        boolean hasBoxBorder = false;
+        boolean hasBitmap = false;
+        boolean hasColumnarMultiSpace = false;
 
         if (activeLength == 0 || (!rowObject.mMayContainRtlOrBidi && paragraphDirection != DIR_RTL)) {
             for (int i = 0; i < columns; i++) {
                 logicalToVisual[i] = i;
                 visualToLogical[i] = i;
                 visualCells[i] = logicalCells[i];
+                if (logicalCells[i].hasBitmap) hasBitmap = true;
             }
             resolvedDir = (paragraphDirection == DIR_RTL) ? DIR_RTL : DIR_LTR;
         } else {
@@ -257,20 +361,24 @@ public final class BidiLayout {
             byte[] levels = s.levels;
             int[] activeVisToLog = s.activeVisToLog;
 
-            boolean hasBoxBorder = false;
+            boolean hasVerticalBoxBorder = false;
             boolean hasAnyRtl = false;
             for (int i = 0; i < activeLength; i++) {
                 LogicalCell lc = logicalCells[i];
                 int cp = lc.codePoint;
                 char mapped;
                 if (lc.hasBitmap) {
+                    hasBitmap = true;
                     mapped = 'A'; // Never reverse pixel tiles of a Sixel/inline bitmap.
                 } else if (cp == 0) {
                     mapped = (i > 0) ? bidiChars[i - 1] : ' ';
                 } else if (cp <= 0xFFFF) {
                     mapped = (char) cp;
-                    if (cp == 0x2502 || cp == 0x2503 || cp == 0x2551) {
+                    if (cp >= 0x2500 && cp <= 0x257F) {
                         hasBoxBorder = true;
+                        if (cp == 0x2502 || cp == 0x2503 || cp == 0x2551) {
+                            hasVerticalBoxBorder = true;
+                        }
                     }
                 } else {
                     mapped = mapSupplementaryToDirectionChar(cp);
@@ -289,7 +397,7 @@ public final class BidiLayout {
                         : Bidi.DIRECTION_LEFT_TO_RIGHT;
                 reorderSlice(bidiChars, 0, activeLength, bidiFlag, activeVisToLog, levels, logicalCells);
                 resolvedDir = paragraphDirection;
-            } else if (hasBoxBorder && hasAnyRtl) {
+            } else if (hasVerticalBoxBorder && hasAnyRtl) {
                 reorderBoxTableCells(logicalCells, bidiChars, activeLength, activeVisToLog, levels);
                 resolvedDir = DIR_LTR;
             } else {
@@ -318,7 +426,10 @@ public final class BidiLayout {
                 logicalToVisual[i] = i;
                 visualToLogical[i] = i;
                 visualCells[i] = logicalCells[i];
+                if (logicalCells[i].hasBitmap) hasBitmap = true;
             }
+
+            hasColumnarMultiSpace = detectColumnarMultiSpace(visualCells, activeLength, promptEnd);
         }
 
         if (isForRendering) {
@@ -331,8 +442,14 @@ public final class BidiLayout {
             }
         }
 
+        boolean effectiveStartsWithPrompt = (paragraphDirection == DIR_DEFAULT)
+                ? (promptEnd > 0)
+                : inheritedStartsWithPrompt;
+
         BidiLayout newLayout = new BidiLayout(visualCells, logicalToVisual, visualToLogical,
-                paragraphDirection, resolvedDir, allIdentity, activeLength, promptEnd);
+                paragraphDirection, inheritedStartsWithPrompt,
+                resolvedDir, allIdentity, activeLength, promptEnd,
+                hasBoxBorder, hasBitmap, hasColumnarMultiSpace, effectiveStartsWithPrompt);
         if (isForRendering) {
             newLayout.mRenderedCursorCol = effectiveCursorCol;
             newLayout.mRenderedVSelStart = vSelStart;
@@ -350,6 +467,14 @@ public final class BidiLayout {
      * a new unwrapped paragraph.
      */
     public static byte resolveInheritedDirection(TerminalBuffer screen, int row, int columns) {
+        return (byte) (resolveInheritedContext(screen, row, columns) & INHERITED_DIR_MASK);
+    }
+
+    /**
+     * Resolves both inherited base direction (low 2 bits) and whether the unwrapped paragraph root
+     * started with a left-anchored shell prompt ({@link #INHERITED_PROMPT_FLAG}).
+     */
+    public static int resolveInheritedContext(TerminalBuffer screen, int row, int columns) {
         if (screen == null || columns <= 0) return DIR_DEFAULT;
         int minRow = -screen.getActiveTranscriptRows();
         if (row <= minRow || !screen.getLineWrap(row - 1)) {
@@ -364,21 +489,51 @@ public final class BidiLayout {
         }
 
         byte dir = DIR_DEFAULT;
+        boolean startsWithPrompt = false;
         for (int r = firstWrappedRow; r < row; r++) {
             int internalRow = screen.externalToInternalRow(r);
             TerminalRow tr = screen.allocateFullLineIfNecessary(internalRow);
             if (tr == null) {
                 dir = DIR_LTR;
+                startsWithPrompt = false;
                 continue;
             }
             if (!tr.mMayContainRtlOrBidi && dir != DIR_RTL) {
                 dir = DIR_LTR;
+                if (r == firstWrappedRow) startsWithPrompt = false;
             } else {
-                BidiLayout l = build(tr, columns, -1, false, -1, -1, -1, -1, r, false, dir);
+                BidiLayout l = build(tr, columns, -1, false, -1, -1, -1, -1, r, false, dir, startsWithPrompt);
                 dir = l.resolvedBaseDirection;
+                startsWithPrompt = l.paragraphStartsWithPrompt;
             }
         }
-        return (dir == DIR_DEFAULT) ? DIR_LTR : dir;
+        byte resolvedDir = (dir == DIR_DEFAULT) ? DIR_LTR : dir;
+        return resolvedDir | (startsWithPrompt ? INHERITED_PROMPT_FLAG : 0);
+    }
+
+    /** Returns true when visual cells contain >= 3 consecutive plain spaces bounded by non-space tokens (table columns). */
+    private static boolean detectColumnarMultiSpace(LogicalCell[] visualCells, int activeLength, int promptEnd) {
+        int scanStart = Math.max(0, promptEnd);
+        int i = scanStart;
+        while (i < activeLength && isPlainBlank(visualCells[i])) {
+            i++; // Skip leading indentation.
+        }
+        int consecutiveSpaces = 0;
+        for (; i < activeLength; i++) {
+            if (isPlainBlank(visualCells[i])) {
+                consecutiveSpaces++;
+                if (consecutiveSpaces >= 3) {
+                    return true;
+                }
+            } else {
+                consecutiveSpaces = 0;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isPlainBlank(LogicalCell cell) {
+        return cell == null || (cell.codePoint == ' ' && cell.combiningCount == 0 && !cell.hasBitmap && cell.displayWidth == 1);
     }
 
     /**
@@ -394,7 +549,9 @@ public final class BidiLayout {
         if (selY1 > selY2) return "";
 
         StringBuilder result = new StringBuilder();
-        byte paragraphDir = resolveInheritedDirection(screen, selY1, columns);
+        int inheritedCtx = resolveInheritedContext(screen, selY1, columns);
+        byte paragraphDir = (byte) (inheritedCtx & INHERITED_DIR_MASK);
+        boolean paragraphHasPrompt = (inheritedCtx & INHERITED_PROMPT_FLAG) != 0;
 
         for (int row = selY1; row <= selY2; row++) {
             int vStart;
@@ -422,6 +579,7 @@ public final class BidiLayout {
             if (rowObject == null) {
                 if (!rowLineWrap && row < selY2 && row < screenRows - 1) result.append('\n');
                 paragraphDir = rowLineWrap ? DIR_LTR : DIR_DEFAULT;
+                paragraphHasPrompt = rowLineWrap && paragraphHasPrompt;
                 continue;
             }
 
@@ -429,10 +587,12 @@ public final class BidiLayout {
                 appendLtrRowSelection(result, rowObject, columns, vStart, vEnd, rowLineWrap);
                 if (!rowLineWrap && row < selY2 && row < screenRows - 1) result.append('\n');
                 paragraphDir = rowLineWrap ? DIR_LTR : DIR_DEFAULT;
+                if (!rowLineWrap) paragraphHasPrompt = false;
                 continue;
             }
 
-            BidiLayout layout = build(rowObject, columns, -1, false, -1, -1, -1, -1, row, false, paragraphDir);
+            BidiLayout layout = build(rowObject, columns, -1, false, -1, -1, -1, -1, row, false,
+                    paragraphDir, paragraphHasPrompt);
             if (layout.isIdentity) {
                 appendLtrRowSelection(result, rowObject, columns, vStart, vEnd, rowLineWrap);
             } else {
@@ -441,6 +601,7 @@ public final class BidiLayout {
 
             if (!rowLineWrap && row < selY2 && row < screenRows - 1) result.append('\n');
             paragraphDir = rowLineWrap ? layout.resolvedBaseDirection : DIR_DEFAULT;
+            paragraphHasPrompt = rowLineWrap && layout.paragraphStartsWithPrompt;
         }
         return result.toString();
     }

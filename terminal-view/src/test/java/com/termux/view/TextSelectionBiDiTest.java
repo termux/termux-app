@@ -1,10 +1,12 @@
 package com.termux.view;
 
+import android.graphics.Paint;
 import android.graphics.Typeface;
 
 import com.termux.terminal.TerminalBuffer;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalOutput;
+import com.termux.terminal.TerminalRow;
 import com.termux.terminal.TextStyle;
 
 import org.junit.Test;
@@ -161,5 +163,54 @@ public class TextSelectionBiDiTest {
 
         // Inverted Y range returns empty string safely
         assertEquals("", BidiLayout.extractSelectedText(screen, 20, 3, 0, 2, 5, 0));
+    }
+
+    @Test
+    public void testProportionalHitTestAndSelectionHandleRoundTrip() {
+        Paint.sMeasureHook = (chars, start, count, tf, textSize) -> {
+            if (tf == Typeface.MONOSPACE) return count * (textSize * 0.6f);
+            float wUnit = textSize * 0.6f;
+            float sum = 0f;
+            for (int i = 0; i < count; i++) {
+                char c = chars[start + i];
+                if (c == '\u0627' || c == '\u0644' || c == '\u0631') sum += wUnit * 0.26f;
+                else if (c == ' ') sum += wUnit * 0.44f;
+                else if (c >= 0x0600 && c <= 0x06FF) sum += wUnit * 0.56f;
+                else sum += wUnit * 0.60f;
+            }
+            return sum;
+        };
+        try {
+            int cols = 25;
+            String mixed = "\u0645\u0631\u062D\u0628\u0627 hello \u0639\u0627\u0644\u0645";
+            TerminalEmulator em = newEmulator(cols, 3, mixed);
+            TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+            TerminalRow rowObj = em.getScreen().allocateFullLineIfNecessary(0);
+            BidiLayout layout = BidiLayout.build(rowObj, cols, -1, false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+            BidiLayout.PixelGeometry geo1 = renderer.ensureRowPixelGeometry(layout, cols, false);
+
+            // Round-trip every active visual cell midpoint -> visual & logical columns & handle X edges
+            for (int v = 0; v < layout.trimmedActiveLength; v++) {
+                float leftX = renderer.getVisualColumnLeftX(em, v, 0);
+                float rightX = renderer.getVisualColumnRightX(em, v, 0);
+                float midX = 0.5f * (leftX + rightX);
+                assertEquals("Visual midpoint hit-test mismatch at v=" + v,
+                        v, renderer.translateXToVisualColumn(em, midX, 0));
+                assertEquals("Logical midpoint hit-test mismatch at v=" + v,
+                        layout.visualToLogical[v], renderer.translateXToLogicalColumn(em, midX, 0));
+                int lCol = layout.visualToLogical[v];
+                assertEquals("Logical Left X must match Visual Left X at v=" + v,
+                        leftX, renderer.getLogicalColumnLeftX(em, lCol, 0), 0.01f);
+            }
+
+            // Dragging past left margin of right-aligned RTL line with clampToActive=true clamps cleanly to v=0
+            assertEquals(0, renderer.translateXToVisualColumn(em, 2.0f, 0, true));
+
+            // Static queries reuse cached PixelGeometry instance with zero re-computation
+            BidiLayout.PixelGeometry geo2 = renderer.ensureRowPixelGeometry(layout, cols, false);
+            assertEquals("Cached PixelGeometry must be reused cleanly across static queries", geo1, geo2);
+        } finally {
+            Paint.sMeasureHook = null;
+        }
     }
 }
