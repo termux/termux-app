@@ -26,10 +26,10 @@ import com.termux.terminal.WcWidth;
  */
 public final class TerminalRenderer {
 
-    /** Maximum horizontal stretch factor for longer RTL phrases so glyphs remain balanced. */
-    static final float MAX_RTL_HORIZONTAL_STRETCH = 1.48f;
-    /** Uniform proportional scale factor for RTL scripts so Arabic matches Latin visual height cleanly. */
-    static final float RTL_TEXT_SIZE_SCALE = 1.15f;
+    /** Maximum horizontal stretch factor for longer RTL phrases so glyphs remain natural next to LTR. */
+    static final float MAX_RTL_HORIZONTAL_STRETCH = 1.35f;
+    /** Proportional scale factor for RTL scripts matching monospace Latin visual weight comfortably. */
+    static final float RTL_TEXT_SIZE_SCALE = 1.08f;
 
     static final int ALIGN_LEFT = -1;
     static final int ALIGN_CENTER = 0;
@@ -63,6 +63,9 @@ public final class TerminalRenderer {
     private int[] mVisualToRunCell = new int[256];
     private float[] mVisCellLeft = new float[256];
     private float[] mVisCellRight = new float[256];
+    private int mTrackedAnchorCol = -1;
+    private boolean mTrackedAnchorIsRtl = false;
+    private float mTrackedAnchorEdgeX = Float.NaN;
 
     public TerminalRenderer(int textSize, Typeface typeface) {
         mTextSize = textSize;
@@ -85,10 +88,10 @@ public final class TerminalRenderer {
     }
 
     static float getMaxRtlHorizontalStretch(int runColumns) {
-        if (runColumns <= 1) return 1.20f;
-        if (runColumns == 2) return 1.26f;
-        if (runColumns == 3) return 1.34f;
-        if (runColumns < 8) return 1.42f;
+        if (runColumns <= 1) return 1.18f;
+        if (runColumns == 2) return 1.24f;
+        if (runColumns == 3) return 1.28f;
+        if (runColumns < 8) return 1.32f;
         return MAX_RTL_HORIZONTAL_STRETCH;
     }
 
@@ -137,7 +140,7 @@ public final class TerminalRenderer {
     static int resolveRtlAlignment(BidiLayout.LogicalCell[] visualCells, int startCol, int endCol, int columns) {
         boolean textOnLeft = hasAdjacentTextOnLeft(visualCells, startCol);
         boolean textOnRight = hasAdjacentTextOnRight(visualCells, endCol, columns);
-        if (textOnLeft && textOnRight) return ALIGN_CENTER;
+        if (textOnRight && (textOnLeft || startCol == 0)) return ALIGN_CENTER;
         if (textOnRight && startCol > 0 && !textOnLeft) return ALIGN_RIGHT;
         return ALIGN_LEFT;
     }
@@ -159,14 +162,47 @@ public final class TerminalRenderer {
                 && Math.abs(next.originalColumn - curr.originalColumn) == 1;
     }
 
+    /** Returns true for paired ASCII delimiters that should stay crisp in monospace with UAX #9 mirroring. */
+    static boolean isMirroredAsciiDelimiter(int codePoint) {
+        return codePoint == '(' || codePoint == ')'
+                || codePoint == '[' || codePoint == ']'
+                || codePoint == '{' || codePoint == '}'
+                || codePoint == '<' || codePoint == '>';
+    }
+
+    /** Returns the UAX #9 mirrored counterpart for an ASCII paired delimiter. */
+    static int getMirroredAsciiChar(int codePoint) {
+        switch (codePoint) {
+            case '(': return ')';
+            case ')': return '(';
+            case '[': return ']';
+            case ']': return '[';
+            case '{': return '}';
+            case '}': return '{';
+            case '<': return '>';
+            case '>': return '<';
+            default: return codePoint;
+        }
+    }
+
+    /** Returns true for invisible BiDi format control characters that must not emit glyphs. */
+    static boolean isInvisibleBidiFormatChar(int codePoint) {
+        return codePoint == 0x061C
+                || codePoint == 0x200E || codePoint == 0x200F
+                || (codePoint >= 0x202A && codePoint <= 0x202E)
+                || (codePoint >= 0x2066 && codePoint <= 0x2069);
+    }
+
     /**
      * Resolves whether a cell should use the shaped RTL rendering path. Spaces without combining
-     * marks and width-2 glyphs remain on the grid-exact LTR path so inter-word alignment holds
-     * and emojis/CJK keep full 2-column geometry.
+     * marks, width-2 glyphs, and ASCII paired delimiters remain on the monospace grid path so
+     * inter-word alignment and bracket symmetry hold across mixed text.
      */
     static boolean isShapedRtlCell(BidiLayout.LogicalCell cell) {
         if (!cell.isRtl || cell.hasBitmap || cell.displayWidth != 1) return false;
-        return !(cell.codePoint == ' ' && cell.combiningCount == 0);
+        if (cell.codePoint == ' ' && cell.combiningCount == 0) return false;
+        if (cell.combiningCount == 0 && isMirroredAsciiDelimiter(cell.codePoint)) return false;
+        return !isInvisibleBidiFormatChar(cell.codePoint);
     }
 
     /** Renders the terminal into {@code canvas}, starting at {@code topRow} with an optional selection range. */
@@ -354,6 +390,27 @@ public final class TerminalRenderer {
     private void renderBidiRow(BidiLayout layout, TerminalBuffer screen, Canvas canvas, int[] palette,
                                int columns, int cursorShape, boolean reverseVideo, float heightOffset) {
         final BidiLayout.LogicalCell[] visualCells = layout.visualCells;
+        final int trimmedLen = layout.trimmedActiveLength;
+        int typingEdgeAnchorVisual = -1;
+        boolean typingEdgeAnchorIsRtl = false;
+        if (trimmedLen > 0) {
+            int lastLogical = trimmedLen - 1;
+            int vLast = layout.logicalToVisual[lastLogical];
+            int anchorLogical = (visualCells[vLast].displayWidth == 0 && lastLogical > 0)
+                    ? lastLogical - 1 : lastLogical;
+            int anchorVisual = layout.logicalToVisual[anchorLogical];
+            boolean anchorIsRtl = visualCells[anchorVisual].isRtl;
+            int endOfTextVisual = anchorVisual + Math.max(1, visualCells[anchorVisual].displayWidth);
+            if (anchorIsRtl || endOfTextVisual < trimmedLen) {
+                typingEdgeAnchorVisual = anchorVisual;
+                typingEdgeAnchorIsRtl = anchorIsRtl;
+            }
+        }
+        mTrackedAnchorCol = typingEdgeAnchorVisual;
+        mTrackedAnchorIsRtl = typingEdgeAnchorIsRtl;
+        mTrackedAnchorEdgeX = Float.NaN;
+        boolean deferTypingEdgeCaret = false;
+        int deferredCursorColor = 0;
 
         long lastRunStyle = 0;
         boolean lastRunInsideCursor = false;
@@ -406,12 +463,22 @@ public final class TerminalRenderer {
             if (!insideCursor && codePointWcWidth == 2 && vCol + 1 < columns && visualCells[vCol + 1].insideCursor) {
                 insideCursor = true;
             }
+            if (typingEdgeAnchorVisual >= 0 && insideCursor
+                    && isPlainSpaceCell(cell)
+                    && cell.originalColumn >= trimmedLen
+                    && (cell.originalColumn - trimmedLen) <= 4) {
+                insideCursor = false;
+                deferTypingEdgeCaret = true;
+                deferredCursorColor = palette[TextStyle.COLOR_INDEX_CURSOR];
+            }
 
             boolean fontWidthMismatch = false;
             if (!isShapedRtl) {
+                final int measureCp = (cell.isRtl && cell.combiningCount == 0 && isMirroredAsciiDelimiter(codePoint))
+                        ? getMirroredAsciiChar(codePoint) : codePoint;
                 final float measuredCodePointWidth;
-                if (codePoint < asciiMeasures.length && cell.combiningCount == 0) {
-                    measuredCodePointWidth = asciiMeasures[codePoint];
+                if (measureCp < asciiMeasures.length && cell.combiningCount == 0) {
+                    measuredCodePointWidth = asciiMeasures[measureCp];
                 } else {
                     int tl = encodeCellToBuffer(cell, mCellMeasureBuffer, 0);
                     measuredCodePointWidth = mTextPaint.measureText(mCellMeasureBuffer, 0, tl);
@@ -462,6 +529,32 @@ public final class TerminalRenderer {
                     lastRunInsideCursor, lastRunInsideSelection, lastRunIsRtl,
                     cursorShape, reverseVideo);
         }
+
+        if (deferTypingEdgeCaret) {
+            float edgeX = !Float.isNaN(mTrackedAnchorEdgeX)
+                    ? mTrackedAnchorEdgeX
+                    : (typingEdgeAnchorIsRtl
+                    ? (typingEdgeAnchorVisual * mFontWidth)
+                    : ((typingEdgeAnchorVisual + Math.max(1, visualCells[typingEdgeAnchorVisual].displayWidth)) * mFontWidth));
+            float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
+            float barW = Math.max(2f, mFontWidth / 4.f);
+            float maxX = columns * mFontWidth;
+            mTextPaint.setColor(deferredCursorColor);
+            if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
+                float uW = Math.max(barW, mFontWidth * 0.65f);
+                float uLeft = typingEdgeAnchorIsRtl
+                        ? Math.max(0f, Math.min(maxX - uW, edgeX - uW * 0.5f))
+                        : Math.max(0f, Math.min(maxX - uW, edgeX));
+                canvas.drawRect(uLeft, heightOffset - cursorHeight / 4.f, uLeft + uW, heightOffset, mTextPaint);
+            } else {
+                float barLeft = typingEdgeAnchorIsRtl
+                        ? Math.max(0f, Math.min(maxX - barW, edgeX - barW))
+                        : Math.max(0f, Math.min(maxX - barW, edgeX - barW * 0.5f));
+                canvas.drawRect(barLeft, heightOffset - cursorHeight, barLeft + barW, heightOffset, mTextPaint);
+            }
+        }
+        mTrackedAnchorCol = -1;
+        mTrackedAnchorEdgeX = Float.NaN;
     }
 
     private void drawSixelBitmap(Bitmap bitmap, Rect srcRect, Canvas canvas, int column, float heightOffset) {
@@ -475,11 +568,20 @@ public final class TerminalRenderer {
     private int encodeCellToBuffer(BidiLayout.LogicalCell cell, char[] dst, int offset) {
         int written = 0;
         if (cell.codePoint != 0) {
-            written += Character.toChars(cell.codePoint, dst, offset + written);
+            int cp = cell.codePoint;
+            if (isInvisibleBidiFormatChar(cp)) {
+                cp = ' ';
+            } else if (cell.isRtl && cell.combiningCount == 0 && isMirroredAsciiDelimiter(cp)) {
+                cp = getMirroredAsciiChar(cp);
+            }
+            written += Character.toChars(cp, dst, offset + written);
         }
         if (cell.combiningChars != null) {
             for (int k = 0; k < cell.combiningCount; k++) {
-                written += Character.toChars(cell.combiningChars[k], dst, offset + written);
+                int comb = cell.combiningChars[k];
+                if (!isInvisibleBidiFormatChar(comb)) {
+                    written += Character.toChars(comb, dst, offset + written);
+                }
             }
         }
         return written;
@@ -681,8 +783,13 @@ public final class TerminalRenderer {
             final boolean needScale = Math.abs(scaleX - 1.0f) > 0.005f;
             final float baseline = heightOffset - mFontLineSpacingAndAscent;
 
-            if (hasOverlay || !uniformText) {
+            final boolean trackAnchor = (mTrackedAnchorCol >= startCol && mTrackedAnchorCol < endCol);
+            if (hasOverlay || !uniformText || trackAnchor) {
                 computeVisualCellBounds(runColumns, used, measuredWidth, scaleX, drawLeft, drawnWidth);
+            }
+            if (trackAnchor) {
+                int idx = mTrackedAnchorCol - startCol;
+                mTrackedAnchorEdgeX = mTrackedAnchorIsRtl ? mVisCellLeft[idx] : mVisCellRight[idx];
             }
 
             if (hasOverlay) {
@@ -718,13 +825,23 @@ public final class TerminalRenderer {
                     if (cell.insideCursor) {
                         mTextPaint.setColor(cursorColor);
                         float cursorHeight = mFontLineSpacingAndAscent - mFontAscent;
-                        float cursorRight = Math.max(gRight, gLeft + mFontWidth * 0.45f);
+                        float glyphW = gRight - gLeft;
+                        float minCursorW = mFontWidth * 0.65f;
+                        float cLeft = gLeft;
+                        float cRight = gRight;
+                        if (glyphW < minCursorW) {
+                            float center = (gLeft + gRight) * 0.5f;
+                            cLeft = Math.max(slotLeft, Math.min(slotRight - minCursorW, center - minCursorW * 0.5f));
+                            cRight = Math.min(slotRight, cLeft + minCursorW);
+                        }
                         if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
-                            canvas.drawRect(gLeft, bottom - cursorHeight / 4.f, cursorRight, bottom, mTextPaint);
+                            canvas.drawRect(cLeft, bottom - cursorHeight / 4.f, cRight, bottom, mTextPaint);
                         } else if (cursorShape == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
-                            canvas.drawRect(gLeft, bottom - cursorHeight, gLeft + mFontWidth / 4.f, bottom, mTextPaint);
+                            float barW = mFontWidth / 4.f;
+                            float barRight = Math.min(slotRight, Math.max(slotLeft + barW, gRight));
+                            canvas.drawRect(barRight - barW, bottom - cursorHeight, barRight, bottom, mTextPaint);
                         } else {
-                            canvas.drawRect(gLeft, bottom - cursorHeight, cursorRight, bottom, mTextPaint);
+                            canvas.drawRect(cLeft, bottom - cursorHeight, cRight, bottom, mTextPaint);
                         }
                     }
                 }

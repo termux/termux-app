@@ -321,4 +321,50 @@ public class BidiLayoutTest {
         assertTrue(layout.logicalToVisual[1] < layout.logicalToVisual[2]);
         assertTrue(layout.logicalToVisual[2] < layout.logicalToVisual[3]);
     }
+
+    @Test
+    public void testTrimmedActiveLengthAndTrailingCursorPreserveSelectionConsistency() {
+        // Pure RTL with cursor at trailing blank col 9 keeps word columns unshifted
+        TerminalEmulator rtlEm = newEmulator(20, 3, "\u0645\u0631\u062D\u0628\u0627 \u0628\u0643\u0645");
+        assertEquals(9, rtlEm.getCursorCol());
+        TerminalRow rtlRow = rtlEm.getScreen().allocateFullLineIfNecessary(0);
+        BidiLayout rtlLayout = BidiLayout.build(rtlRow, 20, 9, true, -1, -1, -1, -1, 0, true);
+        assertBijective(rtlLayout, 20);
+        assertEquals(9, rtlLayout.trimmedActiveLength);
+        assertEquals(0, rtlLayout.logicalToVisual[8]);
+        assertEquals(8, rtlLayout.logicalToVisual[0]);
+
+        // Prompt + Arabic leaves prompt on left and tracks trimmedActiveLength cleanly
+        TerminalEmulator promptEm = newEmulator(20, 3, "$ \u0645\u0631\u062D\u0628\u0627   ");
+        TerminalRow promptRow = promptEm.getScreen().allocateFullLineIfNecessary(0);
+        BidiLayout promptLayout = BidiLayout.build(promptRow, 20, promptEm.getCursorCol(), true, -1, -1, -1, -1, 0, true);
+        assertBijective(promptLayout, 20);
+        assertEquals(7, promptLayout.trimmedActiveLength);
+        assertEquals(0, promptLayout.logicalToVisual[0]);
+        assertEquals(2, promptLayout.logicalToVisual[6]);
+
+        // Embedded English at end of RTL keeps trimmedActiveLength at 'c' (col 8)
+        TerminalEmulator mixedEm = newEmulator(20, 3, "\u0645\u0631\u062D\u0628\u0627 abc");
+        TerminalRow mixedRow = mixedEm.getScreen().allocateFullLineIfNecessary(0);
+        BidiLayout mixedLayout = BidiLayout.build(mixedRow, 20, 9, true, -1, -1, -1, -1, 0, true);
+        assertBijective(mixedLayout, 20);
+        assertEquals(9, mixedLayout.trimmedActiveLength);
+        assertEquals(2, mixedLayout.logicalToVisual[8]);
+    }
+
+    @Test
+    public void testMixedTextWithPairedBracketsPreservesBijectiveOrder() {
+        String[] samples = {
+                "\u0645\u0631\u062D\u0628\u0627 (hello)",
+                "\u0645\u0631\u062D\u0628\u0627 [1] \u0648 [2]",
+                "\u0627\u0644\u0646\u0635 {key: 123}",
+                "\u0645\u0631\u062D\u0628\u0627 <tag> \u0628\u0643\u0645"
+        };
+        for (String sample : samples) {
+            TerminalEmulator em = newEmulator(30, 2, sample);
+            BidiLayout layout = buildRow(em.getScreen(), 0, 30, -1, -1, -1, -1);
+            assertBijective(layout, 30);
+            assertEquals(sample.length(), layout.trimmedActiveLength);
+        }
+    }
 }

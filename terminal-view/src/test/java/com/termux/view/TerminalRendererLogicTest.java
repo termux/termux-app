@@ -61,8 +61,25 @@ public class TerminalRendererLogicTest {
         }
     }
 
+    private static final class RectCall {
+        final float left;
+        final float top;
+        final float right;
+        final float bottom;
+        final int color;
+
+        RectCall(float left, float top, float right, float bottom, int color) {
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+            this.color = color;
+        }
+    }
+
     private static final class RecordingCanvas extends Canvas {
         final List<DrawCall> textCalls = new ArrayList<>();
+        final List<RectCall> rectCalls = new ArrayList<>();
         final List<String> ops = new ArrayList<>();
         float currentScaleX = 1.0f;
         boolean hasClipInFrame = false;
@@ -107,6 +124,11 @@ public class TerminalRendererLogicTest {
         }
 
         @Override
+        public void drawRect(float left, float top, float right, float bottom, Paint paint) {
+            rectCalls.add(new RectCall(left, top, right, bottom, paint != null ? paint.getColor() : 0));
+        }
+
+        @Override
         public void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
             ops.add("bitmap");
         }
@@ -131,11 +153,11 @@ public class TerminalRendererLogicTest {
 
     @Test
     public void testRtlScaleCappedAgainstDistortion() {
-        // Progressive gentle caps prevent flat short words ("في", "لا") while closing inter-word gaps on longer phrases.
-        assertEquals(1.20f, TerminalRenderer.computeRtlRunScaleX(5.0f, 1, 10.0f), 0.0001f);
-        assertEquals(1.26f, TerminalRenderer.computeRtlRunScaleX(8.0f, 2, 10.0f), 0.0001f);
-        assertEquals(1.34f, TerminalRenderer.computeRtlRunScaleX(12.0f, 3, 10.0f), 0.0001f);
-        assertEquals(1.42f, TerminalRenderer.computeRtlRunScaleX(20.0f, 5, 10.0f), 0.0001f);
+        // Gentle progressive caps keep Arabic comfortable next to monospace English without wide flattening.
+        assertEquals(1.18f, TerminalRenderer.computeRtlRunScaleX(5.0f, 1, 10.0f), 0.0001f);
+        assertEquals(1.24f, TerminalRenderer.computeRtlRunScaleX(8.0f, 2, 10.0f), 0.0001f);
+        assertEquals(1.28f, TerminalRenderer.computeRtlRunScaleX(12.0f, 3, 10.0f), 0.0001f);
+        assertEquals(1.32f, TerminalRenderer.computeRtlRunScaleX(20.0f, 5, 10.0f), 0.0001f);
         assertEquals(TerminalRenderer.MAX_RTL_HORIZONTAL_STRETCH,
                 TerminalRenderer.computeRtlRunScaleX(40.0f, 10, 10.0f), 0.0001f);
 
@@ -175,6 +197,10 @@ public class TerminalRendererLogicTest {
         row[0].codePoint = ' ';
         row[8].codePoint = 'x';
         assertEquals(TerminalRenderer.ALIGN_RIGHT, TerminalRenderer.resolveRtlAlignment(row, 3, 7, 10));
+        // Col-0 Arabic [0..2] before inline English 'x' at [4] -> ALIGN_CENTER so gap before English stays balanced
+        row[8].codePoint = ' ';
+        row[4].codePoint = 'x';
+        assertEquals(TerminalRenderer.ALIGN_CENTER, TerminalRenderer.resolveRtlAlignment(row, 0, 3, 10));
     }
 
     @Test
@@ -429,5 +455,147 @@ public class TerminalRendererLogicTest {
         // Generous sanity ceilings for slow devices/CI containers while verifying sub-millisecond per frame
         assertTrue("300 ASCII frames took too long: " + asciiMs + "ms", asciiMs < 3000L);
         assertTrue("300 cached BiDi frames took too long: " + bidiCachedMs + "ms", bidiCachedMs < 3000L);
+    }
+
+    private static TerminalEmulator newEmulator(int cols, int rows, String content) {
+        TerminalEmulator em = new TerminalEmulator(new DummyOutput(), cols, rows, 10, 20, rows * 2, null);
+        if (content != null && !content.isEmpty()) {
+            byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+            em.append(bytes, bytes.length);
+        }
+        return em;
+    }
+
+    @Test
+    public void testPairedAsciiBracketsRenderInMonospaceMirroredLtrRuns() {
+        // Helper predicates: paired ASCII delimiters stay monospace while Arabic punctuation shapes RTL
+        char[] brackets = {'(', ')', '[', ']', '{', '}', '<', '>'};
+        for (char b : brackets) {
+            assertTrue(TerminalRenderer.isMirroredAsciiDelimiter(b));
+            BidiLayout.LogicalCell c = new BidiLayout.LogicalCell();
+            c.codePoint = b;
+            c.displayWidth = 1;
+            c.isRtl = true;
+            assertFalse("Bracket " + b + " should stay on monospace grid", TerminalRenderer.isShapedRtlCell(c));
+        }
+        assertEquals('(', TerminalRenderer.getMirroredAsciiChar(')'));
+        assertEquals(')', TerminalRenderer.getMirroredAsciiChar('('));
+        assertEquals('[', TerminalRenderer.getMirroredAsciiChar(']'));
+        assertEquals(']', TerminalRenderer.getMirroredAsciiChar('['));
+
+        BidiLayout.LogicalCell arComma = new BidiLayout.LogicalCell();
+        arComma.codePoint = '\u060C';
+        arComma.displayWidth = 1;
+        arComma.isRtl = true;
+        assertTrue(TerminalRenderer.isShapedRtlCell(arComma));
+
+        // Rendering "مرحبا (hello)" must produce one contiguous monospace "(hello)" run and one RTL "مرحبا" run
+        TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+        RecordingCanvas canvas1 = new RecordingCanvas();
+        TerminalEmulator em1 = newEmulator(30, 2, "\u0645\u0631\u062D\u0628\u0627 (hello)");
+        renderer.render(em1, canvas1, 0, -1, -1, -1, -1);
+
+        boolean sawMonoParenHello = false;
+        boolean sawPureArabic = false;
+        for (DrawCall dc : canvas1.textCalls) {
+            if (!dc.isRtl && dc.text.trim().equals("(hello)") && Math.abs(dc.lastScaleX - 1.0f) < 0.001f) {
+                sawMonoParenHello = true;
+            }
+            if (dc.isRtl && dc.text.equals("\u0645\u0631\u062D\u0628\u0627")) {
+                sawPureArabic = true;
+            }
+            assertFalse("Opening bracket must never glue into Arabic RTL run: " + dc.text,
+                    dc.isRtl && (dc.text.contains("(") || dc.text.contains(")")));
+        }
+        assertTrue("Expected contiguous monospace (hello) call", sawMonoParenHello);
+        assertTrue("Expected un-polluted Arabic RTL run", sawPureArabic);
+
+        // Rendering "مرحبا [1] و [2]" must emit crisp mirrored "[2]" and "[1]" monospace runs
+        RecordingCanvas canvas2 = new RecordingCanvas();
+        TerminalEmulator em2 = newEmulator(30, 2, "\u0645\u0631\u062D\u0628\u0627 [1] \u0648 [2]");
+        renderer.render(em2, canvas2, 0, -1, -1, -1, -1);
+
+        boolean sawBracket2 = false;
+        boolean sawBracket1 = false;
+        for (DrawCall dc : canvas2.textCalls) {
+            if (!dc.isRtl && dc.text.trim().equals("[2]")) sawBracket2 = true;
+            if (!dc.isRtl && dc.text.trim().equals("[1]")) sawBracket1 = true;
+            assertFalse("Brackets must stay out of RTL shaped runs: " + dc.text,
+                    dc.isRtl && (dc.text.contains("[") || dc.text.contains("]")));
+        }
+        assertTrue("Expected mirrored monospace [2]", sawBracket2);
+        assertTrue("Expected mirrored monospace [1]", sawBracket1);
+    }
+
+    @Test
+    public void testTypingCursorRedirectsToInsertionEdgeWithoutStrandingAtOppositeSide() {
+        TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+        float w = renderer.mFontWidth;
+
+        // 1. Pure Arabic "مرحبا" with cursor at col 5 (trailing typing edge):
+        // Caret must sit near visual left edge (< 1*w), NOT stranded at col 5 (5*w).
+        TerminalEmulator rtlEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627");
+        int cursorColor = rtlEm.mColors.mCurrentColors[TextStyle.COLOR_INDEX_CURSOR];
+        RecordingCanvas c1 = new RecordingCanvas();
+        renderer.render(rtlEm, c1, 0, -1, -1, -1, -1);
+        RectCall rtlCaret = findLastCursorRect(c1, cursorColor);
+        assertTrue("Expected cursor rect for pure RTL typing edge", rtlCaret != null);
+        assertTrue("Cursor stranded on wrong side at x=" + rtlCaret.left, rtlCaret.right <= w * 1.1f);
+
+        // 2. Bash prompt "$ مرحبا" with cursor at col 7:
+        // Prompt "$ " is at [0..2*w), Arabic word starts at 2*w; insertion caret must sit around 2*w, NOT 7*w.
+        TerminalEmulator promptEm = newEmulator(20, 2, "$ \u0645\u0631\u062D\u0628\u0627");
+        RecordingCanvas c2 = new RecordingCanvas();
+        renderer.render(promptEm, c2, 0, -1, -1, -1, -1);
+        RectCall promptCaret = findLastCursorRect(c2, cursorColor);
+        assertTrue("Expected cursor rect for prompted Arabic typing edge", promptCaret != null);
+        assertTrue("Prompt cursor stranded at x=" + promptCaret.left,
+                promptCaret.left >= w && promptCaret.right <= w * 2.5f);
+
+        // 3. Arabic + embedded LTR "مرحبا abc" with cursor at col 9:
+        // "abc" occupies visual [0..3*w), so insertion caret must sit near 3*w, NOT 9*w.
+        TerminalEmulator mixedEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627 abc");
+        RecordingCanvas c3 = new RecordingCanvas();
+        renderer.render(mixedEm, c3, 0, -1, -1, -1, -1);
+        RectCall mixedCaret = findLastCursorRect(c3, cursorColor);
+        assertTrue("Expected cursor rect for mixed trailing LTR typing edge", mixedCaret != null);
+        assertTrue("Mixed trailing LTR caret should be near end of 'abc' (~3w), was " + mixedCaret.left,
+                mixedCaret.left >= w * 2.5f && mixedCaret.right <= w * 3.5f);
+
+        // 4. Explicit distant cursor positioning (\e[15G -> col 14) still draws at col 14.
+        TerminalEmulator farEm = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627\u001b[15G");
+        RecordingCanvas c4 = new RecordingCanvas();
+        renderer.render(farEm, c4, 0, -1, -1, -1, -1);
+        RectCall farCaret = findLastCursorRect(c4, cursorColor);
+        assertTrue("Expected explicit distant cursor rect", farCaret != null);
+        assertTrue("Distant cursor should render at col 14, was " + farCaret.left,
+                farCaret.left >= 13.9f * w && farCaret.left <= 14.1f * w);
+    }
+
+    @Test
+    public void testInvisibleBidiFormatMarksDoNotEmitTofuOrBreakRtlRuns() {
+        TerminalRenderer renderer = new TerminalRenderer(20, Typeface.MONOSPACE);
+        RecordingCanvas canvas = new RecordingCanvas();
+        // U+200F (RLM) attached as combining mark and U+2066 (LRI) must not render format glyphs
+        TerminalEmulator em = newEmulator(20, 2, "\u0645\u0631\u062D\u0628\u0627\u200F \u0628\u0643\u0645");
+        renderer.render(em, canvas, 0, -1, -1, -1, -1);
+        for (DrawCall dc : canvas.textCalls) {
+            assertFalse("Draw call leaked RLM control char", dc.text.indexOf('\u200F') >= 0);
+            assertFalse("Draw call leaked LRI control char", dc.text.indexOf('\u2066') >= 0);
+        }
+        assertTrue(TerminalRenderer.isInvisibleBidiFormatChar('\u200E'));
+        assertTrue(TerminalRenderer.isInvisibleBidiFormatChar('\u200F'));
+        assertTrue(TerminalRenderer.isInvisibleBidiFormatChar('\u2066'));
+        assertTrue(TerminalRenderer.isInvisibleBidiFormatChar('\u061C'));
+    }
+
+    private static RectCall findLastCursorRect(RecordingCanvas canvas, int cursorColor) {
+        RectCall found = null;
+        for (RectCall rc : canvas.rectCalls) {
+            if (rc.color == cursorColor) {
+                found = rc;
+            }
+        }
+        return found;
     }
 }

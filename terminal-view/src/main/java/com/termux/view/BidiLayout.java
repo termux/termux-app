@@ -95,6 +95,7 @@ public final class BidiLayout {
     public final byte inputParagraphDirection;
     public final byte resolvedBaseDirection;
     public final boolean isIdentity;
+    public final int trimmedActiveLength;
 
     // Tracks last rendered dynamic cursor/selection state to skip per-cell loops on static frames.
     private int mRenderedCursorCol = -2;
@@ -102,13 +103,15 @@ public final class BidiLayout {
     private int mRenderedVSelEnd = -2;
 
     private BidiLayout(LogicalCell[] visualCells, int[] logicalToVisual, int[] visualToLogical,
-                       byte inputParagraphDirection, byte resolvedBaseDirection, boolean isIdentity) {
+                       byte inputParagraphDirection, byte resolvedBaseDirection, boolean isIdentity,
+                       int trimmedActiveLength) {
         this.visualCells = visualCells;
         this.logicalToVisual = logicalToVisual;
         this.visualToLogical = visualToLogical;
         this.inputParagraphDirection = inputParagraphDirection;
         this.resolvedBaseDirection = resolvedBaseDirection;
         this.isIdentity = isIdentity;
+        this.trimmedActiveLength = trimmedActiveLength;
     }
 
     /** Backward-compatible entry point defaulting to {@link #DIR_DEFAULT}. */
@@ -326,7 +329,7 @@ public final class BidiLayout {
         }
 
         BidiLayout newLayout = new BidiLayout(visualCells, logicalToVisual, visualToLogical,
-                paragraphDirection, resolvedDir, allIdentity);
+                paragraphDirection, resolvedDir, allIdentity, activeLength);
         if (isForRendering) {
             newLayout.mRenderedCursorCol = effectiveCursorCol;
             newLayout.mRenderedVSelStart = vSelStart;
