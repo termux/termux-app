@@ -96,14 +96,15 @@ public class TextSelectionCursorController implements CursorController {
         mSelY1 = mSelY2 = columnAndRow[1];
 
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
+        int columns = terminalView.mEmulator.mColumns;
         int lStart = logicalCol;
         int lEnd = logicalCol;
-        if (!" ".equals(screen.getSelectedText(lStart, mSelY1, lStart, mSelY1))) {
-            // Selecting something other than whitespace. Expand to word.
+        if (!"".equals(screen.getSelectedText(lStart, mSelY1, lStart, mSelY1))) {
+            // Selecting something other than blank whitespace. Expand to word.
             while (lStart > 0 && !"".equals(screen.getSelectedText(lStart - 1, mSelY1, lStart - 1, mSelY1))) {
                 lStart--;
             }
-            while (lEnd < terminalView.mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(lEnd + 1, mSelY1, lEnd + 1, mSelY1))) {
+            while (lEnd < columns - 1 && !"".equals(screen.getSelectedText(lEnd + 1, mSelY1, lEnd + 1, mSelY1))) {
                 lEnd++;
             }
         }
@@ -115,6 +116,18 @@ public class TextSelectionCursorController implements CursorController {
             int v = logicalToVisual(l, mSelY1);
             if (v < minV) minV = v;
             if (v > maxV) maxV = v;
+        }
+        // Include continuation column if selection ends on a wide character.
+        if (lEnd + 1 < columns) {
+            int internalRow = screen.externalToInternalRow(mSelY1);
+            if (internalRow >= 0 && internalRow < screen.getActiveRows()) {
+                com.termux.terminal.TerminalRow tr = screen.allocateFullLineIfNecessary(internalRow);
+                if (tr != null && tr.wideDisplayCharacterStartingAt(lEnd)) {
+                    int contV = logicalToVisual(lEnd + 1, mSelY1);
+                    if (contV < minV) minV = contV;
+                    if (contV > maxV) maxV = contV;
+                }
+            }
         }
         mSelX1 = (minV != Integer.MAX_VALUE) ? minV : lStart;
         mSelX2 = (maxV != Integer.MIN_VALUE) ? maxV : lEnd;
@@ -205,10 +218,15 @@ public class TextSelectionCursorController implements CursorController {
 
             @Override
             public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                int visualCol1 = logicalToVisual(mSelX1, mSelY1);
-                int visualCol2 = logicalToVisual(mSelX2, mSelY2);
-                int minCol = Math.min(visualCol1, visualCol2);
-                int maxCol = Math.max(visualCol1, visualCol2);
+                int minCol;
+                int maxCol;
+                if (mSelY1 == mSelY2) {
+                    minCol = Math.min(mSelX1, mSelX2);
+                    maxCol = Math.max(mSelX1, mSelX2);
+                } else {
+                    minCol = 0;
+                    maxCol = Math.max(0, terminalView.mEmulator.mColumns - 1);
+                }
                 int x1 = Math.round(minCol * terminalView.mRenderer.getFontWidth());
                 int x2 = Math.round((maxCol + 1) * terminalView.mRenderer.getFontWidth());
                 int y1 = Math.round((mSelY1 - 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
@@ -227,10 +245,6 @@ public class TextSelectionCursorController implements CursorController {
 
     private int logicalToVisual(int logicalCol, int row) {
         return terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, logicalCol, row);
-    }
-
-    private int visualToLogical(int visualCol, int row) {
-        return terminalView.mRenderer.translateVisualToLogicalColumn(terminalView.mEmulator, visualCol, row);
     }
 
     @Override
@@ -387,23 +401,11 @@ public class TextSelectionCursorController implements CursorController {
 
     /** Get the currently selected text. */
     public String getSelectedText() {
-        if (mSelY1 == mSelY2) {
-            int minL = Integer.MAX_VALUE;
-            int maxL = Integer.MIN_VALUE;
-            int startV = Math.min(mSelX1, mSelX2);
-            int endV = Math.max(mSelX1, mSelX2);
-            for (int v = startV; v <= endV; v++) {
-                int l = visualToLogical(v, mSelY1);
-                if (l < minL) minL = l;
-                if (l > maxL) maxL = l;
-            }
-            if (minL == Integer.MAX_VALUE) return "";
-            return terminalView.mEmulator.getSelectedText(minL, mSelY1, maxL, mSelY2);
-        } else {
-            int l1 = visualToLogical(mSelX1, mSelY1);
-            int l2 = visualToLogical(mSelX2, mSelY2);
-            return terminalView.mEmulator.getSelectedText(l1, mSelY1, l2, mSelY2);
-        }
+        return com.termux.view.BidiLayout.extractSelectedText(
+                terminalView.mEmulator.getScreen(),
+                terminalView.mEmulator.mColumns,
+                terminalView.mEmulator.mRows,
+                mSelX1, mSelY1, mSelX2, mSelY2);
     }
 
     /** Get the selected text stored before "MORE" button was pressed on the context menu. */

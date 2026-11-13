@@ -287,5 +287,107 @@ public class TerminalRendererBufferTest extends TestCase {
         assertNull("mCachedBidiLayout must be invalidated on clear", row.mCachedBidiLayout);
         assertNull("mLogicalToVisual must be invalidated on clear", row.mLogicalToVisual);
         assertNull("mVisualToLogical must be invalidated on clear", row.mVisualToLogical);
+        assertFalse("mMayContainRtlOrBidi must reset on clear", row.mMayContainRtlOrBidi);
+    }
+
+    public void testTerminalRow_mayContainRtlOrBidiTracking() {
+        TerminalRow row = new TerminalRow(80, TextStyle.NORMAL);
+        assertFalse(row.mMayContainRtlOrBidi);
+
+        // Pure ASCII, Latin Extended, CJK, and box drawing should NOT trigger RTL path
+        row.setChar(0, 'A', TextStyle.NORMAL);
+        row.setChar(1, 'z', TextStyle.NORMAL);
+        row.setChar(2, 0x00E9, TextStyle.NORMAL); // e-acute
+        row.setChar(3, 0x2502, TextStyle.NORMAL); // box-drawing vertical bar
+        row.setChar(4, 0x6F22, TextStyle.NORMAL); // CJK wide char
+        assertFalse("Pure LTR scripts should remain on fast path", row.mMayContainRtlOrBidi);
+
+        // Writing BMP Arabic latches flag even on fast-path single-width char
+        row.setChar(6, 0x0645, TextStyle.NORMAL); // ARABIC LETTER MEEM
+        assertTrue("Arabic char must enable BiDi layout flag", row.mMayContainRtlOrBidi);
+
+        row.clear(TextStyle.NORMAL);
+        assertFalse(row.mMayContainRtlOrBidi);
+
+        // Writing BiDi control char also latches flag
+        row.setChar(0, 0x2067, TextStyle.NORMAL); // RLI
+        assertTrue(row.mMayContainRtlOrBidi);
+    }
+
+    public void testTerminalRow_isRtlOrBidiCodePointBoundaries() {
+        assertFalse(TerminalRow.isRtlOrBidiCodePoint(' '));
+        assertFalse(TerminalRow.isRtlOrBidiCodePoint('Z'));
+        assertFalse(TerminalRow.isRtlOrBidiCodePoint(0x0410)); // Cyrillic A
+        assertFalse(TerminalRow.isRtlOrBidiCodePoint(0x058F)); // Just before Hebrew block
+        assertFalse(TerminalRow.isRtlOrBidiCodePoint(0x1F600)); // Emoji
+
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x0590)); // Hebrew start
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x061C)); // Arabic Letter Mark
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x0645)); // Arabic Meem
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x08FF)); // Arabic Extended end
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x200E)); // LRM
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x200F)); // RLM
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x202B)); // RLE
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x2067)); // RLI
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0xFB50)); // Arabic PF-A
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0xFE70)); // Arabic PF-B
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x1E900)); // Adlam (SMP RTL)
+        assertTrue(TerminalRow.isRtlOrBidiCodePoint(0x1EE00)); // Arabic Math Alphabetic
+    }
+
+    public void testTerminalRow_copyIntervalPreservesRtlFlagAndInvalidatesCache() {
+        TerminalRow src = new TerminalRow(20, TextStyle.NORMAL);
+        src.setChar(0, 'A', TextStyle.NORMAL);
+        src.setChar(1, 0x0645, TextStyle.NORMAL); // Arabic Meem
+        src.setChar(2, 'Z', TextStyle.NORMAL);
+
+        TerminalRow dst = new TerminalRow(20, TextStyle.NORMAL);
+        dst.mCachedBidiLayout = "stale";
+        dst.mLogicalToVisual = new int[20];
+        dst.mVisualToLogical = new int[20];
+        // Copy only column 0 ('A') -> destination stays LTR!
+        dst.copyInterval(src, 0, 1, 0);
+        assertFalse("Copying pure ASCII slice must not trigger RTL flag", dst.mMayContainRtlOrBidi);
+        assertNull(dst.mCachedBidiLayout);
+        assertNull(dst.mLogicalToVisual);
+        assertNull(dst.mVisualToLogical);
+
+        // Copy column 1 (Arabic) -> destination latches RTL flag
+        dst.copyInterval(src, 1, 2, 1);
+        assertTrue("Copying Arabic char must propagate RTL flag", dst.mMayContainRtlOrBidi);
+    }
+
+    public void testTerminalBuffer_setOrClearEffectInvalidatesAllBidiFields() {
+        TerminalBuffer buf = new TerminalBuffer(20, 5, 5);
+        TerminalRow row = buf.allocateFullLineIfNecessary(0);
+        row.setChar(0, 0x0645, TextStyle.NORMAL);
+        row.mCachedBidiLayout = "cached";
+        row.mLogicalToVisual = new int[20];
+        row.mVisualToLogical = new int[20];
+
+        buf.setOrClearEffect(TextStyle.CHARACTER_ATTRIBUTE_BOLD, true, false, true,
+                0, 20, 0, 0, 1, 5);
+
+        assertNull(row.mCachedBidiLayout);
+        assertNull(row.mLogicalToVisual);
+        assertNull(row.mVisualToLogical);
+    }
+
+    public void testTerminalRow_persianZwnjAndArabicTashkeelPreserved() {
+        // "می‌خواهم": م (0), ی (1) + ZWNJ (U+200C), خ (2), ...
+        TerminalRow row = new TerminalRow(20, TextStyle.NORMAL);
+        row.setChar(0, '\u0645', TextStyle.NORMAL);
+        row.setChar(1, '\u06CC', TextStyle.NORMAL);
+        row.setChar(1, '\u200C', TextStyle.NORMAL); // zero-width non-joiner attaches to cell 1
+        row.setChar(2, '\u062E', TextStyle.NORMAL);
+        row.setChar(2, '\u064E', TextStyle.NORMAL); // Fatha attaches to cell 2
+
+        int c1Start = row.findStartOfColumn(1);
+        int c2Start = row.findStartOfColumn(2);
+        assertEquals(2, c2Start - c1Start);
+        assertEquals('\u06CC', row.mText[c1Start]);
+        assertEquals('\u200C', row.mText[c1Start + 1]);
+        assertEquals('\u062E', row.mText[c2Start]);
+        assertEquals('\u064E', row.mText[c2Start + 1]);
     }
 }

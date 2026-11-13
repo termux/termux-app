@@ -554,7 +554,7 @@ public final class TerminalBuffer {
                 }
                 line.mStyle[x] = TextStyle.encode(foreColor, backColor, effect);
             }
-            line.mCachedBidiLayout = null;
+            line.invalidateBidiLayout();
         }
     }
 
