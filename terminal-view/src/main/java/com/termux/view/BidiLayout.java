@@ -342,6 +342,7 @@ public final class BidiLayout {
         byte resolvedDir = (paragraphDirection == DIR_RTL) ? DIR_RTL : DIR_LTR;
         boolean allIdentity = true;
         int promptEnd = 0;
+        boolean hasShellPrompt = false;
         boolean hasBoxBorder = false;
         boolean hasBitmap = false;
         boolean hasColumnarMultiSpace = false;
@@ -402,6 +403,10 @@ public final class BidiLayout {
                 resolvedDir = DIR_LTR;
             } else {
                 promptEnd = hasAnyRtl ? detectPromptPrefixLength(logicalCells, bidiChars, activeLength) : 0;
+                hasShellPrompt = (promptEnd > 0);
+                if (!hasShellPrompt && hasAnyRtl) {
+                    promptEnd = detectLeadingIndentLength(logicalCells, bidiChars, activeLength);
+                }
                 if (promptEnd > 0) {
                     boolean payloadLtr = reorderSlice(bidiChars, promptEnd, activeLength,
                             Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT, activeVisToLog, levels, logicalCells);
@@ -429,7 +434,7 @@ public final class BidiLayout {
                 if (logicalCells[i].hasBitmap) hasBitmap = true;
             }
 
-            hasColumnarMultiSpace = detectColumnarMultiSpace(visualCells, activeLength, promptEnd);
+            hasColumnarMultiSpace = detectColumnarMultiSpace(logicalCells, activeLength, promptEnd);
         }
 
         if (isForRendering) {
@@ -443,7 +448,7 @@ public final class BidiLayout {
         }
 
         boolean effectiveStartsWithPrompt = (paragraphDirection == DIR_DEFAULT)
-                ? (promptEnd > 0)
+                ? hasShellPrompt
                 : inheritedStartsWithPrompt;
 
         BidiLayout newLayout = new BidiLayout(visualCells, logicalToVisual, visualToLogical,
@@ -511,16 +516,62 @@ public final class BidiLayout {
         return resolvedDir | (startsWithPrompt ? INHERITED_PROMPT_FLAG : 0);
     }
 
-    /** Returns true when visual cells contain >= 3 consecutive plain spaces bounded by non-space tokens (table columns). */
-    private static boolean detectColumnarMultiSpace(LogicalCell[] visualCells, int activeLength, int promptEnd) {
+    /**
+     * Detects leading structural indentation ({@code >= 2} plain spaces, optionally followed by a CLI/Markdown
+     * bullet or ordered-list marker and up to two spaces) before RTL content so indented prose and lists
+     * stay vertically aligned on the left margin instead of throwing spaces or markers to the visual right.
+     */
+    private static int detectLeadingIndentLength(LogicalCell[] cells, char[] bidiChars, int activeLength) {
+        int spaceCount = 0;
+        while (spaceCount < activeLength && isPlainBlank(cells[spaceCount])) {
+            spaceCount++;
+        }
+        if (spaceCount < 2 || spaceCount >= activeLength) {
+            return 0;
+        }
+        boolean tailHasRtl = false;
+        for (int i = spaceCount; i < activeLength; i++) {
+            if (isRtlCharacterDirection(bidiChars[i])) {
+                tailHasRtl = true;
+                break;
+            }
+        }
+        if (!tailHasRtl) {
+            return 0;
+        }
+
+        int pos = spaceCount;
+        int cp = cells[pos].codePoint;
+        if ((cp == 0x2022 || cp == '-' || cp == '*' || cp == '+'
+                || cp == 0x25E6 || cp == 0x25AA || cp == 0x2023)
+                && pos + 1 < activeLength && isPlainBlank(cells[pos + 1])) {
+            pos += 2;
+            if (pos < activeLength && isPlainBlank(cells[pos])) pos++;
+        } else if (cp >= '0' && cp <= '9') {
+            int numEnd = pos;
+            while (numEnd < activeLength && cells[numEnd].codePoint >= '0' && cells[numEnd].codePoint <= '9') {
+                numEnd++;
+            }
+            if (numEnd > pos && numEnd + 1 < activeLength
+                    && (cells[numEnd].codePoint == '.' || cells[numEnd].codePoint == ')')
+                    && isPlainBlank(cells[numEnd + 1])) {
+                pos = numEnd + 2;
+                if (pos < activeLength && isPlainBlank(cells[pos])) pos++;
+            }
+        }
+        return (pos < activeLength) ? pos : spaceCount;
+    }
+
+    /** Returns true when logical cells contain >= 3 consecutive plain spaces bounded by non-space tokens (table columns). */
+    private static boolean detectColumnarMultiSpace(LogicalCell[] logicalCells, int activeLength, int promptEnd) {
         int scanStart = Math.max(0, promptEnd);
         int i = scanStart;
-        while (i < activeLength && isPlainBlank(visualCells[i])) {
+        while (i < activeLength && isPlainBlank(logicalCells[i])) {
             i++; // Skip leading indentation.
         }
         int consecutiveSpaces = 0;
         for (; i < activeLength; i++) {
-            if (isPlainBlank(visualCells[i])) {
+            if (isPlainBlank(logicalCells[i])) {
                 consecutiveSpaces++;
                 if (consecutiveSpaces >= 3) {
                     return true;

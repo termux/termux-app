@@ -223,12 +223,12 @@ public final class TerminalRenderer {
         }
         for (int i = vCol - 1; i >= 0; i--) {
             BidiLayout.LogicalCell c = visualCells[i];
-            if (isShapedRtlCell(c)) return true;
+            if (c.codePoint >= 0x0590 && isShapedRtlCell(c)) return true;
             if (!isMirroredAsciiDelimiterCell(c)) break;
         }
         for (int i = vCol + 1; i < columns; i++) {
             BidiLayout.LogicalCell c = visualCells[i];
-            if (isShapedRtlCell(c)) return true;
+            if (c.codePoint >= 0x0590 && isShapedRtlCell(c)) return true;
             if (!isMirroredAsciiDelimiterCell(c)) break;
         }
         return false;
@@ -518,7 +518,7 @@ public final class TerminalRenderer {
             mTextPaint.setTextSkewX(0f);
             float measuredSpace = mTextPaint.measureText(" ");
             if (measuredSpace > 0f) rtlSpaceW = measuredSpace;
-            final float interScriptSpaceW = Math.min(mFontWidth * 0.65f, Math.max(rtlSpaceW, mFontWidth * 0.48f));
+            final float interScriptSpaceW = Math.min(mFontWidth * 0.85f, Math.max(rtlSpaceW, mFontWidth * 0.72f));
 
             for (int v = 0; v < promptEnd; v++) {
                 visLeft[v] = v * mFontWidth;

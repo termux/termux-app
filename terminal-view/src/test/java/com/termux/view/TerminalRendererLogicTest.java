@@ -1032,6 +1032,73 @@ public class TerminalRendererLogicTest {
         assertTrue(TerminalRenderer.usesStrictGrid(altLayout, altEm));
     }
 
+    @Test
+    public void testIndentedArabicMarkdownListsRemainContinuousAndLeftAligned() {
+        TerminalRenderer renderer = newProportionalRenderer();
+        float w = renderer.mFontWidth;
+        int cols = 108;
+
+        String numberedLine = "  1. \u0625\u0644\u063A\u0627\u0621 \u0627\u0644\u0625\u0632\u0627\u062D\u0629";
+        String bulletLine = "      \u2022 \u062C\u0639\u0644\u0646\u0627 shouldRightAlignBidi(...) \u064A\u0631\u062C\u0639 false \u062F\u0627\u0626\u0645\u0627\u064B";
+        String proseLine = "      \u0645\u0628\u0627\u0634\u0631\u0629 (\u0645\u062B\u0644\u0627\u064B) \u0641\u064A \u0645\u0643\u0627\u0646\u0647";
+
+        TerminalEmulator numEm = newEmulator(cols, 2, numberedLine);
+        BidiLayout numLayout = BidiLayout.build(numEm.getScreen().allocateFullLineIfNecessary(0), cols, -1, false,
+                -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertFalse(numLayout.hasColumnarMultiSpace);
+        assertFalse(TerminalRenderer.usesStrictGrid(numLayout, false));
+        assertEquals(5, numLayout.promptPrefixLength);
+        assertFalse(numLayout.paragraphStartsWithPrompt);
+        BidiLayout.PixelGeometry numGeo = renderer.ensureRowPixelGeometry(numLayout, cols, false);
+        assertTrue(numGeo.continuousFlow);
+        assertEquals(0f, numGeo.visLeft[0], 0.01f);
+        assertEquals(5f * w, numGeo.visLeft[5], 0.01f);
+        assertEquals(numberedLine, BidiLayout.extractSelectedText(numEm.getScreen(), cols, 2,
+                0, 0, numLayout.trimmedActiveLength - 1, 0));
+
+        TerminalEmulator bulletEm = newEmulator(cols, 2, bulletLine);
+        BidiLayout bulletLayout = BidiLayout.build(bulletEm.getScreen().allocateFullLineIfNecessary(0), cols, -1, false,
+                -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertFalse("Leading indentation spaces must not trigger columnar grid", bulletLayout.hasColumnarMultiSpace);
+        assertFalse(TerminalRenderer.usesStrictGrid(bulletLayout, false));
+        assertEquals(8, bulletLayout.promptPrefixLength);
+        assertEquals('\u2022', bulletLayout.visualCells[6].codePoint);
+        BidiLayout.PixelGeometry bulletGeo = renderer.ensureRowPixelGeometry(bulletLayout, cols, false);
+        assertTrue(bulletGeo.continuousFlow);
+        assertEquals(6f * w, bulletGeo.visLeft[6], 0.01f);
+        assertEquals(8f * w, bulletGeo.visLeft[8], 0.01f);
+        for (int v = 1; v < bulletLayout.trimmedActiveLength; v++) {
+            float step = bulletGeo.visLeft[v] - bulletGeo.visRight[v - 1];
+            assertTrue("Adjacent visual cells must never have huge grid holes (v=" + v + ", gap=" + step + ")",
+                    step >= -0.01f && step <= w + 0.01f);
+        }
+        for (int v = 0; v < bulletLayout.trimmedActiveLength; v++) {
+            int cp = bulletLayout.visualCells[v].codePoint;
+            if (cp == '(' || cp == ')') {
+                assertFalse("ASCII (...) delimiters next to '.' must not be treated as RTL-adjacent",
+                        TerminalRenderer.canJoinRtlAdjacentDelimiter(bulletLayout.visualCells, bulletLayout.trimmedActiveLength, v));
+            }
+        }
+        assertEquals(bulletLine, BidiLayout.extractSelectedText(bulletEm.getScreen(), cols, 2,
+                0, 0, bulletLayout.trimmedActiveLength - 1, 0));
+
+        TerminalEmulator proseEm = newEmulator(cols, 2, proseLine);
+        BidiLayout proseLayout = BidiLayout.build(proseEm.getScreen().allocateFullLineIfNecessary(0), cols, -1, false,
+                -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertFalse(proseLayout.hasColumnarMultiSpace);
+        assertFalse(TerminalRenderer.usesStrictGrid(proseLayout, false));
+        assertEquals(6, proseLayout.promptPrefixLength);
+        BidiLayout.PixelGeometry proseGeo = renderer.ensureRowPixelGeometry(proseLayout, cols, false);
+        assertEquals(6f * w, proseGeo.visLeft[6], 0.01f);
+
+        // Indented rows that actually have >= 3 spaces separating columns must still use strict grid.
+        TerminalEmulator indentedTableEm = newEmulator(cols, 2, "      \u0627\u0644\u0627\u0633\u0645   123");
+        BidiLayout indentedTableLayout = BidiLayout.build(indentedTableEm.getScreen().allocateFullLineIfNecessary(0),
+                cols, -1, false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertTrue(indentedTableLayout.hasColumnarMultiSpace);
+        assertTrue(TerminalRenderer.usesStrictGrid(indentedTableLayout, false));
+    }
+
     private static RectCall findLastCursorRect(RecordingCanvas canvas, int cursorColor) {
         RectCall found = null;
         for (RectCall rc : canvas.rectCalls) {
