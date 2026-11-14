@@ -54,7 +54,8 @@ public class TermuxShellUtils {
                                 } else {
                                     // End of shebang.
                                     String shebangExecutable = builder.toString();
-                                    if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin")) {
+                                    if (shebangExecutable.startsWith("/usr") || shebangExecutable.startsWith("/bin") ||
+                                        shebangExecutable.startsWith(TermuxConstants.TERMUX_PREFIX_DIR_PATH)) {
                                         String[] parts = shebangExecutable.split("/");
                                         String binary = parts[parts.length - 1];
                                         interpreter = TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/" + binary;
