@@ -1099,6 +1099,69 @@ public class TerminalRendererLogicTest {
         assertTrue(TerminalRenderer.usesStrictGrid(indentedTableLayout, false));
     }
 
+    @Test
+    public void testRtlInlineCodeTokensAndWrappedLineEndPunctuation() {
+        int cols = 108;
+        String[] cases = new String[] {
+                // func(...) inside Arabic + unclosed (c. at line end
+                "      \u2022 \u0641\u064A canJoinRtlAdjacentDelimiter(...): \u0627\u0634\u062A\u0631\u0627\u0637 (c.",
+                // trailing ',' inside unclosed paren at line end
+                "      \u2022 \u062A\u0645 \u062A\u063A\u064A\u064A\u0631 logicalCells (detectColumnarMultiSpace(logicalCells, activeLength,",
+                // trailing '.' on decimal at line end inside Math.min(
+                "      \u2022 \u062A\u0648\u0633\u064A\u0639 interScriptSpaceW \u0625\u0644\u0649 Math.min(mFontWidth * 0.85f, Math.max(rtlSpaceW, mFontWidth * 0.",
+                // leading wrapped = 0) and inline wrapped grid).
+                "      = 0) \u0648\u0645\u0628\u0627\u0634\u0631\u0629 \u0648grid). \u0639\u0644\u0649",
+                // comparison operator >= 3
+                "      \u062A\u062D\u0648\u064A >= 3 \u0645\u0633\u0627\u0641\u0627\u062A",
+                // unclosed opening paren before English followed by Arabic word
+                "      \u2022 \u0642\u064A\u0627\u0633 (scaleX = 1.0f \u062F\u0648\u0646"
+        };
+        String[] expectedSubstrings = new String[] {
+                "canJoinRtlAdjacentDelimiter(...)",
+                "logicalCells (detectColumnarMultiSpace(logicalCells, activeLength,",
+                "Math.min(mFontWidth * 0.85f, Math.max(rtlSpaceW, mFontWidth * 0.",
+                "= 0)",
+                ">= 3",
+                "(scaleX = 1.0f"
+        };
+        String[] extraExpected = new String[] {
+                "(c.",
+                null,
+                null,
+                "grid).",
+                null,
+                null
+        };
+
+        for (int i = 0; i < cases.length; i++) {
+            TerminalEmulator em = newEmulator(cols, 2, cases[i]);
+            BidiLayout layout = BidiLayout.build(em.getScreen().allocateFullLineIfNecessary(0),
+                    cols, -1, false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+            StringBuilder vis = new StringBuilder();
+            for (int v = 0; v < layout.trimmedActiveLength; v++) {
+                BidiLayout.LogicalCell cell = layout.visualCells[v];
+                int cp = (cell.isRtl && cell.combiningCount == 0 && TerminalRenderer.isMirroredAsciiDelimiter(cell.codePoint))
+                        ? TerminalRenderer.getMirroredAsciiChar(cell.codePoint) : cell.codePoint;
+                vis.appendCodePoint(cp);
+            }
+            String vs = vis.toString();
+            assertTrue("Expected '" + expectedSubstrings[i] + "' intact in: " + vs, vs.contains(expectedSubstrings[i]));
+            if (extraExpected[i] != null) {
+                assertTrue("Expected '" + extraExpected[i] + "' intact in: " + vs, vs.contains(extraExpected[i]));
+            }
+            assertEquals(cases[i], BidiLayout.extractSelectedText(em.getScreen(), cols, 2,
+                    0, 0, layout.trimmedActiveLength - 1, 0));
+        }
+
+        // Arabic parenthetical list "(6 مسافات أو أكثر)" must keep natural UAX #9 structure intact.
+        String arabicParen = "  1. \u0627\u0644\u0641\u062C\u0648\u0627\u062A (6 \u0645\u0633\u0627\u0641\u0627\u062A \u0623\u0648 \u0623\u0643\u062B\u0631) \u0641\u064A";
+        TerminalEmulator apEm = newEmulator(cols, 2, arabicParen);
+        BidiLayout apLayout = BidiLayout.build(apEm.getScreen().allocateFullLineIfNecessary(0),
+                cols, -1, false, -1, -1, -1, -1, 0, false, BidiLayout.DIR_DEFAULT);
+        assertEquals(arabicParen, BidiLayout.extractSelectedText(apEm.getScreen(), cols, 2,
+                0, 0, apLayout.trimmedActiveLength - 1, 0));
+    }
+
     private static RectCall findLastCursorRect(RecordingCanvas canvas, int cursorColor) {
         RectCall found = null;
         for (RectCall rc : canvas.rectCalls) {

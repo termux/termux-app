@@ -746,14 +746,22 @@ public final class BidiLayout {
             return baseIsLtr;
         }
 
-        byte minOdd = Byte.MAX_VALUE;
-        byte maxLvl = 0;
         for (int i = 0; i < len; i++) {
             int idx = start + i;
             byte lvl = (byte) bidi.getLevelAt(i);
             levels[idx] = lvl;
             activeVisToLog[idx] = idx;
             logicalCells[idx].isRtl = ((lvl & 1) != 0);
+        }
+
+        if (!baseIsLtr) {
+            adjustRtlCodeLevels(chars, start, end, levels, logicalCells);
+        }
+
+        byte minOdd = Byte.MAX_VALUE;
+        byte maxLvl = 0;
+        for (int idx = start; idx < end; idx++) {
+            byte lvl = levels[idx];
             if (lvl > maxLvl) maxLvl = lvl;
             if ((lvl & 1) != 0 && lvl < minOdd) minOdd = lvl;
         }
@@ -794,6 +802,213 @@ public final class BidiLayout {
             }
         }
         return baseIsLtr;
+    }
+
+    /**
+     * Preserves LTR cohesion of programming expressions and wrapped line-end code punctuation
+     * (e.g. {@code func(...)}, {@code grid).}, {@code (c.}, {@code * 0.}, {@code >= 3}) inside RTL
+     * paragraphs without altering normal RTL prose punctuation such as lists or quoted Arabic text.
+     */
+    private static void adjustRtlCodeLevels(char[] chars, int start, int end, byte[] levels, LogicalCell[] cells) {
+        if (end - start < 2) return;
+
+        // 1. Paired ASCII brackets directly attached to a preceding LTR token with no RTL inside: func(...)
+        for (int i = start + 1; i < end; i++) {
+            char open = chars[i];
+            if (!isAsciiOpener(open) || (levels[i] & 1) == 0 || (levels[i - 1] & 1) != 0) continue;
+            if (!isCodeTokenLeftNeighbor(chars[i - 1])) continue;
+            char close = matchingAsciiCloser(open);
+            int depth = 1;
+            int closeIdx = -1;
+            boolean hasRtlInside = false;
+            for (int k = i + 1; k < end; k++) {
+                char ck = chars[k];
+                if (isRtlCharacterDirection(ck)) {
+                    hasRtlInside = true;
+                    break;
+                }
+                if (ck == open) depth++;
+                else if (ck == close) {
+                    depth--;
+                    if (depth == 0) {
+                        closeIdx = k;
+                        break;
+                    }
+                }
+            }
+            if (closeIdx > i && !hasRtlInside) {
+                promoteSpanToLtrLevel(levels, cells, i, closeIdx + 1, levels[i - 1]);
+            }
+        }
+
+        // 2. Unclosed opening bracket directly before an LTR token: (x, (c., (scaleX = 1.0f
+        for (int i = start; i < end - 1; i++) {
+            char open = chars[i];
+            if (!isAsciiOpener(open) || (levels[i] & 1) == 0 || (levels[i + 1] & 1) != 0) continue;
+            if (!isStrongAsciiLtrChar(chars[i + 1])) continue;
+            char close = matchingAsciiCloser(open);
+            int depth = 1;
+            boolean hasRtlTail = false;
+            for (int k = i + 1; k < end; k++) {
+                char ck = chars[k];
+                if (isRtlCharacterDirection(ck)) {
+                    hasRtlTail = true;
+                }
+                if (ck == open) depth++;
+                else if (ck == close) {
+                    depth--;
+                    if (depth == 0) break;
+                }
+            }
+            boolean startsWithAsciiLetter = (chars[i + 1] >= 'A' && chars[i + 1] <= 'Z')
+                    || (chars[i + 1] >= 'a' && chars[i + 1] <= 'z');
+            if (depth > 0 && (!hasRtlTail || startsWithAsciiLetter)) {
+                promoteSpanToLtrLevel(levels, cells, i, i + 1, levels[i + 1]);
+            }
+        }
+
+        // 3. Unmatched closing bracket directly after a code expression: grid)., = 0)
+        boolean[] promotedCloser = new boolean[end - start];
+        for (int i = start + 1; i < end; i++) {
+            char close = chars[i];
+            if (!isAsciiCloser(close) || (levels[i] & 1) == 0 || (levels[i - 1] & 1) != 0) continue;
+            char open = matchingAsciiOpener(close);
+            int depth = 1;
+            boolean matchedEarlier = false;
+            for (int k = i - 1; k >= start; k--) {
+                char ck = chars[k];
+                if (ck == close) depth++;
+                else if (ck == open) {
+                    depth--;
+                    if (depth == 0) {
+                        matchedEarlier = true;
+                        break;
+                    }
+                }
+            }
+            if (!matchedEarlier && hasCodeEvidenceBeforeCloser(chars, start, i, levels)) {
+                promoteSpanToLtrLevel(levels, cells, i, i + 1, levels[i - 1]);
+                promotedCloser[i - start] = true;
+            }
+        }
+
+        // 4. Bridge '.' immediately separating two LTR tokens (e.g. foo().bar after closing paren promotion).
+        for (int i = start + 1; i < end - 1; i++) {
+            if ((levels[i] & 1) != 0 && (chars[i] == '.')
+                    && (levels[i - 1] & 1) == 0 && (levels[i + 1] & 1) == 0) {
+                promoteSpanToLtrLevel(levels, cells, i, i + 1, levels[i - 1]);
+            }
+        }
+
+        // 5. Trailing '.' or ',' at end of line inside unclosed LTR parens or attached to a promoted closer:
+        //    e.g. activeLength,, (c., mFontWidth * 0., grid).
+        int openLtrParens = 0;
+        for (int i = start; i < end; i++) {
+            char c = chars[i];
+            if ((levels[i] & 1) == 0) {
+                if (isAsciiOpener(c)) openLtrParens++;
+                else if (isAsciiCloser(c) && openLtrParens > 0) openLtrParens--;
+            }
+            if ((c == '.' || c == ',') && (levels[i] & 1) != 0 && i > start && (levels[i - 1] & 1) == 0) {
+                boolean afterPromotedCloser = isAsciiCloser(chars[i - 1]) && promotedCloser[i - 1 - start];
+                boolean trailingOpenCodePunct = (i == end - 1 && openLtrParens > 0);
+                if (afterPromotedCloser || trailingOpenCodePunct) {
+                    promoteSpanToLtrLevel(levels, cells, i, i + 1, levels[i - 1]);
+                }
+            }
+        }
+
+        // 6. Multi-char ASCII operators immediately preceding an LTR token/number (>= 3, <= 5, -> x)
+        //    and standalone leading '=' before a promoted closer expression (= 0)).
+        for (int i = start; i < end - 2; i++) {
+            if (isTwoCharAsciiOperator(chars[i], chars[i + 1]) && ((levels[i] & 1) != 0 || (levels[i + 1] & 1) != 0)) {
+                int target = i + 2;
+                if (target < end && chars[target] == ' ' && target + 1 < end) target++;
+                if (target < end && (levels[target] & 1) == 0 && isStrongAsciiLtrChar(chars[target])) {
+                    promoteSpanToLtrLevel(levels, cells, i, target, levels[target]);
+                }
+            }
+        }
+        for (int i = start; i < end - 1; i++) {
+            if (chars[i] == '=' && (levels[i] & 1) != 0 && (i == start || chars[i - 1] == ' ')) {
+                int target = i + 1;
+                if (target < end && chars[target] == ' ' && target + 1 < end) target++;
+                if (target < end && (levels[target] & 1) == 0 && spanHasPromotedCloser(chars, levels, promotedCloser, start, end, target)) {
+                    promoteSpanToLtrLevel(levels, cells, i, target, levels[target]);
+                }
+            }
+        }
+    }
+
+    private static void promoteSpanToLtrLevel(byte[] levels, LogicalCell[] cells, int from, int to, byte targetLevel) {
+        byte even = ((targetLevel & 1) == 0) ? targetLevel : (byte) (targetLevel + 1);
+        for (int k = from; k < to; k++) {
+            levels[k] = even;
+            cells[k].isRtl = false;
+        }
+    }
+
+    private static boolean isAsciiOpener(char c) {
+        return c == '(' || c == '[' || c == '{';
+    }
+
+    private static boolean isAsciiCloser(char c) {
+        return c == ')' || c == ']' || c == '}';
+    }
+
+    private static char matchingAsciiCloser(char open) {
+        if (open == '(') return ')';
+        if (open == '[') return ']';
+        return '}';
+    }
+
+    private static char matchingAsciiOpener(char close) {
+        if (close == ')') return '(';
+        if (close == ']') return '[';
+        return '{';
+    }
+
+    private static boolean isStrongAsciiLtrChar(char c) {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
+    }
+
+    private static boolean isCodeTokenLeftNeighbor(char c) {
+        return isStrongAsciiLtrChar(c) || c == '_' || isAsciiCloser(c) || c == '>';
+    }
+
+    private static boolean hasCodeEvidenceBeforeCloser(char[] chars, int start, int closerIdx, byte[] levels) {
+        boolean hasLetterOrCodeSym = false;
+        for (int k = closerIdx - 1; k >= start; k--) {
+            char c = chars[k];
+            if (isRtlCharacterDirection(c)) break;
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_'
+                    || c == '=' || c == '.' || isAsciiCloser(c)) {
+                hasLetterOrCodeSym = true;
+                break;
+            }
+            if ((levels[k] & 1) != 0 && c != ' ') break;
+        }
+        return hasLetterOrCodeSym;
+    }
+
+    private static boolean isTwoCharAsciiOperator(char a, char b) {
+        return (a == '>' && b == '=')
+                || (a == '<' && b == '=')
+                || (a == '!' && b == '=')
+                || (a == '=' && b == '=')
+                || (a == '-' && b == '>')
+                || (a == '=' && b == '>')
+                || (a == ':' && b == ':')
+                || (a == '&' && b == '&')
+                || (a == '|' && b == '|');
+    }
+
+    private static boolean spanHasPromotedCloser(char[] chars, byte[] levels, boolean[] promotedCloser,
+                                                 int sliceStart, int sliceEnd, int from) {
+        for (int k = from; k < sliceEnd && (levels[k] & 1) == 0; k++) {
+            if (promotedCloser[k - sliceStart]) return true;
+        }
+        return false;
     }
 
     private static void reorderBoxTableCells(LogicalCell[] cells, char[] bidiChars, int activeLength,
