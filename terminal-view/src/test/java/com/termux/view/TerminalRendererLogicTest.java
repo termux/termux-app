@@ -156,7 +156,6 @@ public class TerminalRendererLogicTest {
         private Typeface mTf;
         private float mTextSize = 20f;
         private int mColor;
-        private boolean mFakeBold;
         private boolean mUnderline;
         private boolean mStrikeThru;
         private float mSkewX;
@@ -174,8 +173,7 @@ public class TerminalRendererLogicTest {
         @Override public float ascent() { return -mTextSize * 0.9f; }
         @Override public void setColor(int color) { mColor = color; }
         @Override public int getColor() { return mColor; }
-        @Override public void setFakeBoldText(boolean fakeBoldText) { mFakeBold = fakeBoldText; }
-        @Override public boolean isFakeBoldText() { return mFakeBold; }
+        @Override public void setFakeBoldText(boolean fakeBoldText) {}
         @Override public void setUnderlineText(boolean underlineText) { mUnderline = underlineText; }
         @Override public void setStrikeThruText(boolean strikeThruText) { mStrikeThru = strikeThruText; }
         @Override public void setTextSkewX(float skewX) { mSkewX = skewX; }
