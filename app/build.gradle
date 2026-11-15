@@ -51,8 +51,8 @@ android {
         applicationId "com.termux"
         minSdk buildMinSdk
         targetSdk buildTargetSdk
-        versionCode 1005
-        versionName "0.119.1"
+        versionCode 1006
+        versionName "0.119.2"
 
         if (appVersionName) versionName = appVersionName
         validateVersionName(versionName)
