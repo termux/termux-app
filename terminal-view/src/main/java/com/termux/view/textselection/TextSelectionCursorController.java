@@ -45,8 +45,8 @@ public class TextSelectionCursorController implements CursorController {
     @Override
     public void show(MotionEvent event) {
         setInitialTextSelectionPosition(event);
-        mStartHandle.positionAtCursor(mSelX1, mSelY1, true);
-        mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, true);
+        mStartHandle.positionAtVisual(mSelX1, mSelY1, true, false);
+        mEndHandle.positionAtVisual(mSelX2, mSelY2, true, true);
 
         setActionModeCallBacks();
         mShowStartTime = System.currentTimeMillis();
@@ -82,8 +82,8 @@ public class TextSelectionCursorController implements CursorController {
     public void render() {
         if (!isActive()) return;
 
-        mStartHandle.positionAtCursor(mSelX1, mSelY1, false);
-        mEndHandle.positionAtCursor(mSelX2 + 1, mSelY2, false);
+        mStartHandle.positionAtVisual(mSelX1, mSelY1, false, false);
+        mEndHandle.positionAtVisual(mSelX2, mSelY2, false, true);
 
         if (mActionMode != null) {
             mActionMode.invalidate();
@@ -92,19 +92,45 @@ public class TextSelectionCursorController implements CursorController {
 
     public void setInitialTextSelectionPosition(MotionEvent event) {
         int[] columnAndRow = terminalView.getColumnAndRow(event, true);
-        mSelX1 = mSelX2 = columnAndRow[0];
+        int logicalCol = columnAndRow[0];
         mSelY1 = mSelY2 = columnAndRow[1];
 
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
-        if (!" ".equals(screen.getSelectedText(mSelX1, mSelY1, mSelX1, mSelY1))) {
-            // Selecting something other than whitespace. Expand to word.
-            while (mSelX1 > 0 && !"".equals(screen.getSelectedText(mSelX1 - 1, mSelY1, mSelX1 - 1, mSelY1))) {
-                mSelX1--;
+        int columns = terminalView.mEmulator.mColumns;
+        int lStart = logicalCol;
+        int lEnd = logicalCol;
+        if (!"".equals(screen.getSelectedText(lStart, mSelY1, lStart, mSelY1))) {
+            // Selecting something other than blank whitespace. Expand to word.
+            while (lStart > 0 && !"".equals(screen.getSelectedText(lStart - 1, mSelY1, lStart - 1, mSelY1))) {
+                lStart--;
             }
-            while (mSelX2 < terminalView.mEmulator.mColumns - 1 && !"".equals(screen.getSelectedText(mSelX2 + 1, mSelY1, mSelX2 + 1, mSelY1))) {
-                mSelX2++;
+            while (lEnd < columns - 1 && !"".equals(screen.getSelectedText(lEnd + 1, mSelY1, lEnd + 1, mSelY1))) {
+                lEnd++;
             }
         }
+
+        // Map word's logical span [lStart, lEnd] to visual column bounds [mSelX1, mSelX2]
+        int minV = Integer.MAX_VALUE;
+        int maxV = Integer.MIN_VALUE;
+        for (int l = lStart; l <= lEnd; l++) {
+            int v = logicalToVisual(l, mSelY1);
+            if (v < minV) minV = v;
+            if (v > maxV) maxV = v;
+        }
+        // Include continuation column if selection ends on a wide character.
+        if (lEnd + 1 < columns) {
+            int internalRow = screen.externalToInternalRow(mSelY1);
+            if (internalRow >= 0 && internalRow < screen.getActiveRows()) {
+                com.termux.terminal.TerminalRow tr = screen.allocateFullLineIfNecessary(internalRow);
+                if (tr != null && tr.wideDisplayCharacterStartingAt(lEnd)) {
+                    int contV = logicalToVisual(lEnd + 1, mSelY1);
+                    if (contV < minV) minV = contV;
+                    if (contV > maxV) maxV = contV;
+                }
+            }
+        }
+        mSelX1 = (minV != Integer.MAX_VALUE) ? minV : lStart;
+        mSelX2 = (maxV != Integer.MIN_VALUE) ? maxV : lEnd;
     }
     
     public void setActionModeCallBacks() {
@@ -192,16 +218,31 @@ public class TextSelectionCursorController implements CursorController {
 
             @Override
             public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-                int x1 = Math.round(mSelX1 * terminalView.mRenderer.getFontWidth());
-                int x2 = Math.round(mSelX2 * terminalView.mRenderer.getFontWidth());
+                int minCol;
+                int maxCol;
+                if (mSelY1 == mSelY2) {
+                    minCol = Math.min(mSelX1, mSelX2);
+                    maxCol = Math.max(mSelX1, mSelX2);
+                } else {
+                    minCol = 0;
+                    maxCol = Math.max(0, terminalView.mEmulator.mColumns - 1);
+                }
+                int x1;
+                int x2;
+                if (mSelY1 == mSelY2) {
+                    x1 = Math.round(terminalView.mRenderer.getVisualColumnLeftX(terminalView.mEmulator, minCol, mSelY1));
+                    x2 = Math.round(terminalView.mRenderer.getVisualColumnRightX(terminalView.mEmulator, maxCol, mSelY2));
+                    if (x2 < x1) {
+                        int tmp = x1;
+                        x1 = x2;
+                        x2 = tmp;
+                    }
+                } else {
+                    x1 = Math.round(minCol * terminalView.mRenderer.getFontWidth());
+                    x2 = Math.round((maxCol + 1) * terminalView.mRenderer.getFontWidth());
+                }
                 int y1 = Math.round((mSelY1 - 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
                 int y2 = Math.round((mSelY2 + 1 - terminalView.getTopRow()) * terminalView.mRenderer.getFontLineSpacing());
-
-                if (x1 > x2) {
-                    int tmp = x1;
-                    x1 = x2;
-                    x2 = tmp;
-                }
 
                 int terminalBottom = terminalView.getBottom();
                 int top = y1 + mHandleHeight;
@@ -214,30 +255,32 @@ public class TextSelectionCursorController implements CursorController {
         }, ActionMode.TYPE_FLOATING);
     }
 
+    private int logicalToVisual(int logicalCol, int row) {
+        return terminalView.mRenderer.translateLogicalToVisualColumn(terminalView.mEmulator, logicalCol, row);
+    }
+
     @Override
     public void updatePosition(TextSelectionHandleView handle, int x, int y) {
         TerminalBuffer screen = terminalView.mEmulator.getScreen();
         final int scrollRows = screen.getActiveRows() - terminalView.mEmulator.mRows;
-        if (handle == mStartHandle) {
-            mSelX1 = terminalView.getCursorX(x);
-            mSelY1 = terminalView.getCursorY(y);
-            if (mSelX1 < 0) {
-                mSelX1 = 0;
-            }
 
+        if (handle == mStartHandle) {
+            mSelY1 = terminalView.getCursorY(y);
             if (mSelY1 < -scrollRows) {
                 mSelY1 = -scrollRows;
-
             } else if (mSelY1 > terminalView.mEmulator.mRows - 1) {
                 mSelY1 = terminalView.mEmulator.mRows - 1;
-
             }
 
             if (mSelY1 > mSelY2) {
                 mSelY1 = mSelY2;
             }
-            if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
-                mSelX1 = mSelX2;
+
+            int visualCol = terminalView.mRenderer.translateXToVisualColumn(terminalView.mEmulator, x, mSelY1, true);
+            if (mSelY1 == mSelY2) {
+                mSelX1 = Math.min(visualCol, mSelX2);
+            } else {
+                mSelX1 = visualCol;
             }
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
@@ -258,15 +301,8 @@ public class TextSelectionCursorController implements CursorController {
                 terminalView.setTopRow(topRow);
             }
 
-            mSelX1 = getValidCurX(screen, mSelY1, mSelX1);
-
         } else {
-            mSelX2 = terminalView.getCursorX(x);
             mSelY2 = terminalView.getCursorY(y);
-            if (mSelX2 < 0) {
-                mSelX2 = 0;
-            }
-
             if (mSelY2 < -scrollRows) {
                 mSelY2 = -scrollRows;
             } else if (mSelY2 > terminalView.mEmulator.mRows - 1) {
@@ -276,8 +312,12 @@ public class TextSelectionCursorController implements CursorController {
             if (mSelY1 > mSelY2) {
                 mSelY2 = mSelY1;
             }
-            if (mSelY1 == mSelY2 && mSelX1 > mSelX2) {
-                mSelX2 = mSelX1;
+
+            int visualCol = terminalView.mRenderer.translateXToVisualColumn(terminalView.mEmulator, x, mSelY2, true);
+            if (mSelY1 == mSelY2) {
+                mSelX2 = Math.max(visualCol, mSelX1);
+            } else {
+                mSelX2 = visualCol;
             }
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
@@ -297,8 +337,6 @@ public class TextSelectionCursorController implements CursorController {
 
                 terminalView.setTopRow(topRow);
             }
-
-            mSelX2 = getValidCurX(screen, mSelY2, mSelX2);
         }
 
         terminalView.invalidate();
@@ -372,7 +410,11 @@ public class TextSelectionCursorController implements CursorController {
 
     /** Get the currently selected text. */
     public String getSelectedText() {
-        return terminalView.mEmulator.getSelectedText(mSelX1, mSelY1, mSelX2, mSelY2);
+        return com.termux.view.BidiLayout.extractSelectedText(
+                terminalView.mEmulator.getScreen(),
+                terminalView.mEmulator.mColumns,
+                terminalView.mEmulator.mRows,
+                mSelX1, mSelY1, mSelX2, mSelY2);
     }
 
     /** Get the selected text stored before "MORE" button was pressed on the context menu. */

@@ -154,7 +154,19 @@ public class TextSelectionHandleView extends View {
     }
 
     public void positionAtCursor(final int cx, final int cy, boolean forceOrientationCheck) {
-        int x = terminalView.getPointX(cx);
+        int x = terminalView.getPointX(cx, cy);
+        int y = terminalView.getPointY(cy + 1);
+        moveTo(x, y, forceOrientationCheck);
+    }
+
+    public void positionAtVisual(final int visualCol, final int cy, boolean forceOrientationCheck) {
+        positionAtVisual(visualCol, cy, forceOrientationCheck, false);
+    }
+
+    public void positionAtVisual(final int visualCol, final int cy, boolean forceOrientationCheck, boolean isEndEdge) {
+        int x = isEndEdge
+                ? Math.round(terminalView.mRenderer.getVisualColumnRightX(terminalView.mEmulator, visualCol, cy))
+                : Math.round(terminalView.mRenderer.getVisualColumnLeftX(terminalView.mEmulator, visualCol, cy));
         int y = terminalView.getPointY(cy + 1);
         moveTo(x, y, forceOrientationCheck);
     }

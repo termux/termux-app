@@ -34,9 +34,9 @@ public class TermuxShellCommandShellEnvironment extends ShellCommandShellEnviron
                 String.valueOf(TermuxShellManager.getAndIncrementAppShellNumberSinceAppStart()));
 
         } else if (ExecutionCommand.Runner.TERMINAL_SESSION.equalsRunner(executionCommand.runner)) {
-            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_SHELL_CMD__TERMINAL_SESSION_NUMBER_SINCE_BOOT,
+            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_SHELL_CMD__APP_TERMINAL_SESSION_NUMBER_SINCE_BOOT,
                 String.valueOf(preferences.getAndIncrementTerminalSessionNumberSinceBoot()));
-            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_SHELL_CMD__TERMINAL_SESSION_NUMBER_SINCE_APP_START,
+            ShellEnvironmentUtils.putToEnvIfSet(environment, ENV_SHELL_CMD__APP_TERMINAL_SESSION_NUMBER_SINCE_APP_START,
                 String.valueOf(TermuxShellManager.getAndIncrementTerminalSessionNumberSinceAppStart()));
         } else {
             return environment;

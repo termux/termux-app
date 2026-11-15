@@ -10,8 +10,12 @@ import android.system.Os;
 import android.util.Pair;
 import android.view.WindowManager;
 
+import com.termux.BuildConfig;
 import com.termux.R;
 import com.termux.shared.file.FileUtils;
+import com.termux.shared.shell.command.ExecutionCommand;
+import com.termux.shared.shell.command.runner.app.AppShell;
+import com.termux.shared.termux.TermuxBootstrap;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
@@ -99,6 +103,12 @@ final class TermuxInstaller {
             MessageDialogUtils.showMessage(activity,
                 activity.getString(R.string.bootstrap_error_title),
                 bootstrapErrorMessage, null);
+            return;
+        }
+
+        if (!checkIfMinOrMaxSdkVersionIsIncompatible(activity,
+                BuildConfig.TERMUX_APP__BOOTSTRAP_MIN_SDK, BuildConfig.TERMUX_APP__BOOTSTRAP_MIN_RELEASE,
+                BuildConfig.TERMUX_APP__BOOTSTRAP_MAX_SDK, BuildConfig.TERMUX_APP__BOOTSTRAP_MAX_RELEASE)) {
             return;
         }
 
@@ -195,7 +205,8 @@ final class TermuxInstaller {
                                             outStream.write(buffer, 0, readBytes);
                                     }
                                     if (zipEntryName.startsWith("bin/") || zipEntryName.startsWith("libexec") ||
-                                        zipEntryName.startsWith("lib/apt/apt-helper") || zipEntryName.startsWith("lib/apt/methods")) {
+                                        zipEntryName.startsWith("lib/apt/apt-helper") || zipEntryName.startsWith("lib/apt/methods") ||
+                                        zipEntryName.equals("etc/termux/bootstrap/termux-bootstrap-second-stage.sh")) {
                                         //noinspection OctalInteger
                                         Os.chmod(targetFile.getAbsolutePath(), 0700);
                                     }
@@ -214,6 +225,35 @@ final class TermuxInstaller {
 
                     if (!TERMUX_STAGING_PREFIX_DIR.renameTo(TERMUX_PREFIX_DIR)) {
                         throw new RuntimeException("Moving termux prefix staging to prefix directory failed");
+                    }
+
+                    // Run Termux bootstrap second stage.
+                    String termuxBootstrapSecondStageFile = TERMUX_PREFIX_DIR_PATH + "/etc/termux/bootstrap/termux-bootstrap-second-stage.sh";
+                    if (!FileUtils.fileExists(termuxBootstrapSecondStageFile, false)) {
+                        Logger.logInfo(LOG_TAG, "Not running Termux bootstrap second stage since script not found at \"" + termuxBootstrapSecondStageFile + "\" path.");
+                    } else {
+                        if (!FileUtils.fileExists(TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash", true)) {
+                            Logger.logInfo(LOG_TAG, "Not running Termux bootstrap second stage since bash not found.");
+                        }
+                        Logger.logInfo(LOG_TAG, "Running Termux bootstrap second stage.");
+
+                        ExecutionCommand executionCommand = new ExecutionCommand(-1,
+                                termuxBootstrapSecondStageFile, null, null,
+                                null, ExecutionCommand.Runner.APP_SHELL.getName(), false);
+                        executionCommand.commandLabel = "Termux Bootstrap Second Stage Command";
+                        executionCommand.backgroundCustomLogLevel = Logger.LOG_LEVEL_NORMAL;
+                        AppShell appShell = AppShell.execute(activity, executionCommand, null, new TermuxShellEnvironment(), null, true);
+                        if (appShell == null || !executionCommand.isSuccessful() || executionCommand.resultData.exitCode != 0) {
+                            // Generate debug report before deleting broken prefix directory to get `stat` info at time of failure.
+                            showBootstrapErrorDialog(activity, whenDone, MarkdownUtils.getMarkdownCodeForString(executionCommand.toString(), true));
+
+                            // Delete prefix directory as otherwise when app is restarted, the broken prefix directory would be used and logged into.
+                            Logger.logInfo(LOG_TAG, "Deleting broken termux prefix.");
+                            error = FileUtils.deleteFile("termux prefix directory", TERMUX_PREFIX_DIR_PATH, true);
+                            if (error != null)
+                                Logger.logErrorExtended(LOG_TAG, error.toString());
+                            return;
+                        }
                     }
 
                     Logger.logInfo(LOG_TAG, "Bootstrap packages installed successfully.");
@@ -237,6 +277,42 @@ final class TermuxInstaller {
                 }
             }
         }.start();
+    }
+
+    public static boolean checkIfMinOrMaxSdkVersionIsIncompatible(Activity activity,
+                                                                  Integer minSdk, String minRelease,
+                                                                  Integer maxSdk, String maxRelease) {
+        if (minSdk != null && Build.VERSION.SDK_INT < minSdk) {
+            String bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_apk_bootstrap_variant_min_sdk_incompatible,
+                    MarkdownUtils.getMarkdownCodeForString(TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT.getName(), false),
+                    MarkdownUtils.getMarkdownCodeForString(Build.VERSION.RELEASE, false),
+                    Build.VERSION.SDK_INT,
+                    MarkdownUtils.getMarkdownCodeForString(minRelease, false),
+                    minSdk);
+            Logger.logError(LOG_TAG, bootstrapErrorMessage);
+            sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
+            MessageDialogUtils.exitAppWithErrorMessage(activity,
+                    activity.getString(R.string.bootstrap_error_title),
+                    bootstrapErrorMessage);
+            return false;
+        }
+
+        if (maxSdk != null && Build.VERSION.SDK_INT > maxSdk) {
+            String bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_apk_bootstrap_variant_max_sdk_incompatible,
+                    MarkdownUtils.getMarkdownCodeForString(TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT.getName(), false),
+                    MarkdownUtils.getMarkdownCodeForString(Build.VERSION.RELEASE, false),
+                    Build.VERSION.SDK_INT,
+                    MarkdownUtils.getMarkdownCodeForString(maxRelease, false),
+                    maxSdk);
+            Logger.logError(LOG_TAG, bootstrapErrorMessage);
+            sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
+            MessageDialogUtils.exitAppWithErrorMessage(activity,
+                    activity.getString(R.string.bootstrap_error_title),
+                    bootstrapErrorMessage);
+            return false;
+        }
+
+        return true;
     }
 
     public static void showBootstrapErrorDialog(Activity activity, Runnable whenDone, String message) {
