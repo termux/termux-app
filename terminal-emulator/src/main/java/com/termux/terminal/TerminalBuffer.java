@@ -1,6 +1,14 @@
 package com.termux.terminal;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.HashMap;
+
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+
+import android.os.SystemClock;
 
 /**
  * A circular buffer of {@link TerminalRow}:s which keeps notes about what is visible on a logical screen and the scroll
@@ -9,6 +17,12 @@ import java.util.Arrays;
  * See {@link #externalToInternalRow(int)} for how to map from logical screen rows to array indices.
  */
 public final class TerminalBuffer {
+
+    public static final String LOG_TAG = "TerminalBuffer";
+
+
+
+    private TerminalSessionClient mClient;
 
     TerminalRow[] mLines;
     /** The length of {@link #mLines}. */
@@ -20,22 +34,73 @@ public final class TerminalBuffer {
     /** The index in the circular buffer where the visible screen starts. */
     private int mScreenFirstRow = 0;
 
+
+    /**
+     * The {@link TerminalSixel} if a sixel command is being processed, from which the final
+     * {@link TerminalBitmap} is created.
+     */
+    private TerminalSixel mTerminalSixel;
+
+
+    /** The map for bitmap number to the {@link TerminalBitmap} loaded in the terminal. */
+    private final HashMap<Integer, TerminalBitmap> mTerminalBitmaps;
+
+    /** The time since last garbage collection for all the {@link TerminalBitmap} that are loaded in the terminal. */
+    private long mTerminalBitmapsLastGC;
+
+    /**
+     * The bitmap number start for {@link #mTerminalBitmaps} keys.
+     *
+     * The bitmap number and coordinates are encoded in the `long` {@link TerminalRow#mStyle} for
+     * the `TerminalRow` character of a column by
+     * {@link TerminalBitmap#buildOrThrow(TerminalBuffer, int, Bitmap, int, int, int, int)} by
+     * getting encoded value from {@link TextStyle#encodeTerminalBitmap(int, int, int)}.
+     * The `TerminalRenderer.render()` then checks during rendering terminal output whether a
+     * character at a row/coloumn index is a bitmap instead of text by calling
+     * `TextStyle.isTerminalBitmap()`.
+     */
+    public static final int TERMINAL_BITMAP__NUM_START = 0;
+
+    /**
+     * The bitmap number end for {@link #mTerminalBitmaps} keys.
+     */
+    public static final int TERMINAL_BITMAP__NUM_END = Integer.MAX_VALUE;
+
+
+
+
+    public TerminalBuffer(int columns, int totalRows, int screenRows) {
+        this(null, columns, totalRows, screenRows);
+    }
+
     /**
      * Create a transcript screen.
      *
+     * @param client    the {@link TerminalSessionClient}.
      * @param columns    the width of the screen in characters.
      * @param totalRows  the height of the entire text area, in rows of text.
      * @param screenRows the height of just the screen, not including the transcript that holds lines that have scrolled off
      *                   the top of the screen.
      */
-    public TerminalBuffer(int columns, int totalRows, int screenRows) {
+    public TerminalBuffer(TerminalSessionClient client, int columns, int totalRows, int screenRows) {
+        mClient = client;
+
         mColumns = columns;
         mTotalRows = totalRows;
         mScreenRows = screenRows;
         mLines = new TerminalRow[totalRows];
 
         blockSet(0, 0, columns, screenRows, ' ', TextStyle.NORMAL);
+        mTerminalBitmaps = new HashMap<>();
+        mTerminalBitmapsLastGC = SystemClock.uptimeMillis();
     }
+
+
+
+    public TerminalSessionClient getClient() {
+        return mClient;
+    }
+
 
     public String getTranscriptText() {
         return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows).trim();
@@ -65,63 +130,42 @@ public final class TerminalBuffer {
         if (selY2 >= mScreenRows) selY2 = mScreenRows - 1;
 
         for (int row = selY1; row <= selY2; row++) {
-            TerminalRow lineObject = mLines[externalToInternalRow(row)];
-            if (lineObject == null) continue;
-
-            int[] l2v = lineObject.mLogicalToVisual;
-
-            int vStart, vEnd;
-            if (row == selY1 && row == selY2) {
-                int v1 = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX1))] : selX1;
-                int v2 = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX2))] : selX2;
-                vStart = Math.min(v1, v2);
-                vEnd = Math.max(v1, v2);
-            } else if (row == selY1) {
-                vStart = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX1))] : selX1;
-                vEnd = columns - 1;
-            } else if (row == selY2) {
-                vStart = 0;
-                vEnd = (l2v != null) ? l2v[Math.min(columns - 1, Math.max(0, selX2))] : selX2;
+            int x1 = (row == selY1) ? selX1 : 0;
+            int x2;
+            if (row == selY2) {
+                x2 = selX2 + 1;
+                if (x2 > columns) x2 = columns;
             } else {
-                vStart = 0;
-                vEnd = columns - 1;
+                x2 = columns;
             }
-
+            TerminalRow lineObject = mLines[externalToInternalRow(row)];
+            int x1Index = lineObject.findStartOfColumn(x1);
+            int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
+            if (x2Index == x1Index) {
+                // Selected the start of a wide character.
+                x2Index = lineObject.findStartOfColumn(x2 + 1);
+            }
             char[] line = lineObject.mText;
-            int lineObjectSpaceUsed = lineObject.getSpaceUsed();
-
-            StringBuilder rowBuilder = new StringBuilder();
-            for (int col = 0; col < columns; ) {
-                int vCol = (l2v != null) ? l2v[col] : col;
-                int x1Index = lineObject.findStartOfColumn(col);
-                int nextCol = col + 1;
-                int x2Index = (nextCol < columns) ? lineObject.findStartOfColumn(nextCol) : lineObjectSpaceUsed;
-
-                if (vCol >= vStart && vCol <= vEnd) {
-                    if (x2Index > x1Index) {
-                        rowBuilder.append(line, x1Index, x2Index - x1Index);
-                    }
-                }
-                col = nextCol;
-            }
-
+            int lastPrintingCharIndex = -1;
+            int i;
             boolean rowLineWrap = getLineWrap(row);
-            String rowText = rowBuilder.toString();
-            if (!rowLineWrap) {
-                int len = rowText.length();
-                while (len > 0 && rowText.charAt(len - 1) == ' ') {
-                    len--;
+            if (rowLineWrap && x2 == columns) {
+                // If the line was wrapped, we shouldn't lose trailing space:
+                lastPrintingCharIndex = x2Index - 1;
+            } else {
+                for (i = x1Index; i < x2Index; ++i) {
+                    char c = line[i];
+                    if (c != ' ') lastPrintingCharIndex = i;
                 }
-                rowText = rowText.substring(0, len);
             }
 
-            builder.append(rowText);
+            int len = lastPrintingCharIndex - x1Index + 1;
+            if (lastPrintingCharIndex != -1 && len > 0)
+                builder.append(line, x1Index, len);
 
-            boolean lineFillsWidth = rowBuilder.length() > 0 && rowBuilder.charAt(rowBuilder.length() - 1) != ' ';
+            boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
             if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
-                && row < selY2 && row < mScreenRows - 1) {
-                builder.append('\n');
-            }
+                && row < selY2 && row < mScreenRows - 1) builder.append('\n');
         }
         return builder.toString();
     }
@@ -422,6 +466,10 @@ public final class TerminalBuffer {
         if (mLines[blankRow] == null) {
             mLines[blankRow] = new TerminalRow(mColumns, style);
         } else {
+            // Remove bitmaps that are completely scrolled out.
+            if(mLines[blankRow].mHasTerminalBitmap) {
+                removeScrolledOutTerminalBitmaps(blankRow);
+            }
             mLines[blankRow].clear(style);
         }
     }
@@ -460,9 +508,13 @@ public final class TerminalBuffer {
             throw new IllegalArgumentException(
                 "Illegal arguments! blockSet(" + sx + ", " + sy + ", " + w + ", " + h + ", " + val + ", " + mColumns + ", " + mScreenRows + ")");
         }
-        for (int y = 0; y < h; y++)
+        for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++)
                 setChar(sx + x, sy + y, val, style);
+            if (sx + w == mColumns && val == ' ') {
+                clearLineWrap(sy + y);
+            }
+        }
     }
 
     public TerminalRow allocateFullLineIfNecessary(int row) {
@@ -502,10 +554,11 @@ public final class TerminalBuffer {
                 }
                 line.mStyle[x] = TextStyle.encode(foreColor, backColor, effect);
             }
+            line.invalidateBidiLayout();
         }
     }
 
-    public void clearTranscript() {
+    public synchronized void clearTranscript() {
         if (mScreenFirstRow < mActiveTranscriptRows) {
             Arrays.fill(mLines, mTotalRows + mScreenFirstRow - mActiveTranscriptRows, mTotalRows, null);
             Arrays.fill(mLines, 0, mScreenFirstRow, null);
@@ -513,6 +566,205 @@ public final class TerminalBuffer {
             Arrays.fill(mLines, mScreenFirstRow - mActiveTranscriptRows, mScreenFirstRow, null);
         }
         mActiveTranscriptRows = 0;
+        clearTerminalBitmaps();
+    }
+
+
+
+    public synchronized TerminalBitmap getTerminalBitmap(long style) {
+        int bitmapNum = TextStyle.getTerminalBitmapNum(style);
+        return bitmapNum >= TERMINAL_BITMAP__NUM_START ? mTerminalBitmaps.get(bitmapNum): null;
+    }
+
+    public synchronized void clearTerminalBitmaps() {
+        mTerminalBitmaps.clear();
+    }
+
+    public synchronized Bitmap getSixelBitmap(long style) {
+        TerminalBitmap terminalBitmap = getTerminalBitmap(style);
+        return terminalBitmap != null ? terminalBitmap.mBitmap : null;
+    }
+
+
+    public synchronized Rect getSixelRect(long style) {
+        TerminalBitmap terminalBitmap = getTerminalBitmap(style);
+        if (terminalBitmap == null) {
+            return null;
+        }
+
+        int x = TextStyle.getTerminalBitmapX(style);
+        int y = TextStyle.getTerminalBitmapY(style);
+        return new Rect(
+            x * terminalBitmap.mCellWidth,
+            y * terminalBitmap.mCellHeight,
+            (x + 1) * terminalBitmap.mCellWidth,
+            (y + 1) * terminalBitmap.mCellHeight);
+    }
+
+
+    public synchronized void sixelStart(int width, int height) {
+        mTerminalSixel = TerminalSixel.build(getClient(), width, height);
+    }
+
+    public synchronized int sixelEnd(int x, int y, int cellW, int cellH) {
+        if (mTerminalSixel == null) return 0;
+
+        int bitmapNum = getFreeTerminalBitmapNum();
+        if (bitmapNum < TERMINAL_BITMAP__NUM_START) {
+            Logger.logError(mClient, LOG_TAG, "Cannot create more than " + TERMINAL_BITMAP__NUM_END + " bitmaps");
+            return 0;
+        }
+
+        TerminalBitmap terminalBitmap = TerminalBitmap.build(this, bitmapNum, mTerminalSixel, x, y, cellW, cellH);
+        mTerminalSixel = null;
+        if (terminalBitmap == null || terminalBitmap.getBitmap() == null) {
+            return 0;
+        }
+        mTerminalBitmaps.put(bitmapNum, terminalBitmap);
+
+        doTerminalBitmapsGC(30000);
+        return terminalBitmap.mScrollLines;
+    }
+
+    /** Clears the {@link #mTerminalSixel} by setting it to `null`. */
+    public synchronized void sixelClear() {
+        mTerminalSixel = null;
+    }
+
+    /**
+     * Clears the {@link #mTerminalSixel} by setting it to `null` and logs error.
+     * Call this on error if further sixel commands/data should be parsed to prevent them from
+     * printing on terminal, but sixel rendering should be ignored.
+     */
+    public synchronized void sixelIgnore() {
+        Logger.logError(mClient, LOG_TAG, "Ignoring sixel rendering");
+        mTerminalSixel = null;
+    }
+
+    public synchronized boolean sixelReadData(int codePoint, int repeat) {
+        //  If an error occurred during processing (like OOM), then remaining sixel command is
+        //  completely read, but is ignored.
+        if (mTerminalSixel != null) {
+            if (!mTerminalSixel.readData(codePoint, repeat)) {
+                sixelIgnore();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized boolean sixelResize(int sixelWidth, int sixelHeight) {
+        //  If an error occurred during processing (like OOM), then remaining sixel command is
+        //  completely read, but is ignored.
+        if (mTerminalSixel != null) {
+            if (!mTerminalSixel.resize(sixelWidth, sixelHeight)) {
+                sixelIgnore();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized void sixelSetColor(int color) {
+        if (mTerminalSixel != null)
+            mTerminalSixel.setColor(color);
+    }
+
+    public synchronized void sixelSetRGBColor(int color, int r, int g, int b) {
+        if (mTerminalSixel != null)
+            mTerminalSixel.setRGBColor(color, r, g, b);
+    }
+
+
+
+    private synchronized int getFreeTerminalBitmapNum() {
+        int bitmapNum = TERMINAL_BITMAP__NUM_START;
+        while (mTerminalBitmaps.containsKey(bitmapNum)) {
+            bitmapNum++;
+            if (bitmapNum == TERMINAL_BITMAP__NUM_END) {
+                return -1;
+            }
+        }
+        return bitmapNum;
+    }
+
+
+    public synchronized int[] addTerminalBitmapForImage(byte[] image, int x, int y, int cellW, int cellH, int width, int height, boolean shouldPreserveAspectRatio) {
+        int bitmapNum = getFreeTerminalBitmapNum();
+        if (bitmapNum < TERMINAL_BITMAP__NUM_START) {
+            Logger.logError(mClient, LOG_TAG, "Cannot create more than " + TERMINAL_BITMAP__NUM_END + " bitmaps");
+            return new int[] {0, 0};
+        }
+
+        TerminalBitmap terminalBitmap = TerminalBitmap.build(this, bitmapNum, image, x, y,
+            cellW, cellH, width, height, shouldPreserveAspectRatio);
+        if (terminalBitmap == null || terminalBitmap.getBitmap() == null) {
+            return new int[] {0, 0};
+        }
+        mTerminalBitmaps.put(bitmapNum, terminalBitmap);
+
+        doTerminalBitmapsGC(30000);
+        return terminalBitmap.mCursorDelta;
+    }
+
+
+    /** Remove bitmaps that are completely scrolled out. */
+    public synchronized void removeScrolledOutTerminalBitmaps(int row) {
+        Set<Integer> bitmapsToRemove = new HashSet<>();
+
+        for (int column = 0; column < mColumns; column++) {
+            long columnStyle = mLines[row].getStyle(column);
+            int bitmapNum = TextStyle.getTerminalBitmapNum(columnStyle);
+            if (bitmapNum >= TERMINAL_BITMAP__NUM_START) {
+                bitmapsToRemove.add(bitmapNum);
+            }
+        }
+
+        if (row + 1 < mTotalRows) {
+            TerminalRow nextLine = mLines[row + 1];
+            if (nextLine.mHasTerminalBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    long columnStyle = nextLine.getStyle(column);
+                    int bitmapNum = TextStyle.getTerminalBitmapNum(columnStyle);
+                    if (bitmapNum >= TERMINAL_BITMAP__NUM_START) {
+                        bitmapsToRemove.add(bitmapNum);
+                    }
+                }
+            }
+        }
+
+        for(Integer bitmapStyle : bitmapsToRemove) {
+            mTerminalBitmaps.remove(bitmapStyle);
+        }
+    }
+
+    public synchronized void doTerminalBitmapsGC(int timeDelta) {
+        if (mTerminalBitmaps.isEmpty() || mTerminalBitmapsLastGC + timeDelta > SystemClock.uptimeMillis()) {
+            return;
+        }
+
+        Set<Integer> bitmapsToKeep = new HashSet<>();
+
+        for (int line = 0; line < mLines.length; line++) {
+            if(mLines[line] != null && mLines[line].mHasTerminalBitmap) {
+                for (int column = 0; column < mColumns; column++) {
+                    long style = mLines[line].getStyle(column);
+                    int bitmapNum = TextStyle.getTerminalBitmapNum(style);
+                    if (bitmapNum >= TERMINAL_BITMAP__NUM_START) {
+                        bitmapsToKeep.add(bitmapNum);
+                    }
+                }
+            }
+        }
+
+        Set<Integer> bitmapNums = new HashSet<>(mTerminalBitmaps.keySet());
+        for (Integer bitmapNum: bitmapNums) {
+            if (!bitmapsToKeep.contains(bitmapNum)) {
+                mTerminalBitmaps.remove(bitmapNum);
+            }
+        }
+
+        mTerminalBitmapsLastGC = SystemClock.uptimeMillis();
     }
 
 }

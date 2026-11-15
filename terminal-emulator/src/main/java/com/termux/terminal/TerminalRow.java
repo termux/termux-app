@@ -42,17 +42,41 @@ public final class TerminalRow {
     /** The text filling this terminal row. */
     public char[] mText;
     /** The number of java chars used in {@link #mText}. */
-    private short mSpaceUsed;
+    private int mSpaceUsed;
     /** If this row has been line wrapped due to text output at the end of line. */
     boolean mLineWrap;
     /** The style bits of each cell in the row. See {@link TextStyle}. */
     final long[] mStyle;
     /** If this row might contain chars with width != 1, used for deactivating fast path */
     boolean mHasNonOneWidthOrSurrogateChars;
+    /** Latches true if an RTL script or BiDi control codepoint was written to this row. */
+    public boolean mMayContainRtlOrBidi;
     /** Cached visual layout object. Type is Object to decouple terminal emulator from view module. */
     public Object mCachedBidiLayout;
     public int[] mLogicalToVisual;
     public int[] mVisualToLogical;
+    /** If this row has a {@link TerminalBitmap}. Used for performance only. */
+    public boolean mHasTerminalBitmap;
+
+    /** Returns true if {@code codePoint} belongs to an RTL script or BiDi formatting block. */
+    public static boolean isRtlOrBidiCodePoint(int codePoint) {
+        if (codePoint < 0x0590) return false;
+        if (codePoint <= 0x08FF) return true; // Hebrew, Arabic, Syriac, Thaana, NKo, Samaritan, Mandaic, Arabic Ext
+        if (codePoint >= 0x200E && codePoint <= 0x200F) return true; // LRM, RLM
+        if (codePoint >= 0x202A && codePoint <= 0x202E) return true; // LRE..RLO
+        if (codePoint >= 0x2066 && codePoint <= 0x2069) return true; // LRI..PDI
+        if (codePoint >= 0xFB1D && codePoint <= 0xFDFF) return true; // Hebrew & Arabic Presentation Forms-A
+        if (codePoint >= 0xFE70 && codePoint <= 0xFEFF) return true; // Arabic Presentation Forms-B & BOM
+        if (codePoint >= 0x10800 && codePoint <= 0x10FFF) return true; // Historic RTL scripts
+        return codePoint >= 0x1E800 && codePoint <= 0x1EEFF; // Adlam, Mende Kikakui, Arabic Math
+    }
+
+    /** Invalidates cached visual BiDi layout and column maps for this row. */
+    public void invalidateBidiLayout() {
+        mCachedBidiLayout = null;
+        mLogicalToVisual = null;
+        mVisualToLogical = null;
+    }
 
     /** Construct a blank row (containing only whitespace, ' ') with a specified style. */
     public TerminalRow(int columns, long style) {
@@ -131,7 +155,7 @@ public final class TerminalRow {
         }
     }
 
-    private boolean wideDisplayCharacterStartingAt(int column) {
+    public boolean wideDisplayCharacterStartingAt(int column) {
         for (int currentCharIndex = 0, currentColumn = 0; currentCharIndex < mSpaceUsed; ) {
             char c = mText[currentCharIndex++];
             int codePoint = Character.isHighSurrogate(c) ? Character.toCodePoint(c, mText[currentCharIndex++]) : c;
@@ -148,11 +172,11 @@ public final class TerminalRow {
     public void clear(long style) {
         Arrays.fill(mText, ' ');
         Arrays.fill(mStyle, style);
-        mSpaceUsed = (short) mColumns;
+        mSpaceUsed = mColumns;
         mHasNonOneWidthOrSurrogateChars = false;
-        mCachedBidiLayout = null; // Invalidate cache
-        mLogicalToVisual = null;
-        mVisualToLogical = null;
+        mMayContainRtlOrBidi = false;
+        invalidateBidiLayout();
+        mHasTerminalBitmap = false;
     }
 
     // https://github.com/steven676/Android-Terminal-Emulator/commit/9a47042620bec87617f0b4f5d50568535668fe26
@@ -160,10 +184,15 @@ public final class TerminalRow {
         if (columnToSet  < 0 || columnToSet >= mStyle.length)
             throw new IllegalArgumentException("TerminalRow.setChar(): columnToSet=" + columnToSet + ", codePoint=" + codePoint + ", style=" + style);
 
-        mCachedBidiLayout = null; // Invalidate cache
-        mLogicalToVisual = null;
-        mVisualToLogical = null;
+        invalidateBidiLayout();
         mStyle[columnToSet] = style;
+
+        if (!mHasTerminalBitmap && TextStyle.isTerminalBitmap(style)) {
+            mHasTerminalBitmap = true;
+        }
+        if (!mMayContainRtlOrBidi && isRtlOrBidiCodePoint(codePoint)) {
+            mMayContainRtlOrBidi = true;
+        }
 
         final int newCodePointDisplayWidth = WcWidth.width(codePoint);
 
@@ -266,7 +295,7 @@ public final class TerminalRow {
                 throw new IllegalArgumentException("Cannot put wide character in last column");
             } else if (columnToSet == mColumns - 2) {
                 // Truncate the line to the second part of this wide char:
-                mSpaceUsed = (short) newNextColumnIndex;
+                mSpaceUsed = newNextColumnIndex;
             } else {
                 // Overwrite the contents of the next column, which mean we actually remove java characters. Due to the
                 // check at the beginning of this method we know that we are not overwriting a wide char.
