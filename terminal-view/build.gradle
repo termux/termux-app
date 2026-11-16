@@ -28,6 +28,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+
     publishing {
         multipleVariants {
             withSourcesJar()
@@ -39,6 +43,7 @@ android {
 
 dependencies {
     testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.17"
 }
 
 task sourceJar(type: Jar) {
