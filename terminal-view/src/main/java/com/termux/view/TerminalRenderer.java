@@ -60,8 +60,16 @@ public final class TerminalRenderer {
     /** Render the terminal to a canvas with at a specified row scroll, and an optional rectangular selection. */
     public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
                              int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
+        render(mEmulator, canvas, topRow, 0f, selectionY1, selectionY2, selectionX1, selectionX2);
+    }
+
+    /** Render the terminal with continuous sub-row pixel offset (`0 <= subRowOffsetPx < mFontLineSpacing`). */
+    public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow, float subRowOffsetPx,
+                             int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
         final boolean reverseVideo = mEmulator.isReverseVideo();
-        final int endRow = topRow + mEmulator.mRows;
+        final boolean hasSubRowOffset = subRowOffsetPx > 0.5f && topRow < 0;
+        final int endRow = Math.min(mEmulator.mRows,
+            topRow + mEmulator.mRows + (hasSubRowOffset ? 1 : 0));
         final int columns = mEmulator.mColumns;
         final int cursorCol = mEmulator.getCursorCol();
         final int cursorRow = mEmulator.getCursorRow();
@@ -73,7 +81,14 @@ public final class TerminalRenderer {
         if (reverseVideo)
             canvas.drawColor(palette[TextStyle.COLOR_INDEX_FOREGROUND], PorterDuff.Mode.SRC);
 
-        float heightOffset = mFontLineSpacingAndAscent;
+        if (hasSubRowOffset) {
+            canvas.save();
+            int clipTop = Math.max(0, mFontLineSpacingAndAscent);
+            int clipBottom = mFontLineSpacingAndAscent + mEmulator.mRows * mFontLineSpacing;
+            canvas.clipRect(0, clipTop, canvas.getWidth(), clipBottom);
+        }
+
+        float heightOffset = mFontLineSpacingAndAscent - (hasSubRowOffset ? subRowOffsetPx : 0f);
         for (int row = topRow; row < endRow; row++) {
             heightOffset += mFontLineSpacing;
 
@@ -176,6 +191,10 @@ public final class TerminalRenderer {
             }
             drawTextRun(canvas, line, palette, heightOffset, lastRunStartColumn, columnWidthSinceLastRun, lastRunStartIndex, charsSinceLastRun,
                 measuredWidthForRun, cursorColor, cursorShape, lastRunStyle, reverseVideo || invertCursorTextColor || lastRunInsideSelection);
+        }
+
+        if (hasSubRowOffset) {
+            canvas.restore();
         }
     }
 
