@@ -75,4 +75,58 @@ public class DecSetTest extends TerminalTestCase {
 		enterString("\033[?7hhij").assertLinesAre("abh", "ij ", "   ");
 	}
 
+	/** DECSET/DECRST 2026 + DECRQM (?2026$p), synchronized output mode. */
+	public void testSynchronizedOutputMode2026() {
+		withTerminalSized(10, 4);
+
+		// Initially reset (DECRQM -> 2):
+		enterString("\033[?2026$p");
+		assertEquals("\033[?2026;2$y", mOutput.getOutputAndClear());
+		assertFalse(mTerminal.isSynchronizedOutputActive());
+		assertEquals(0L, mTerminal.getDeferredScreenUpdateDelayMs());
+
+		// Enabling synchronized output updates buffer state while deferring UI redraw:
+		enterString("\033[?2026hHello");
+		assertTrue(mTerminal.isSynchronizedOutputActive());
+		long delayMs = mTerminal.getDeferredScreenUpdateDelayMs();
+		assertTrue("Expected positive bounded deferral (<= 100ms), got " + delayMs, delayMs > 0L && delayMs <= 100L);
+		assertLinesAre("Hello     ", "          ", "          ", "          ");
+		enterString("\033[?2026$p");
+		assertEquals("\033[?2026;1$y", mOutput.getOutputAndClear());
+
+		// Preserved across alternate screen transition inside a synchronized frame:
+		enterString("\033[?1049hAlt\033[?1049l");
+		assertTrue(mTerminal.isSynchronizedOutputActive());
+
+		// Resetting (?2026l) flushes immediately (DECRQM -> 2):
+		enterString("\033[?2026l");
+		assertFalse(mTerminal.isSynchronizedOutputActive());
+		assertEquals(0L, mTerminal.getDeferredScreenUpdateDelayMs());
+		enterString("\033[?2026$p");
+		assertEquals("\033[?2026;2$y", mOutput.getOutputAndClear());
+
+		// XTSAVE (?2026s) and XTRESTORE (?2026r):
+		enterString("\033[?2026h\033[?2026s\033[?2026l");
+		assertFalse(mTerminal.isSynchronizedOutputActive());
+		enterString("\033[?2026r");
+		assertTrue(mTerminal.isSynchronizedOutputActive());
+
+		// DECSTR (\033[!p) and RIS (\033c) both clear synchronized output:
+		enterString("\033[!p");
+		assertFalse(mTerminal.isSynchronizedOutputActive());
+		assertEquals(0L, mTerminal.getDeferredScreenUpdateDelayMs());
+		enterString("\033[?2026h\033c");
+		assertFalse(mTerminal.isSynchronizedOutputActive());
+		assertEquals(0L, mTerminal.getDeferredScreenUpdateDelayMs());
+
+		// Safety timeout (100ms) auto-resets synchronized output if client stalls without ?2026l:
+		enterString("\033[?2026hStalled");
+		assertTrue(mTerminal.isSynchronizedOutputActive());
+		mTerminal.mSyncOutputStartNs = System.nanoTime() - TerminalEmulator.SYNC_OUTPUT_MAX_HOLD_NS - 1_000_000L;
+		assertFalse(mTerminal.isSynchronizedOutputActive());
+		assertEquals(0L, mTerminal.getDeferredScreenUpdateDelayMs());
+		enterString("\033[?2026$p");
+		assertEquals("\033[?2026;2$y", mOutput.getOutputAndClear());
+	}
+
 }

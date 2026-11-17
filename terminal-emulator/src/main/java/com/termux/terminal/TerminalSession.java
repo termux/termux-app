@@ -31,6 +31,7 @@ import java.util.UUID;
 public final class TerminalSession extends TerminalOutput {
 
     private static final int MSG_NEW_INPUT = 1;
+    private static final int MSG_DEFERRED_SCREEN_UPDATE = 2;
     private static final int MSG_PROCESS_EXITED = 4;
 
     public final String mHandle = UUID.randomUUID().toString();
@@ -228,6 +229,7 @@ public final class TerminalSession extends TerminalOutput {
     /** Reset state for terminal emulator state. */
     public void reset() {
         mEmulator.reset();
+        mMainThreadHandler.removeMessages(MSG_DEFERRED_SCREEN_UPDATE);
         notifyScreenUpdate();
     }
 
@@ -343,7 +345,15 @@ public final class TerminalSession extends TerminalOutput {
             int bytesRead = mProcessToTerminalIOQueue.read(mReceiveBuffer, false);
             if (bytesRead > 0) {
                 mEmulator.append(mReceiveBuffer, bytesRead);
-                notifyScreenUpdate();
+            }
+            if (bytesRead > 0 || msg.what == MSG_DEFERRED_SCREEN_UPDATE) {
+                long deferMs = mEmulator.getDeferredScreenUpdateDelayMs();
+                if (deferMs <= 0L) {
+                    removeMessages(MSG_DEFERRED_SCREEN_UPDATE);
+                    notifyScreenUpdate();
+                } else if (!hasMessages(MSG_DEFERRED_SCREEN_UPDATE)) {
+                    sendEmptyMessageDelayed(MSG_DEFERRED_SCREEN_UPDATE, deferMs);
+                }
             }
 
             if (msg.what == MSG_PROCESS_EXITED) {
@@ -362,6 +372,7 @@ public final class TerminalSession extends TerminalOutput {
 
                 byte[] bytesToWrite = exitDescription.getBytes(StandardCharsets.UTF_8);
                 mEmulator.append(bytesToWrite, bytesToWrite.length);
+                removeMessages(MSG_DEFERRED_SCREEN_UPDATE);
                 notifyScreenUpdate();
 
                 mClient.onSessionFinished(TerminalSession.this);

@@ -210,6 +210,8 @@ public final class TerminalEmulator {
     private static final int DECSET_BIT_LEFTRIGHT_MARGIN_MODE = 1 << 11;
     /** Not really DECSET bit... - http://www.vt100.net/docs/vt510-rm/DECSACE */
     private static final int DECSET_BIT_RECTANGULAR_CHANGEATTRIBUTE = 1 << 12;
+    /** DECSET 2026 - Synchronized Output (https://gist.github.com/christianparpart/d8a62cc1ab659194337d73e399004036). */
+    private static final int DECSET_BIT_SYNCHRONIZED_OUTPUT = 1 << 13;
 
 
     private String mTitle;
@@ -433,6 +435,10 @@ public final class TerminalEmulator {
     /** If automatic scrolling of terminal is disabled */
     private boolean mAutoScrollDisabled;
 
+    /** Monotonic start timestamp (ns) of the active DECSET 2026 synchronized update, or 0. */
+    long mSyncOutputStartNs = 0L;
+    static final long SYNC_OUTPUT_MAX_HOLD_NS = 100_000_000L; // 100ms safety timeout
+
     private byte mUtf8ToFollow, mUtf8Index;
     private final byte[] mUtf8InputBuffer = new byte[4];
     private int mLastEmittedCodePoint = -1;
@@ -487,6 +493,8 @@ public final class TerminalEmulator {
                 return DECSET_BIT_MOUSE_PROTOCOL_SGR;
             case 2004:
                 return DECSET_BIT_BRACKETED_PASTE_MODE;
+            case 2026:
+                return DECSET_BIT_SYNCHRONIZED_OUTPUT;
             default:
                 return -1;
             // throw new IllegalArgumentException("Unsupported decset: " + decsetBit);
@@ -1878,6 +1886,15 @@ public final class TerminalEmulator {
             }
             case 2004:
                 // Bracketed paste mode - setting bit is enough.
+                break;
+            case 2026:
+                if (setting) {
+                    if (mSyncOutputStartNs == 0L) {
+                        mSyncOutputStartNs = System.nanoTime();
+                    }
+                } else {
+                    mSyncOutputStartNs = 0L;
+                }
                 break;
             default:
                 unknownParameter(externalBit);
@@ -3463,6 +3480,28 @@ public final class TerminalEmulator {
         mScrollCounter = 0;
     }
 
+    public boolean isSynchronizedOutputActive() {
+        return isDecsetInternalBitSet(DECSET_BIT_SYNCHRONIZED_OUTPUT)
+            && (mSyncOutputStartNs == 0L || (System.nanoTime() - mSyncOutputStartNs) < SYNC_OUTPUT_MAX_HOLD_NS);
+    }
+
+    /**
+     * Returns > 0 milliseconds to defer UI redraw while a DECSET 2026 synchronized update is active
+     * (bounded by {@link #SYNC_OUTPUT_MAX_HOLD_NS}), or 0 when ready to render immediately.
+     */
+    public long getDeferredScreenUpdateDelayMs() {
+        if (!isDecsetInternalBitSet(DECSET_BIT_SYNCHRONIZED_OUTPUT)) return 0L;
+        long now = System.nanoTime();
+        if (mSyncOutputStartNs == 0L) mSyncOutputStartNs = now;
+        long remainingNs = (mSyncOutputStartNs + SYNC_OUTPUT_MAX_HOLD_NS) - now;
+        if (remainingNs <= 0L) {
+            setDecsetinternalBit(DECSET_BIT_SYNCHRONIZED_OUTPUT, false);
+            mSyncOutputStartNs = 0L;
+            return 0L;
+        }
+        return Math.max(1L, (remainingNs + 999_999L) / 1_000_000L);
+    }
+
     public boolean isAutoScrollDisabled() {
         return mAutoScrollDisabled;
     }
@@ -3488,6 +3527,7 @@ public final class TerminalEmulator {
         mArgIndex = 0;
         mContinueSequence = false;
         mEscapeState = ESC_NONE;
+        mSyncOutputStartNs = 0L;
         mInsertMode = false;
         mTopMargin = mLeftMargin = 0;
         mBottomMargin = mRows;
