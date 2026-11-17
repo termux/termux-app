@@ -33,6 +33,8 @@ public final class TerminalBuffer {
     private int mActiveTranscriptRows = 0;
     /** The index in the circular buffer where the visible screen starts. */
     private int mScreenFirstRow = 0;
+    /** Monotonic document row coordinate corresponding to external row 0 (`mScreenFirstRow`). */
+    private long mBaseAbsoluteRow = 0L;
 
 
     /**
@@ -265,7 +267,15 @@ public final class TerminalBuffer {
      * @param newRows    The number of rows the screen should have.
      * @param cursor     An int[2] containing the (column, row) cursor location.
      */
+    public long getBaseAbsoluteRow() {
+        return mBaseAbsoluteRow;
+    }
+
     public void resize(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle, boolean altScreen) {
+        resize(newColumns, newRows, newTotalRows, cursor, currentStyle, altScreen, null);
+    }
+
+    public void resize(int newColumns, int newRows, int newTotalRows, int[] cursor, long currentStyle, boolean altScreen, int[] anchorExternalRow) {
         // newRows > mTotalRows should not normally happen since mTotalRows is TRANSCRIPT_ROWS (10000):
         if (newColumns == mColumns && newRows <= mTotalRows) {
             // Fast resize where just the rows changed.
@@ -293,6 +303,12 @@ public final class TerminalBuffer {
             mScreenFirstRow = (mScreenFirstRow < 0) ? (mScreenFirstRow + mTotalRows) : (mScreenFirstRow % mTotalRows);
             mTotalRows = newTotalRows;
             mActiveTranscriptRows = altScreen ? 0 : Math.max(0, mActiveTranscriptRows + shiftDownOfTopRow);
+            if (!altScreen) {
+                mBaseAbsoluteRow += shiftDownOfTopRow;
+            }
+            if (anchorExternalRow != null) {
+                anchorExternalRow[0] = altScreen ? 0 : Math.max(-mActiveTranscriptRows, Math.min(newRows - 1, anchorExternalRow[0] - shiftDownOfTopRow));
+            }
             cursor[1] -= shiftDownOfTopRow;
             mScreenRows = newRows;
         } else {
@@ -306,9 +322,11 @@ public final class TerminalBuffer {
             final int oldScreenFirstRow = mScreenFirstRow;
             final int oldScreenRows = mScreenRows;
             final int oldTotalRows = mTotalRows;
+            final int oldColumns = mColumns;
             mTotalRows = newTotalRows;
             mScreenRows = newRows;
             mActiveTranscriptRows = mScreenFirstRow = 0;
+            mBaseAbsoluteRow = 0L;
             mColumns = newColumns;
 
             int newCursorRow = -1;
@@ -316,6 +334,10 @@ public final class TerminalBuffer {
             int oldCursorRow = cursor[1];
             int oldCursorColumn = cursor[0];
             boolean newCursorPlaced = false;
+
+            int oldAnchorRow = (anchorExternalRow != null) ? anchorExternalRow[0] : 0;
+            int newAnchorRow = 0;
+            boolean anchorPlaced = (anchorExternalRow == null);
 
             int currentOutputExternalRow = 0;
             int currentOutputExternalColumn = 0;
@@ -331,14 +353,17 @@ public final class TerminalBuffer {
 
                 TerminalRow oldLine = oldLines[internalOldRow];
                 boolean cursorAtThisRow = externalOldRow == oldCursorRow;
+                boolean anchorAtThisRow = !anchorPlaced && externalOldRow >= oldAnchorRow;
                 // The cursor may only be on a non-null line, which we should not skip:
-                if (oldLine == null || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank()) {
+                if (!anchorAtThisRow && (oldLine == null || (!(!newCursorPlaced && cursorAtThisRow)) && oldLine.isBlank())) {
                     skippedBlankLines++;
                     continue;
                 } else if (skippedBlankLines > 0) {
                     // After skipping some blank lines we encounter a non-blank line. Insert the skipped blank lines.
                     for (int i = 0; i < skippedBlankLines; i++) {
                         if (currentOutputExternalRow == mScreenRows - 1) {
+                            if (newCursorPlaced) newCursorRow--;
+                            if (anchorPlaced) newAnchorRow--;
                             scrollDownOneLine(0, mScreenRows, currentStyle);
                         } else {
                             currentOutputExternalRow++;
@@ -346,6 +371,14 @@ public final class TerminalBuffer {
                         currentOutputExternalColumn = 0;
                     }
                     skippedBlankLines = 0;
+                }
+
+                if (anchorAtThisRow) {
+                    newAnchorRow = currentOutputExternalRow;
+                    anchorPlaced = true;
+                }
+                if (oldLine == null) {
+                    oldLine = new TerminalRow(oldColumns, currentStyle);
                 }
 
                 int lastNonSpaceIndex = 0;
@@ -376,6 +409,7 @@ public final class TerminalBuffer {
                         setLineWrap(currentOutputExternalRow);
                         if (currentOutputExternalRow == mScreenRows - 1) {
                             if (newCursorPlaced) newCursorRow--;
+                            if (anchorPlaced) newAnchorRow--;
                             scrollDownOneLine(0, mScreenRows, currentStyle);
                         } else {
                             currentOutputExternalRow++;
@@ -402,6 +436,7 @@ public final class TerminalBuffer {
                 if (externalOldRow != (oldScreenRows - 1) && !oldLine.mLineWrap) {
                     if (currentOutputExternalRow == mScreenRows - 1) {
                         if (newCursorPlaced) newCursorRow--;
+                        if (anchorPlaced) newAnchorRow--;
                         scrollDownOneLine(0, mScreenRows, currentStyle);
                     } else {
                         currentOutputExternalRow++;
@@ -412,6 +447,11 @@ public final class TerminalBuffer {
 
             cursor[0] = newCursorColumn;
             cursor[1] = newCursorRow;
+            if (anchorExternalRow != null) {
+                anchorExternalRow[0] = anchorPlaced
+                    ? Math.max(-mActiveTranscriptRows, Math.min(mScreenRows - 1, newAnchorRow))
+                    : 0;
+            }
         }
 
         // Handle cursor scrolling off screen:
@@ -458,6 +498,7 @@ public final class TerminalBuffer {
 
         // Update the screen location in the ring buffer:
         mScreenFirstRow = (mScreenFirstRow + 1) % mTotalRows;
+        mBaseAbsoluteRow++;
         // Note that the history has grown if not already full:
         if (mActiveTranscriptRows < mTotalRows - mScreenRows) mActiveTranscriptRows++;
 

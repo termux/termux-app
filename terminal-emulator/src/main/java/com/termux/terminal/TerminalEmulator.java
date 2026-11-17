@@ -427,11 +427,17 @@ public final class TerminalEmulator {
      */
     private int mScrollCounter = 0;
 
-    /** The cached value for this emulator for `TerminalView.mTopRow` as sessions/emulators may be switched.*/
-    private int mTopRow;
+    /** True when viewport is pinned to bottom (`0`) and follows new output automatically. */
+    private boolean mFollowOutput = true;
+
+    /** Continuous document row coordinate (`mMainBuffer.getBaseAbsoluteRow() + viewportOffset`) when off-bottom. */
+    private double mAnchoredDocRow = 0.0;
 
     /** If automatic scrolling of terminal is disabled */
     private boolean mAutoScrollDisabled;
+
+    /** Timestamp of last main-buffer line scroll, used for streaming bottom catch-snap. */
+    private long mLastScrollOutputNs = 0L;
 
     private byte mUtf8ToFollow, mUtf8Index;
     private final byte[] mUtf8InputBuffer = new byte[4];
@@ -604,7 +610,20 @@ public final class TerminalEmulator {
     private void resizeScreen() {
         final int[] cursor = {mCursorCol, mCursorRow};
         int newTotalRows = (mScreen == mAltBuffer) ? mRows : mMainBuffer.mTotalRows;
-        mScreen.resize(mColumns, mRows, newTotalRows, cursor, getStyle(), isAlternateBufferActive());
+        if (mScreen == mMainBuffer && (!mFollowOutput || mAutoScrollDisabled)) {
+            double currentOffset = mAnchoredDocRow - mMainBuffer.getBaseAbsoluteRow();
+            int oldAnchorRow = (int) Math.floor(currentOffset);
+            double subRowFraction = currentOffset - oldAnchorRow;
+            int[] anchor = {Math.max(-mMainBuffer.getActiveTranscriptRows(), Math.min(0, oldAnchorRow))};
+            mMainBuffer.resize(mColumns, mRows, newTotalRows, cursor, getStyle(), false, anchor);
+            double newOffset = Math.min(0.0, anchor[0] + subRowFraction);
+            mAnchoredDocRow = mMainBuffer.getBaseAbsoluteRow() + newOffset;
+            if (newOffset >= -0.15 && !mAutoScrollDisabled) {
+                mFollowOutput = true;
+            }
+        } else {
+            mScreen.resize(mColumns, mRows, newTotalRows, cursor, getStyle(), isAlternateBufferActive());
+        }
         mCursorCol = cursor[0];
         mCursorRow = cursor[1];
     }
@@ -2044,6 +2063,8 @@ public final class TerminalEmulator {
             case 'c': // RIS - Reset to Initial State (http://vt100.net/docs/vt510-rm/RIS).
                 reset();
                 mMainBuffer.clearTranscript();
+                mScrollCounter = 0;
+                pinViewportToBottom();
                 blockClear(0, 0, mColumns, mRows);
                 setCursorPosition(0, 0);
                 break;
@@ -2204,6 +2225,14 @@ public final class TerminalEmulator {
                         break;
                     case 3: // Delete all lines saved in the scrollback buffer (xterm etc)
                         mMainBuffer.clearTranscript();
+                        mScrollCounter = 0;
+                        if (mScreen == mMainBuffer) {
+                            if (!mAutoScrollDisabled) {
+                                pinViewportToBottom();
+                            } else {
+                                mAnchoredDocRow = mMainBuffer.getBaseAbsoluteRow();
+                            }
+                        }
                         break;
                     default:
                         unknownSequence(b);
@@ -3071,6 +3100,9 @@ public final class TerminalEmulator {
             // .. and blank bottom row between margins:
             mScreen.blockSet(mLeftMargin, mBottomMargin - 1, mRightMargin - mLeftMargin, 1, ' ', currentStyle);
         } else {
+            if (mScreen == mMainBuffer) {
+                mLastScrollOutputNs = System.nanoTime();
+            }
             mScreen.scrollDownOneLine(mTopMargin, mBottomMargin, currentStyle);
         }
     }
@@ -3463,22 +3495,70 @@ public final class TerminalEmulator {
         mScrollCounter = 0;
     }
 
+    public boolean isFollowingOutput() {
+        return mFollowOutput && !mAutoScrollDisabled;
+    }
+
+    public boolean hasRecentOutputScroll(long windowNs) {
+        return mLastScrollOutputNs != 0L && (System.nanoTime() - mLastScrollOutputNs) <= windowNs;
+    }
+
     public boolean isAutoScrollDisabled() {
         return mAutoScrollDisabled;
     }
 
     public void toggleAutoScrollDisabled() {
         mAutoScrollDisabled = !mAutoScrollDisabled;
+        if (mAutoScrollDisabled) {
+            if (mFollowOutput) {
+                mAnchoredDocRow = mMainBuffer.getBaseAbsoluteRow();
+                mFollowOutput = false;
+            }
+        } else {
+            pinViewportToBottom();
+        }
     }
 
+    public void pinViewportToBottom() {
+        mFollowOutput = true;
+        mAnchoredDocRow = mMainBuffer.getBaseAbsoluteRow();
+    }
 
+    public void freezeViewportAtOffset(double externalRowOffset) {
+        mFollowOutput = false;
+        int rowsInHistory = mMainBuffer.getActiveTranscriptRows();
+        double clamped = Math.max(-rowsInHistory, Math.min(0.0, externalRowOffset));
+        mAnchoredDocRow = mMainBuffer.getBaseAbsoluteRow() + clamped;
+    }
+
+    public void setViewportOffset(double externalRowOffset) {
+        if (externalRowOffset >= -0.15 && !mAutoScrollDisabled) {
+            pinViewportToBottom();
+        } else {
+            freezeViewportAtOffset(externalRowOffset);
+        }
+    }
+
+    public double getViewportOffset() {
+        if (isAlternateBufferActive()) return 0.0;
+        if (mFollowOutput && !mAutoScrollDisabled) return 0.0;
+        int rowsInHistory = mMainBuffer.getActiveTranscriptRows();
+        double offset = mAnchoredDocRow - mMainBuffer.getBaseAbsoluteRow();
+        if (offset < -rowsInHistory) {
+            offset = -rowsInHistory;
+            mAnchoredDocRow = mMainBuffer.getBaseAbsoluteRow() + offset;
+        } else if (offset > 0.0) {
+            return 0.0;
+        }
+        return offset;
+    }
 
     public int getTopRow() {
-        return mTopRow;
+        return (int) Math.floor(getViewportOffset());
     }
 
     public void setTopRow(int topRow) {
-        mTopRow = topRow;
+        setViewportOffset(topRow);
     }
 
 
