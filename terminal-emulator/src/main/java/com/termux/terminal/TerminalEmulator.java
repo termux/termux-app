@@ -221,6 +221,9 @@ public final class TerminalEmulator {
     /** The number of character rows and columns in the terminal screen. */
     public int mRows, mColumns;
 
+    /** Visible character rows in the current visual viewport (may be smaller than {@link #mRows} when IME is open). */
+    private int mVisualRows;
+
     /** Size of a terminal cell in pixels. */
     private int mCellWidthPixels, mCellHeightPixels;
 
@@ -499,6 +502,7 @@ public final class TerminalEmulator {
         mAltBuffer = new TerminalBuffer(client, columns, rows, rows);
         mClient = client;
         mRows = rows;
+        mVisualRows = rows;
         mColumns = columns;
         mCellWidthPixels = cellWidthPixels;
         mCellHeightPixels = cellHeightPixels;
@@ -582,6 +586,9 @@ public final class TerminalEmulator {
         }
 
         if (mRows != rows) {
+            if (mVisualRows == mRows || mVisualRows > rows) {
+                mVisualRows = rows;
+            }
             mRows = rows;
             mTopMargin = 0;
             mBottomMargin = mRows;
@@ -3461,6 +3468,23 @@ public final class TerminalEmulator {
 
     public void clearScrollCounter() {
         mScrollCounter = 0;
+    }
+
+    public void setVisualRows(int visualRows) {
+        mVisualRows = Math.max(2, visualRows);
+    }
+
+    public int getVisualRows() {
+        return (mVisualRows > 0 && mVisualRows < mRows && !isAlternateBufferActive()) ? mVisualRows : mRows;
+    }
+
+    public int getMaxTopRow() {
+        if (isAlternateBufferActive()) return 0;
+        int visRows = getVisualRows();
+        if (visRows >= mRows) return 0;
+        int lowestActiveRow = Math.max(mCursorRow, mMainBuffer.getLowestNonEmptyScreenRow());
+        int neededTopRow = lowestActiveRow - visRows + 1;
+        return Math.max(0, Math.min(mRows - visRows, neededTopRow));
     }
 
     public boolean isAutoScrollDisabled() {

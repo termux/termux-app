@@ -606,6 +606,10 @@ public abstract class TermuxSharedProperties {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP, true);
     }
 
+    public boolean shouldSoftKeyboardPanMainScreen() {
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_SOFT_KEYBOARD_PAN_MAIN_SCREEN, true);
+    }
+
     public boolean shouldRunTermuxAmSocketServer() {
         return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_RUN_TERMUX_AM_SOCKET_SERVER, true);
     }

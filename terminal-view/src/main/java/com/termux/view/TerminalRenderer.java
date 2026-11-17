@@ -61,7 +61,7 @@ public final class TerminalRenderer {
     public final void render(TerminalEmulator mEmulator, Canvas canvas, int topRow,
                              int selectionY1, int selectionY2, int selectionX1, int selectionX2) {
         final boolean reverseVideo = mEmulator.isReverseVideo();
-        final int endRow = topRow + mEmulator.mRows;
+        final int endRow = Math.min(mEmulator.mRows, topRow + mEmulator.getVisualRows());
         final int columns = mEmulator.mColumns;
         final int cursorCol = mEmulator.getCursorCol();
         final int cursorRow = mEmulator.getCursorRow();

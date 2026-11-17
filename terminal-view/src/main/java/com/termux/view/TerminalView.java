@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -25,7 +26,9 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityManager;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
@@ -66,8 +69,14 @@ public final class TerminalView extends View {
     public static final int TERMINAL_CURSOR_BLINK_RATE_MIN = 100;
     public static final int TERMINAL_CURSOR_BLINK_RATE_MAX = 2000;
 
-    /** The top row of text to display. Ranges from -activeTranscriptRows to 0. */
+    /** The top row of text to display. Ranges from -activeTranscriptRows to mEmulator.getMaxTopRow(). */
     int mTopRow;
+    private boolean mSoftKeyboardPansMainScreen;
+    private int mUnobscuredRootWidth;
+    private int mUnobscuredRootHeight;
+    private int mUnobscuredViewHeight;
+    private int mLayoutRows;
+    private int mVisibleRows;
     int[] mDefaultSelectors = new int[]{-1,-1,-1,-1};
 
     float mScaleFactor = 1.f;
@@ -204,7 +213,7 @@ public final class TerminalView extends View {
                 if (mouseTrackingAtStartOfFling) {
                     mScroller.fling(0, 0, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.mRows / 2, mEmulator.mRows / 2);
                 } else {
-                    mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), 0);
+                    mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), mEmulator.getMaxTopRow());
                 }
 
                 post(new Runnable() {
@@ -278,6 +287,17 @@ public final class TerminalView extends View {
      */
     public void setIsTerminalViewKeyLoggingEnabled(boolean value) {
         TERMINAL_VIEW_KEY_LOGGING_ENABLED = value;
+    }
+
+    /**
+     * Configure whether opening the soft keyboard pans the main-screen viewport instead of resizing PTY rows.
+     */
+    public void setSoftKeyboardPansMainScreen(boolean enabled) {
+        if (mSoftKeyboardPansMainScreen != enabled) {
+            mSoftKeyboardPansMainScreen = enabled;
+            mUnobscuredViewHeight = 0;
+            updateSize();
+        }
     }
 
 
@@ -439,17 +459,18 @@ public final class TerminalView extends View {
 
     @Override
     protected int computeVerticalScrollRange() {
-        return mEmulator == null ? 1 : mEmulator.getScreen().getActiveRows();
+        return mEmulator == null ? 1 :
+            mEmulator.getScreen().getActiveTranscriptRows() + mEmulator.getMaxTopRow() + mEmulator.getVisualRows();
     }
 
     @Override
     protected int computeVerticalScrollExtent() {
-        return mEmulator == null ? 1 : mEmulator.mRows;
+        return mEmulator == null ? 1 : mEmulator.getVisualRows();
     }
 
     @Override
     protected int computeVerticalScrollOffset() {
-        return mEmulator == null ? 1 : mEmulator.getScreen().getActiveRows() + mTopRow - mEmulator.mRows;
+        return mEmulator == null ? 1 : Math.max(0, mEmulator.getScreen().getActiveTranscriptRows() + mTopRow);
     }
 
     public void onScreenUpdated() {
@@ -458,6 +479,14 @@ public final class TerminalView extends View {
 
     public void onScreenUpdated(boolean skipScrolling) {
         if (mEmulator == null) return;
+
+        if (mSoftKeyboardPansMainScreen) {
+            int desiredPtyRows = mEmulator.isAlternateBufferActive() ? mVisibleRows : mLayoutRows;
+            if (desiredPtyRows >= 4 && desiredPtyRows != mEmulator.mRows) {
+                updateSize();
+                if (mEmulator == null) return;
+            }
+        }
 
         int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
         if (mTopRow < -rowsInHistory) setTopRow(-rowsInHistory);
@@ -482,7 +511,8 @@ public final class TerminalView extends View {
             }
         }
 
-        if (!skipScrolling && mTopRow != 0) {
+        int maxTopRow = mEmulator.getMaxTopRow();
+        if (!skipScrolling && mTopRow != maxTopRow) {
             // Scroll down if not already there.
             if (mTopRow < -3) {
                 // Awaken scroll bars only if scrolling a noticeable amount
@@ -490,7 +520,7 @@ public final class TerminalView extends View {
                 // of one row at a time.
                 awakenScrollBars();
             }
-            setTopRow(0);
+            setTopRow(maxTopRow);
         }
 
         mEmulator.clearScrollCounter();
@@ -547,7 +577,7 @@ public final class TerminalView extends View {
     public int[] getColumnAndRow(MotionEvent event, boolean relativeToScroll) {
         int column = (int) (event.getX() / mRenderer.mFontWidth);
         int row = (int) ((event.getY() - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
-        if (relativeToScroll) {
+        if (relativeToScroll || mTopRow > 0) {
             row += mTopRow;
         }
         return new int[] { column, row };
@@ -583,7 +613,7 @@ public final class TerminalView extends View {
                 // e.g. less, which shifts to the alt screen without mouse handling.
                 handleKeyCode(up ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN, 0);
             } else {
-                setTopRow(Math.min(0, Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1))));
+                setTopRow(Math.min(mEmulator.getMaxTopRow(), Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1))));
                 if (!awakenScrollBars()) invalidate();
             }
         }
@@ -936,7 +966,8 @@ public final class TerminalView extends View {
                 if (shiftDown) {
                     long time = SystemClock.uptimeMillis();
                     MotionEvent motionEvent = MotionEvent.obtain(time, time, MotionEvent.ACTION_DOWN, 0, 0, 0);
-                    doScroll(motionEvent, keyCode == KeyEvent.KEYCODE_PAGE_UP ? -mEmulator.mRows : mEmulator.mRows);
+                    int pageRows = mEmulator.getVisualRows();
+                    doScroll(motionEvent, keyCode == KeyEvent.KEYCODE_PAGE_UP ? -pageRows : pageRows);
                     motionEvent.recycle();
                     return true;
                 }
@@ -981,19 +1012,118 @@ public final class TerminalView extends View {
         updateSize();
     }
 
+    /** Notify that surrounding non-IME chrome (e.g. extra-keys toolbar) changed height/visibility. */
+    public void onToolbarGeometryChanged() {
+        mUnobscuredViewHeight = 0;
+    }
+
+    private int resolveLayoutHeight(int viewWidth, int viewHeight) {
+        if (!mSoftKeyboardPansMainScreen) {
+            return viewHeight;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Context ctx = getContext();
+            while (ctx instanceof ContextWrapper && !(ctx instanceof Activity)) {
+                ctx = ((ContextWrapper) ctx).getBaseContext();
+            }
+            if (ctx instanceof Activity && ((Activity) ctx).isInMultiWindowMode()) {
+                mUnobscuredViewHeight = 0;
+                return viewHeight;
+            }
+        }
+
+        View rootView = getRootView();
+        int rootW = (rootView != null && rootView.getWidth() > 0) ? rootView.getWidth() : viewWidth;
+        int rootH = (rootView != null && rootView.getHeight() > 0) ? rootView.getHeight() : viewHeight;
+
+        boolean imeActive = false;
+        int imeShrinkPx = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            WindowInsets rootInsets = getRootWindowInsets();
+            if (rootInsets != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    boolean imeVis = rootInsets.isVisible(WindowInsets.Type.ime());
+                    int imeBottom = rootInsets.getInsets(WindowInsets.Type.ime()).bottom;
+                    int navBottom = rootInsets.getInsets(WindowInsets.Type.navigationBars()).bottom;
+                    imeShrinkPx = Math.max(0, imeBottom - navBottom);
+                    imeActive = imeVis || imeBottom > 0;
+                } else {
+                    int bottomInset = rootInsets.getSystemWindowInsetBottom();
+                    if (rootH > 0 && bottomInset > rootH / 6) {
+                        imeActive = true;
+                        imeShrinkPx = bottomInset;
+                    }
+                }
+            }
+        }
+
+        int rootExtraBottomMargin = 0;
+        if (rootView instanceof ViewGroup) {
+            View contentRoot = rootView.findViewById(android.R.id.content);
+            if (contentRoot instanceof ViewGroup && ((ViewGroup) contentRoot).getChildCount() > 0) {
+                View appRoot = ((ViewGroup) contentRoot).getChildAt(0);
+                if (appRoot.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                    rootExtraBottomMargin = Math.max(0, ((ViewGroup.MarginLayoutParams) appRoot.getLayoutParams()).bottomMargin);
+                }
+            }
+        }
+        if (rootExtraBottomMargin > 0) {
+            imeActive = true;
+        }
+
+        boolean sameWindowGeometry = (rootW == mUnobscuredRootWidth && rootH == mUnobscuredRootHeight);
+        if (!imeActive) {
+            mUnobscuredRootWidth = rootW;
+            mUnobscuredRootHeight = rootH;
+            mUnobscuredViewHeight = viewHeight;
+            return viewHeight;
+        }
+
+        if (sameWindowGeometry && mUnobscuredViewHeight >= viewHeight) {
+            return mUnobscuredViewHeight;
+        }
+
+        int estimated = viewHeight + Math.max(imeShrinkPx, rootExtraBottomMargin);
+        if (rootH >= viewHeight) {
+            estimated = Math.min(rootH, estimated);
+        }
+        mUnobscuredRootWidth = rootW;
+        mUnobscuredRootHeight = rootH;
+        mUnobscuredViewHeight = Math.max(viewHeight, estimated);
+        return mUnobscuredViewHeight;
+    }
+
     /** Check if the terminal size in rows and columns should be updated. */
     public void updateSize() {
         int viewWidth = getWidth();
         int viewHeight = getHeight();
-        if (viewWidth == 0 || viewHeight == 0 || mTermSession == null) return;
+        if (viewWidth == 0 || viewHeight == 0 || mTermSession == null || mRenderer == null) return;
 
+        int layoutHeight = resolveLayoutHeight(viewWidth, viewHeight);
         // Set to 80 and 24 if you want to enable vttest.
         int newColumns = Math.max(4, (int) (viewWidth / mRenderer.mFontWidth));
-        int newRows = Math.max(4, (viewHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+        int visibleRows = Math.max(4, (viewHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing);
+        int layoutRows = mSoftKeyboardPansMainScreen ?
+            Math.max(visibleRows, (layoutHeight - mRenderer.mFontLineSpacingAndAscent) / mRenderer.mFontLineSpacing) :
+            visibleRows;
 
-        if (mEmulator == null || (newColumns != mEmulator.mColumns || newRows != mEmulator.mRows)) {
-            mTermSession.updateSize(newColumns, newRows, (int) mRenderer.getFontWidth(), mRenderer.getFontLineSpacing());
+        mVisibleRows = visibleRows;
+        mLayoutRows = layoutRows;
+
+        TerminalEmulator sessionEmulator = mTermSession.getEmulator();
+        boolean altActive = mSoftKeyboardPansMainScreen && sessionEmulator != null && sessionEmulator.isAlternateBufferActive();
+        int targetPtyRows = altActive ? visibleRows : layoutRows;
+
+        if (sessionEmulator == null || mEmulator != sessionEmulator || (newColumns != sessionEmulator.mColumns || targetPtyRows != sessionEmulator.mRows)) {
+            int oldMaxTopRow = (sessionEmulator != null) ? sessionEmulator.getMaxTopRow() : 0;
+            int cachedTopRow = (sessionEmulator != null) ? sessionEmulator.getTopRow() : 0;
+            boolean wasAtBottom = (sessionEmulator == null || cachedTopRow >= oldMaxTopRow);
+
+            mTermSession.updateSize(newColumns, targetPtyRows, (int) mRenderer.getFontWidth(), mRenderer.getFontLineSpacing());
             mEmulator = mTermSession.getEmulator();
+            if (mEmulator != null) {
+                mEmulator.setVisualRows(visibleRows);
+            }
             mClient.onEmulatorSet();
 
             // Update mTerminalCursorBlinkerRunnable inner class mEmulator on session change
@@ -1006,11 +1136,26 @@ public final class TerminalView extends View {
             int topRow = 0;
             if (mEmulator != null) {
                 int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
-                int cachedTopRow = mEmulator.getTopRow();
-                if (cachedTopRow >= -rowsInHistory) {
-                    topRow = cachedTopRow;
+                int newMaxTopRow = mEmulator.getMaxTopRow();
+                if (wasAtBottom) {
+                    topRow = newMaxTopRow;
+                } else if (cachedTopRow >= -rowsInHistory) {
+                    topRow = Math.min(newMaxTopRow, cachedTopRow);
                 }
             }
+            setTopRow(topRow);
+
+            scrollTo(0, 0);
+            invalidate();
+        } else if (visibleRows != mEmulator.getVisualRows()) {
+            int oldMaxTopRow = mEmulator.getMaxTopRow();
+            boolean wasAtBottom = (mTopRow >= oldMaxTopRow);
+            mScroller.forceFinished(true);
+            mEmulator.setVisualRows(visibleRows);
+
+            int rowsInHistory = mEmulator.getScreen().getActiveTranscriptRows();
+            int newMaxTopRow = mEmulator.getMaxTopRow();
+            int topRow = wasAtBottom ? newMaxTopRow : Math.max(-rowsInHistory, Math.min(newMaxTopRow, mTopRow));
             setTopRow(topRow);
 
             scrollTo(0, 0);
@@ -1041,7 +1186,7 @@ public final class TerminalView extends View {
     }
 
     private CharSequence getText() {
-        return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow + mEmulator.mRows);
+        return mEmulator.getScreen().getSelectedText(0, mTopRow, mEmulator.mColumns, mTopRow + mEmulator.getVisualRows());
     }
 
     public int getCursorX(float x) {

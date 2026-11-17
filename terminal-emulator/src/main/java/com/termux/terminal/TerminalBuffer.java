@@ -218,6 +218,20 @@ public final class TerminalBuffer {
     }
 
     /**
+     * Return the highest 0-indexed screen row (`0..mScreenRows-1`) containing non-blank content,
+     * or `0` if all screen rows are blank.
+     */
+    public int getLowestNonEmptyScreenRow() {
+        for (int extRow = mScreenRows - 1; extRow >= 0; extRow--) {
+            TerminalRow line = mLines[externalToInternalRow(extRow)];
+            if (line != null && !line.isBlank()) {
+                return extRow;
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Convert a row value from the public external coordinate system to our internal private coordinate system.
      *
      * <pre>
