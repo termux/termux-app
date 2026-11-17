@@ -209,4 +209,37 @@ public class ResizeTest extends TerminalTestCase {
 		resize(5, rows).assertLinesAre("ＱＲ ", "     ", "     ", "     ");
 	}
 
+	public void testMainScreenVisualRowsDecoupledFromPtyRows() {
+		withTerminalSized(10, 10);
+		assertEquals(10, mTerminal.getVisualRows());
+		assertEquals(0, mTerminal.getMaxTopRow());
+
+		// Fresh shell prompt at row 0: shrinking visual viewport to 4 rows keeps maxTopRow = 0:
+		enterString("$ ");
+		mTerminal.setVisualRows(4);
+		assertEquals(4, mTerminal.getVisualRows());
+		assertEquals(0, mTerminal.getMaxTopRow());
+		assertEquals(10, mTerminal.mRows);
+
+		// Inline TUI draws status bar on row 9 and places input cursor on row 7:
+		enterString("\033[10;1HSTATUSBAR\033[8;3H");
+		assertEquals(7, mTerminal.getCursorRow());
+		assertEquals(9, mTerminal.getScreen().getLowestNonEmptyScreenRow());
+		assertEquals(6, mTerminal.getMaxTopRow());
+		assertEquals(10, mTerminal.mRows);
+
+		// Alternate screen buffer ignores main-screen visual row panning:
+		enterString("\033[?1049h");
+		assertEquals(10, mTerminal.getVisualRows());
+		assertEquals(0, mTerminal.getMaxTopRow());
+		enterString("\033[?1049l");
+		assertEquals(4, mTerminal.getVisualRows());
+		assertEquals(6, mTerminal.getMaxTopRow());
+
+		// Restoring full visual height returns maxTopRow to 0:
+		mTerminal.setVisualRows(10);
+		assertEquals(10, mTerminal.getVisualRows());
+		assertEquals(0, mTerminal.getMaxTopRow());
+	}
+
 }

@@ -242,16 +242,18 @@ public class TextSelectionCursorController implements CursorController {
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
                 int topRow = terminalView.getTopRow();
+                int visRows = terminalView.mEmulator.getVisualRows();
+                int maxTopRow = terminalView.mEmulator.getMaxTopRow();
 
                 if (mSelY1 <= topRow) {
                     topRow--;
                     if (topRow < -scrollRows) {
                         topRow = -scrollRows;
                     }
-                } else if (mSelY1 >= topRow + terminalView.mEmulator.mRows) {
+                } else if (mSelY1 >= topRow + visRows) {
                     topRow++;
-                    if (topRow > 0) {
-                        topRow = 0;
+                    if (topRow > maxTopRow) {
+                        topRow = maxTopRow;
                     }
                 }
 
@@ -282,16 +284,18 @@ public class TextSelectionCursorController implements CursorController {
 
             if (!terminalView.mEmulator.isAlternateBufferActive()) {
                 int topRow = terminalView.getTopRow();
+                int visRows = terminalView.mEmulator.getVisualRows();
+                int maxTopRow = terminalView.mEmulator.getMaxTopRow();
 
                 if (mSelY2 <= topRow) {
                     topRow--;
                     if (topRow < -scrollRows) {
                         topRow = -scrollRows;
                     }
-                } else if (mSelY2 >= topRow + terminalView.mEmulator.mRows) {
+                } else if (mSelY2 >= topRow + visRows) {
                     topRow++;
-                    if (topRow > 0) {
-                        topRow = 0;
+                    if (topRow > maxTopRow) {
+                        topRow = maxTopRow;
                     }
                 }
 

@@ -138,6 +138,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      */
     public void onReloadProperties() {
         setSessionShortcuts();
+        if (mActivity.getTerminalView() != null && mActivity.getProperties() != null) {
+            mActivity.getTerminalView().setSoftKeyboardPansMainScreen(
+                mActivity.getProperties().shouldSoftKeyboardPanMainScreen());
+        }
     }
 
     /**

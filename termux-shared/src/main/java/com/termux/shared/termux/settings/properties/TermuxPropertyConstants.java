@@ -130,6 +130,9 @@ public final class TermuxPropertyConstants {
     /** Defines the key for whether to hide soft keyboard when termux app is started */
     public static final String KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP =  "hide-soft-keyboard-on-startup"; // Default: "hide-soft-keyboard-on-startup"
 
+    /** Defines the key for whether opening the soft keyboard pans the main-screen viewport instead of resizing PTY rows */
+    public static final String KEY_SOFT_KEYBOARD_PAN_MAIN_SCREEN = "soft-keyboard-pan-main-screen"; // Default: "soft-keyboard-pan-main-screen"
+
 
 
     /** Defines the key for whether the {@link TermuxAmSocketServer} should be run at app startup */
@@ -398,6 +401,7 @@ public final class TermuxPropertyConstants {
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
+        KEY_SOFT_KEYBOARD_PAN_MAIN_SCREEN,
         KEY_RUN_TERMUX_AM_SOCKET_SERVER,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_CTRL_SPACE_WORKAROUND,
@@ -445,6 +449,7 @@ public final class TermuxPropertyConstants {
         KEY_DISABLE_TERMINAL_SESSION_CHANGE_TOAST,
         KEY_ENFORCE_CHAR_BASED_INPUT,
         KEY_HIDE_SOFT_KEYBOARD_ON_STARTUP,
+        KEY_SOFT_KEYBOARD_PAN_MAIN_SCREEN,
         KEY_TERMINAL_ONCLICK_URL_OPEN,
         KEY_USE_CTRL_SPACE_WORKAROUND,
         KEY_USE_FULLSCREEN,
