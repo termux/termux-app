@@ -3,6 +3,7 @@ package com.termux.app.terminal;
 import android.content.Context;
 import android.graphics.Rect;
 import android.inputmethodservice.InputMethodService;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.termux.app.TermuxActivity;
@@ -230,17 +232,27 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
             } else {
                 if (root_view_logging_enabled)
                     Logger.logVerbose(LOG_TAG, "Bottom margin already equals 0");
-                // This is done so that when next time onMeasure() is called, lastMarginBottom is used.
-                // This is done since we **expect** the keyboard to have same dimensions next time layout
-                // changes, so best set margin while view is drawn the first time, otherwise it will
-                // cause a jitter when OnGlobalLayoutListener is called with margin 0 and it sets the
-                // likely same lastMarginBottom again and requesting a redraw. Hopefully, this logic
-                // works fine for all cases.
-                marginBottom = lastMarginBottom;
+                // Do not pre-arm marginBottom with lastMarginBottom while the keyboard is closed:
+                // unrelated layout passes (e.g. sliding DrawerLayout or toggling toolbar views)
+                // invoke onMeasure() and would otherwise apply a stale keyboard margin for one
+                // frame, triggering a spurious TerminalView resize and SIGWINCH redraw.
+                marginBottom = null;
             }
         }
         // ELse find the part of the extra keys/terminal that is hidden and add a margin accordingly
         else {
+            // On Android 11+ (API 30+), WindowInsets.Type.ime() reliably reports IME visibility
+            // (unlike Android 7-10, see KeyboardUtils.isSoftKeyboardVisible). Guard against
+            // non-IME layout transients occluding bottomSpaceView when no IME is actually shown.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !isImeVisibleApi30()) {
+                if (params.bottomMargin != 0) {
+                    params.setMargins(0, 0, 0, 0);
+                    setLayoutParams(params);
+                }
+                marginBottom = null;
+                return;
+            }
+
             int pxHidden = bottomSpaceViewRect.bottom - windowAvailableRect.bottom;
 
             if (root_view_logging_enabled)
@@ -285,6 +297,14 @@ public class TermuxActivityRootView extends LinearLayout implements ViewTreeObse
                     Logger.logVerbose(LOG_TAG, "Bottom margin already equals " + pxHidden);
             }
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private boolean isImeVisibleApi30() {
+        WindowInsets insets = getRootWindowInsets();
+        if (insets == null) return false;
+        return insets.isVisible(WindowInsets.Type.ime())
+            || insets.getInsets(WindowInsets.Type.ime()).bottom > 0;
     }
 
     public static class WindowInsetsListener implements View.OnApplyWindowInsetsListener {
