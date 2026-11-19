@@ -80,4 +80,5 @@ public interface TerminalViewClient {
 
     void logStackTrace(String tag, Exception e);
 
+    boolean shouldSwapMouseRightClick();
 }

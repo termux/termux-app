@@ -10,6 +10,11 @@
             app:summaryOn="@string/termux_terminal_view_terminal_margin_adjustment_on"
             app:title="@string/termux_terminal_view_terminal_margin_adjustment_title" />
 
+        <SwitchPreferenceCompat
+            android:key="swap_mouse_right_click"
+            android:title="Swap mouse right click"
+            android:summary="Right click shows copy/paste, long press shows the menu" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
