@@ -30,4 +30,26 @@ public class HistoryTest extends TerminalTestCase {
 		enterString("LMN").assertLinesAre("111", "IJK", "LMN", "444").assertHistoryStartsWith("FGH", "CDE");
 	}
 
+	/** Fill the whole ring buffer with wrapped rows, so new rows scrolled in reuse old {@link TerminalRow}s. */
+	private void fillRingBufferWithWrappedRows() {
+		withTerminalSized(5, 3);
+		int totalRows = mTerminal.getScreen().mTotalRows;
+		for (int i = 0; i < totalRows; i++) enterString("abcdefghij\r\n");
+		for (int i = 0; i < 6; i++) enterString("x" + i + "\r\n");
+		enterString("end");
+		assertLinesAre("x4   ", "x5   ", "end  ");
+	}
+
+	public void testReusedRowDoesNotKeepLineWrap() {
+		fillRingBufferWithWrappedRows();
+		assertLineWraps(false, false, false);
+		assertEquals("x0\nx1\nx2\nx3\nx4\nx5\nend", mTerminal.getScreen().getSelectedText(0, -4, 5, 2));
+	}
+
+	public void testReusedRowIsNotJoinedOnResize() {
+		fillRingBufferWithWrappedRows();
+		resize(10, 3);
+		assertLinesAre("x4        ", "x5        ", "end       ");
+	}
+
 }
