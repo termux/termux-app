@@ -180,6 +180,11 @@ public final class TermuxPreferenceConstants {
         public static final String KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED = "crash_report_notifications_enabled";
         public static final boolean DEFAULT_VALUE_CRASH_REPORT_NOTIFICATIONS_ENABLED = true;
 
+        /**
+         * Defines the key for whether swap action between right mouse click and left mouse hold or not.
+         */
+        public static final String KEY_SWAP_MOUSE_RIGHT_CLICK = "swap_mouse_right_click";
+        public static final boolean DEFAULT_VALUE_SWAP_MOUSE_RIGHT_CLICK = false;
     }
 
 

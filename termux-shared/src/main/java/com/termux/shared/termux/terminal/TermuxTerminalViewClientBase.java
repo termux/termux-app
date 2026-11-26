@@ -33,6 +33,10 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         return false;
     }
 
+    public boolean shouldSwapMouseRightClick() {
+        return false;
+    }
+
     @Override
     public boolean isTerminalViewSelected() {
         return true;

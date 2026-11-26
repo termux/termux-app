@@ -799,4 +799,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             session.getEmulator().paste(text);
     }
 
+    @Override
+    public boolean shouldSwapMouseRightClick() {
+        return mActivity.getPreferences().shouldSwapMouseRightClick();
+    }
 }

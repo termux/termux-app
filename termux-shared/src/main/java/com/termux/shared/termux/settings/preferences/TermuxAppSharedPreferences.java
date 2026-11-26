@@ -258,4 +258,14 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
         SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_CRASH_REPORT_NOTIFICATIONS_ENABLED, value, false);
     }
 
+    public boolean shouldSwapMouseRightClick() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences,
+            TERMUX_APP.KEY_SWAP_MOUSE_RIGHT_CLICK,
+            TERMUX_APP.DEFAULT_VALUE_SWAP_MOUSE_RIGHT_CLICK);
+    }
+
+    public void setSwapMouseRightClick(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences,
+            TERMUX_APP.KEY_SWAP_MOUSE_RIGHT_CLICK, value, true);
+    }
 }

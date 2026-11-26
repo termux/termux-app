@@ -57,6 +57,9 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
             case "terminal_margin_adjustment":
                     mPreferences.setTerminalMarginAdjustment(value);
                 break;
+            case "swap_mouse_right_click":
+                    mPreferences.setSwapMouseRightClick(value);
+                break;
             default:
                 break;
         }
@@ -69,6 +72,8 @@ class TerminalViewPreferencesDataStore extends PreferenceDataStore {
         switch (key) {
             case "terminal_margin_adjustment":
                 return mPreferences.isTerminalMarginAdjustmentEnabled();
+            case "swap_mouse_right_click":
+                return mPreferences.shouldSwapMouseRightClick();
             default:
                 return false;
         }

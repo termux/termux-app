@@ -248,6 +248,12 @@ public final class TerminalView extends View {
 
             @Override
             public void onLongPress(MotionEvent event) {
+                if (mClient.shouldSwapMouseRightClick()
+                        && event.isFromSource(InputDevice.SOURCE_MOUSE)
+                        && isEmptyAreaAt(event)) {
+                    showContextMenu();
+                    return;
+                }
                 if (mGestureRecognizer.isInProgress()) return;
                 if (mClient.onLongPress(event)) return;
                 if (!isSelectingText()) {
@@ -614,7 +620,10 @@ public final class TerminalView extends View {
             return true;
         } else if (event.isFromSource(InputDevice.SOURCE_MOUSE)) {
             if (event.isButtonPressed(MotionEvent.BUTTON_SECONDARY)) {
-                if (action == MotionEvent.ACTION_DOWN) showContextMenu();
+                if (action == MotionEvent.ACTION_DOWN) {
+                    if (mClient.shouldSwapMouseRightClick() && isEmptyAreaAt(event)) startTextSelectionMode(event);
+                        else showContextMenu();
+                }
                 return true;
             } else if (event.isButtonPressed(MotionEvent.BUTTON_TERTIARY)) {
                 ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -1514,6 +1523,17 @@ public final class TerminalView extends View {
                 case MotionEvent.ACTION_CANCEL:
                     showFloatingToolbar();
             }
+        }
+    }
+
+    private boolean isEmptyAreaAt(MotionEvent event) {
+        if (mEmulator == null) return true;
+        try {
+            int[] cr = getColumnAndRow(event, true);
+            String t = mEmulator.getScreen().getSelectedText(cr[0], cr[1], cr[0], cr[1]);
+            return t == null || t.trim().isEmpty();
+        } catch (Exception e) {
+            return false; // on any problem, behave normally (no swap)
         }
     }
 
