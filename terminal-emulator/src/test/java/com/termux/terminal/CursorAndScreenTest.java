@@ -263,4 +263,13 @@ public class CursorAndScreenTest extends TerminalTestCase {
 		Assert.assertEquals(TextStyle.CHARACTER_ATTRIBUTE_UNDERLINE, TextStyle.decodeEffect(s));
 	}
 
+	/** CBT ({@code CSI Z}) is a cursor movement and must cancel a pending auto-wrap like CUB, CHA etc. */
+	public void testCursorBackwardTabulationClearsPendingAutoWrap() {
+		// "0123456789" fills the row, leaving the cursor in the last column with a pending wrap. CBT moves to the tab
+		// stop at column 8, the following tab moves back to the last column, and X must overwrite the last cell
+		// instead of wrapping to the next line due to the stale pending wrap.
+		withTerminalSized(10, 3).enterString("0123456789\033[Z\tX").assertLinesAre("012345678X", "          ", "          ");
+		assertCursorAt(0, 9);
+	}
+
 }

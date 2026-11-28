@@ -2298,7 +2298,9 @@ public final class TerminalEmulator {
                             break;
                         }
                     }
-                mCursorCol = newCol;
+                // Use setCursorCol() so that a pending auto-wrap (mAboutToAutoWrap) is cleared like for the
+                // other cursor movement sequences.
+                setCursorCol(newCol);
                 break;
             case '?': // Esc [ ? -- start of a private parameter byte
                 continueSequence(ESC_CSI_QUESTIONMARK);
